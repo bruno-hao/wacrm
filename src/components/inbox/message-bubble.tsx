@@ -163,6 +163,13 @@ function MessageContent({
           ) : (
             <MediaUnavailable label={t("audio")} t={t} />
           )}
+          {/* Transcription of the voice note (AI assistant), under the
+              player and above the timestamp. */}
+          {message.content_text && (
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm italic">
+              {message.content_text}
+            </p>
+          )}
         </div>
       );
 
