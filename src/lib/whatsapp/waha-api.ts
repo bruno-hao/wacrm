@@ -473,3 +473,24 @@ export async function wahaDownloadMedia(
     return null
   }
 }
+
+/** URL of a contact's WhatsApp profile photo, or null if none / hidden. */
+export async function wahaGetProfilePictureUrl(
+  creds: WahaCreds,
+  phone: string,
+): Promise<string | null> {
+  const digits = normalizePhone(phone)
+  if (!digits) return null
+  try {
+    const r = await wahaJson<{ profilePictureURL?: string | null }>(
+      creds,
+      `/api/contacts/profile-picture?contactId=${digits}&session=${encodeURIComponent(
+        creds.session,
+      )}`,
+      { timeoutMs: 15_000 },
+    )
+    return r.profilePictureURL || null
+  } catch {
+    return null
+  }
+}

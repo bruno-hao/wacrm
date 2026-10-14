@@ -120,18 +120,25 @@ export function SettingsOverview({
     // WhatsApp connection status — slower, independent.
     (async () => {
       setWhatsappLoading(true);
-      const [row, health] = await Promise.allSettled([
+      const [row, health, waha] = await Promise.allSettled([
         supabase
           .from('whatsapp_config')
           .select('phone_number_id')
           .eq('account_id', acctId)
           .maybeSingle(),
         fetch('/api/whatsapp/config', { cache: 'no-store' }).then((r) => r.json()),
+        fetch('/api/whatsapp/waha/config', { cache: 'no-store' }).then((r) => r.json()),
       ]);
       if (cancelled) return;
+      // A WAHA account has no Meta credentials to probe — its health is
+      // the state of the WAHA session instead.
+      const wahaInfo = waha.status === 'fulfilled' ? waha.value : null;
+      const usesWaha = !!wahaInfo?.configured;
       setWhatsapp({
         configured: row.status === 'fulfilled' && !!row.value.data?.phone_number_id,
-        connected: health.status === 'fulfilled' && !!health.value?.connected,
+        connected: usesWaha
+          ? wahaInfo.reachable === true && wahaInfo.status === 'WORKING'
+          : health.status === 'fulfilled' && !!health.value?.connected,
       });
       setWhatsappLoading(false);
     })();

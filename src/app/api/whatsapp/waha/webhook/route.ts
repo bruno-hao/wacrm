@@ -145,6 +145,43 @@ async function translateMessage(
   return { message: base, name, wa_id: phone }
 }
 
+/**
+ * Mark every customer message up to `upTo` as read and shrink the
+ * conversation's unread badge to the customer messages that arrived
+ * after it. Realtime pushes the conversation UPDATE to open inboxes.
+ */
+async function markInboundRead(conversationId: string, upTo: string) {
+  const db = supabaseAdmin()
+  await db
+    .from('messages')
+    .update({ status: 'read' })
+    .eq('conversation_id', conversationId)
+    .eq('sender_type', 'customer')
+    .lte('created_at', upTo)
+    .neq('status', 'read')
+
+  const { count } = await db
+    .from('messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('conversation_id', conversationId)
+    .eq('sender_type', 'customer')
+    .gt('created_at', upTo)
+
+  const { data: conv } = await db
+    .from('conversations')
+    .select('unread_count')
+    .eq('id', conversationId)
+    .maybeSingle()
+  const current = Number(conv?.unread_count ?? 0)
+  const next = Math.min(current, count ?? 0)
+  if (next !== current) {
+    await db
+      .from('conversations')
+      .update({ unread_count: next })
+      .eq('id', conversationId)
+  }
+}
+
 const ACK_TO_STATUS: Record<string, string> = {
   SERVER: 'sent',
   DEVICE: 'delivered',
@@ -182,6 +219,12 @@ export async function POST(request: Request) {
       const phoneNumberId = wahaPhoneNumberId(config.account_id)
       const metadata = { display_phone_number: '', phone_number_id: phoneNumberId }
 
+      console.log(
+        '[waha-webhook]',
+        event.event,
+        event.payload?.fromMe ? 'out' : 'in',
+        event.payload?.ackName ?? event.payload?.status ?? '',
+      )
       switch (event.event) {
         case 'message': {
           const tr = await translateMessage(event, creds)
@@ -244,9 +287,38 @@ export async function POST(request: Request) {
 
         case 'message.ack': {
           const p = event.payload
-          if (!p?.fromMe) return
+          if (!p?.id) return
           const status = ACK_TO_STATUS[String(p.ackName || '').toUpperCase()]
           if (!status) return
+
+          // WhatsApp ids differ in their chat part between the send
+          // response and later events (…@c.us vs …@lid for the same
+          // chat), so match on the trailing message id and work with the
+          // id we stored.
+          const suffix = String(p.id).split('_').pop() || ''
+          if (suffix.length < 8) return
+          const { data: stored } = await supabaseAdmin()
+            .from('messages')
+            .select(
+              'message_id, conversation_id, created_at, sender_type, conversation:conversations!inner(account_id)',
+            )
+            .like('message_id', `%_${suffix}`)
+            .eq('conversation.account_id', config.account_id)
+            .limit(1)
+            .maybeSingle()
+          if (!stored) return
+
+          if (stored.sender_type === 'customer') {
+            // The customer's message was read on ANOTHER of our devices
+            // (WhatsApp Web / the phone). Mirror that in the CRM: mark it
+            // and everything before it read, and clear the unread badge.
+            if (status === 'read') {
+              await markInboundRead(stored.conversation_id, stored.created_at)
+            }
+            return
+          }
+
+          // An outgoing message advanced (sent → delivered → read).
           await processWebhook({
             entry: [
               {
@@ -259,7 +331,7 @@ export async function POST(request: Request) {
                       metadata,
                       statuses: [
                         {
-                          id: String(p.id),
+                          id: String(stored.message_id),
                           status,
                           timestamp: String(Math.floor(Date.now() / 1000)),
                           recipient_id: digits(p.to || p.from),

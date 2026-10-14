@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { decrypt } from '@/lib/whatsapp/encryption'
 import { getMediaUrl } from '@/lib/whatsapp/meta-api'
-import { parseWahaCreds, wahaDownloadMedia } from '@/lib/whatsapp/waha-api'
+import {
+  parseWahaCreds,
+  wahaDownloadMedia,
+  type WahaCreds,
+} from '@/lib/whatsapp/waha-api'
+import { photoNeedsSync, syncContactPhoto } from '@/lib/whatsapp/contact-photo'
 import { mirrorInboundMedia } from '@/lib/whatsapp/mirror-inbound-media'
 import { normalizePhone } from '@/lib/whatsapp/phone-utils'
 import {
@@ -211,6 +216,9 @@ export async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
       const config = configRows[0]
 
       const decryptedAccessToken = decrypt(config.access_token)
+      // WAHA accounts: credentials for the per-contact profile-photo sync.
+      const wahaCreds: WahaCreds | null =
+        config.provider === 'waha' ? parseWahaCreds(decryptedAccessToken) : null
 
       for (let i = 0; i < value.messages.length; i++) {
         const message = value.messages[i]
@@ -230,7 +238,8 @@ export async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           // Default ON: the column is NOT NULL DEFAULT TRUE, but a row
           // read before migration 039 lands would have it undefined,
           // and losing attachments is the failure mode worth avoiding.
-          config.mirror_inbound_media !== false
+          config.mirror_inbound_media !== false,
+          wahaCreds
         )
       }
     }
@@ -535,7 +544,9 @@ async function processMessage(
   accessToken: string,
   // Per-account opt-out for the inbound-media mirror (migration 039).
   // See parseMessageContent for what it turns off.
-  mirrorMedia: boolean
+  mirrorMedia: boolean,
+  // Set for WAHA accounts — used to fetch the contact's WhatsApp photo.
+  wahaCreds: WahaCreds | null = null
 ) {
   // Phone number OR business-scoped user ID — Meta sends only the
   // latter for a sender who has adopted a WhatsApp username (#519).
@@ -559,6 +570,18 @@ async function processMessage(
   )
   if (!contactOutcome) return
   const contactRecord = contactOutcome.contact
+
+  // Profile photo (WAHA): once per contact, then a slow refresh. Detached —
+  // `syncContactPhoto` never throws and must not delay the message.
+  if (wahaCreds && contactRecord.phone && photoNeedsSync(contactRecord)) {
+    void syncContactPhoto({
+      db: supabaseAdmin(),
+      creds: wahaCreds,
+      accountId,
+      contactId: contactRecord.id,
+      phone: contactRecord.phone,
+    })
+  }
 
   // Find or create conversation
   const convResult = await findOrCreateConversation(

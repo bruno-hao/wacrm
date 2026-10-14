@@ -158,7 +158,10 @@ export default function ContactsPage() {
       let query = supabase
         .from('contacts')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+        // A→Z. `sort_name` (migration 048) ignores case/accents/leading
+        // emoji and puts nameless contacts (phone-only) last.
+        .order('sort_name', { ascending: true })
+        .order('id', { ascending: true })
         .range(from, to);
 
       if (term) {
@@ -602,7 +605,24 @@ export default function ContactsPage() {
                     />
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
-                    {contact.name || <span className="text-muted-foreground italic">{t('unnamed')}</span>}
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                        {contact.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={contact.avatar_url}
+                            alt=""
+                            loading="lazy"
+                            width={32}
+                            height={32}
+                            className="h-8 w-8 object-cover"
+                          />
+                        ) : (
+                          (contact.name || '?').replace(/^[^\p{L}\p{N}]+/u, '').charAt(0).toUpperCase() || '?'
+                        )}
+                      </span>
+                      {contact.name || <span className="text-muted-foreground italic">{t('unnamed')}</span>}
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
                     {contact.phone}
