@@ -333,6 +333,7 @@
       "urlButtonVarLabel": "URL 버튼 \"{text}\" — {var} 값"
     },
     "sidebar": {
+      "renameHint": "이름을 편집하려면 더블클릭하세요",
       "contactInfo": "연락처 정보",
       "tags": "태그",
       "notes": "메모",

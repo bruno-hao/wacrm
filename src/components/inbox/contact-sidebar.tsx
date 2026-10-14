@@ -17,6 +17,7 @@ import {
   Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -24,9 +25,11 @@ import { contactHandle } from "@/lib/whatsapp/wa-identity";
 
 interface ContactSidebarProps {
   contact: Contact | null;
+  /** Called after the contact was renamed so the parent can refresh its copies. */
+  onContactRenamed?: (contactId: string, name: string) => void;
 }
 
-export function ContactSidebar({ contact }: ContactSidebarProps) {
+export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProps) {
   const tSidebar = useTranslations("Inbox.sidebar");
   const tThread = useTranslations("Inbox.messageThread");
 
@@ -37,6 +40,11 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
   const [tags, setTags] = useState<(Tag & { contact_tag_id: string })[]>([]);
   const [newNote, setNewNote] = useState("");
   const [addingNote, setAddingNote] = useState(false);
+  // Id of the contact whose name is being edited; switching conversations
+  // therefore ends the edit without any reset effect.
+  const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   const fetchContactData = useCallback(async () => {
     if (!contact) return;
@@ -123,6 +131,25 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
     setAddingNote(false);
   }, [contact, newNote, accountId]);
 
+  const handleSaveName = useCallback(async () => {
+    if (!contact) return;
+    const name = nameDraft.trim();
+    if (!name || name === contact.name) {
+      setEditingNameFor(null);
+      return;
+    }
+    setSavingName(true);
+    const { error } = await createClient()
+      .from("contacts")
+      .update({ name })
+      .eq("id", contact.id);
+    setSavingName(false);
+    if (!error) {
+      onContactRenamed?.(contact.id, name);
+      setEditingNameFor(null);
+    }
+  }, [contact, nameDraft, onContactRenamed]);
+
   if (!contact) {
     return (
       <div className="flex h-full w-70 items-center justify-center border-l border-border bg-card">
@@ -151,9 +178,31 @@ export function ContactSidebar({ contact }: ContactSidebarProps) {
                 initials
               )}
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-foreground">
-              {displayName}
-            </h3>
+            {editingNameFor === contact.id ? (
+              <Input
+                autoFocus
+                value={nameDraft}
+                disabled={savingName}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={handleSaveName}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveName();
+                  if (e.key === "Escape") setEditingNameFor(null);
+                }}
+                className="mt-3 h-8 text-center text-sm font-semibold"
+              />
+            ) : (
+              <h3
+                title={tSidebar("renameHint")}
+                onDoubleClick={() => {
+                  setNameDraft(contact.name ?? "");
+                  setEditingNameFor(contact.id);
+                }}
+                className="mt-3 cursor-text select-none text-sm font-semibold text-foreground"
+              >
+                {displayName}
+              </h3>
+            )}
             {contact.company && (
               <p className="text-xs text-muted-foreground">{contact.company}</p>
             )}

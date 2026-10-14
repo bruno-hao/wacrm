@@ -333,6 +333,7 @@
       "urlButtonVarLabel": "Botón de URL \"{text}\": valor para {var}"
     },
     "sidebar": {
+      "renameHint": "Haz doble clic para editar el nombre",
       "contactInfo": "Información del contacto",
       "tags": "Etiquetas",
       "notes": "Notas",
