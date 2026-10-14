@@ -183,6 +183,49 @@ export function validateSendMessageParams(params: {
   }
 }
 
+/**
+ * "_*Atendente: Maria*_" for the conversation's assigned agent, or null
+ * when nobody is assigned / the message type can't carry the line.
+ */
+async function resolveAgentTag(
+  accountId: string,
+  assignedAgentId: string | null | undefined,
+  messageType: string
+): Promise<string | null> {
+  if (!assignedAgentId) return null;
+  const taggable =
+    messageType === 'text' ||
+    messageType === 'image' ||
+    messageType === 'video' ||
+    messageType === 'document';
+  if (!taggable) return null;
+
+  try {
+    const { data } = await supabaseAdmin()
+      .from('profiles')
+      .select('full_name')
+      .eq('user_id', assignedAgentId)
+      .eq('account_id', accountId)
+      .maybeSingle();
+    const name = (data?.full_name ?? '').trim();
+    return name ? `_*Atendente: ${name}*_` : null;
+  } catch (err) {
+    console.warn(
+      '[send-message] agent tag lookup failed; sending without it:',
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
+}
+
+function withAgentTag(
+  text: string | null | undefined,
+  tag: string | null
+): string | null | undefined {
+  if (!tag) return text;
+  return text ? [tag, text].join('\n') : tag;
+}
+
 export async function sendMessageToConversation(
   db: SupabaseClient,
   accountId: string,
@@ -253,6 +296,19 @@ export async function sendMessageToConversation(
   const sendTarget = resolvedTarget.target;
   const hasValidPhone = resolvedTarget.isPhone;
   const sanitizedPhone = hasValidPhone ? sendTarget : '';
+
+  // When an agent is assigned to the conversation, the customer sees who
+  // is talking: the outgoing text (or media caption) gets a bold-italic
+  // "Atendente: <name>" line on top. Unassigned conversations — and
+  // messages with nowhere to put a line (audio, templates, interactive) —
+  // are sent exactly as written. The stored message keeps the original
+  // text, so the inbox thread is not cluttered with the tag.
+  const agentTag = await resolveAgentTag(
+    accountId,
+    conversation.assigned_agent_id,
+    messageType
+  );
+  const outboundText = withAgentTag(contentText, agentTag);
 
   // WhatsApp config, account-scoped.
   const { data: config, error: configError } = await db
@@ -361,7 +417,7 @@ export async function sendMessageToConversation(
         to: phone,
         kind: messageType as MediaKind,
         link: mediaUrl!,
-        caption: contentText || undefined,
+        caption: outboundText || undefined,
         filename: filename || undefined,
         contextMessageId,
       });
@@ -399,7 +455,7 @@ export async function sendMessageToConversation(
       phoneNumberId: config.phone_number_id,
       accessToken,
       to: phone,
-      text: contentText!,
+      text: outboundText!,
       contextMessageId,
     });
     return result.messageId;
