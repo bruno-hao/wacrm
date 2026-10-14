@@ -81,8 +81,14 @@ async function translateMessage(
   creds: ReturnType<typeof parseWahaCreds>,
 ): Promise<{ message: WhatsAppMessage; name?: string; wa_id: string } | null> {
   const p = event.payload
-  if (!p || p.fromMe) return null
-  const from: string = p.from || ''
+  if (!p) return null
+  // `message` is inbound-only; `message.any` is how we learn about messages
+  // sent from the account's OTHER devices (phone, WhatsApp Web). Each event
+  // type handles exactly one direction so nothing is processed twice.
+  const fromMe = !!p.fromMe
+  if (fromMe !== (event.event === 'message.any')) return null
+  // For our own messages the chat is the recipient, not the sender.
+  const from: string = (fromMe ? p.to : p.from) || ''
   // Only 1:1 chats — no groups, status updates or broadcast lists.
   if (!from || from.endsWith('@g.us') || from.includes('status@broadcast')) return null
 
@@ -97,11 +103,14 @@ async function translateMessage(
     from: phone,
     timestamp: String(p.timestamp || Math.floor(Date.now() / 1000)),
     type: 'text',
+    ...(fromMe ? { from_me: true } : {}),
   }
   if (p.replyTo?.id) base.context = { id: String(p.replyTo.id) }
 
-  const name: string | undefined =
-    p._data?.pushName || p._data?.notifyName || undefined
+  // On our own messages pushName is OUR name, not the contact's.
+  const name: string | undefined = fromMe
+    ? undefined
+    : p._data?.pushName || p._data?.notifyName || undefined
 
   if (p.hasMedia && p.media?.url) {
     const mime: string = p.media.mimetype || ''
@@ -226,7 +235,8 @@ export async function POST(request: Request) {
         event.payload?.ackName ?? event.payload?.status ?? '',
       )
       switch (event.event) {
-        case 'message': {
+        case 'message':
+        case 'message.any': {
           const tr = await translateMessage(event, creds)
           if (!tr) return
           const entry: WhatsAppWebhookEntry = {

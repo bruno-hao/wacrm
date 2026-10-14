@@ -56,6 +56,13 @@ export interface WhatsAppMessage {
   from_parent_user_id?: string
   timestamp: string
   type: string
+  /**
+   * WAHA only: the message was sent by the account itself from another
+   * device (phone / WhatsApp Web). `from` then holds the chat's phone, and
+   * the message is stored as an outgoing agent message without any of the
+   * inbound side effects (unread bump, flows, automations, AI reply).
+   */
+  from_me?: boolean
   text?: { body: string }
   image?: { id: string; mime_type: string; caption?: string }
   video?: { id: string; mime_type: string; caption?: string }
@@ -611,6 +618,8 @@ async function processMessage(
     return
   }
 
+  const isFromMe = message.from_me === true
+
   // Parse message content based on type
   const { contentText, mediaUrl, mediaType, interactiveReplyId } =
     await parseMessageContent(
@@ -657,6 +666,19 @@ async function processMessage(
       : message.type === 'button'
         ? 'interactive' // template quick-reply tap (issue #478)
         : 'text'        // reaction, unknown → text fallback
+
+  if (isFromMe) {
+    await storeMirroredOutbound({
+      conversationId: conversation.id,
+      message,
+      contentType,
+      contentText,
+      mediaUrl,
+      mediaType,
+      replyToInternalId,
+    })
+    return
+  }
 
   // Determine whether this is the contact's very first inbound message
   // BEFORE we insert, so the count is accurate. Covers the case where
@@ -901,6 +923,77 @@ async function processMessage(
     content_type: contentType,
     text: contentText,
   })
+}
+
+/**
+ * A message the account sent from ANOTHER device. Stored as an outgoing
+ * agent message so the whole conversation is visible in the CRM. No unread
+ * bump, flows, automations, AI reply or outbound webhooks: nobody inbound
+ * wrote anything.
+ */
+async function storeMirroredOutbound(args: {
+  conversationId: string
+  message: WhatsAppMessage
+  contentType: string
+  contentText: string | null
+  mediaUrl: string | null
+  mediaType: string | null
+  replyToInternalId: string | null
+}) {
+  const db = supabaseAdmin()
+  const { conversationId, message } = args
+
+  // Messages sent from the CRM itself come back through this same event.
+  // Their stored id and the event id can differ in the chat part
+  // (…@c.us vs …@lid), so match on the trailing message id. Wait briefly
+  // first: the CRM inserts its row only after the send call returns, which
+  // can be after the webhook arrives.
+  const suffix = String(message.id).split('_').pop() || ''
+  if (suffix.length >= 8) {
+    await new Promise((r) => setTimeout(r, 2000))
+    const { data: existing } = await db
+      .from('messages')
+      .select('id')
+      .eq('conversation_id', conversationId)
+      .like('message_id', `%_${suffix}`)
+      .limit(1)
+      .maybeSingle()
+    if (existing) return
+  }
+
+  const createdAt = new Date(parseInt(message.timestamp) * 1000).toISOString()
+  const { data: inserted, error } = await db
+    .from('messages')
+    .upsert(
+      {
+        conversation_id: conversationId,
+        sender_type: 'agent',
+        content_type: args.contentType,
+        content_text: args.contentText,
+        media_url: args.mediaUrl,
+        media_type: args.mediaType,
+        message_id: message.id,
+        status: 'sent',
+        created_at: createdAt,
+        reply_to_message_id: args.replyToInternalId,
+      },
+      { onConflict: 'conversation_id,message_id', ignoreDuplicates: true }
+    )
+    .select('id')
+  if (error) {
+    console.error('Error inserting mirrored outbound message:', error)
+    return
+  }
+  if (!inserted || inserted.length === 0) return
+
+  await db
+    .from('conversations')
+    .update({
+      last_message_text: args.contentText || `[${message.type}]`,
+      last_message_at: createdAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', conversationId)
 }
 
 async function parseMessageContent(

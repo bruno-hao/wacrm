@@ -371,7 +371,9 @@ export async function wahaEnsureSession(args: {
     webhooks: [
       {
         url: webhookUrl,
-        events: ['message', 'message.ack', 'message.reaction', 'session.status'],
+        // `message.any` also carries messages WE sent from other devices
+        // (phone, WhatsApp Web); plain `message` is inbound-only.
+        events: ['message', 'message.any', 'message.ack', 'message.reaction', 'session.status'],
         retries: { policy: 'constant', delaySeconds: 2, attempts: 5 },
       },
     ],
