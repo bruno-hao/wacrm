@@ -945,7 +945,8 @@ async function storeMirroredOutbound(args: {
 
   // Messages sent from the CRM itself come back through this same event.
   // Their stored id and the event id can differ in the chat part
-  // (…@c.us vs …@lid), so match on the trailing message id. Wait briefly
+  // (…@c.us vs …@lid), so match on the trailing message id (CRM sends are stored under the bare
+  // id, hence the `eq` alternative). Wait briefly
   // first: the CRM inserts its row only after the send call returns, which
   // can be after the webhook arrives.
   const suffix = String(message.id).split('_').pop() || ''
@@ -955,7 +956,7 @@ async function storeMirroredOutbound(args: {
       .from('messages')
       .select('id')
       .eq('conversation_id', conversationId)
-      .like('message_id', `%_${suffix}`)
+      .or(`message_id.eq.${suffix},message_id.like.*_${suffix}`)
       .limit(1)
       .maybeSingle()
     if (existing) return

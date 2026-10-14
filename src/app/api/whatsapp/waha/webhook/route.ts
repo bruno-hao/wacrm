@@ -306,7 +306,8 @@ export async function POST(request: Request) {
           // WhatsApp ids differ in their chat part between the send
           // response and later events (…@c.us vs …@lid for the same
           // chat), so match on the trailing message id and work with the
-          // id we stored.
+          // id we stored. Messages sent from the CRM are stored under WAHA's bare
+  // id (no "true_<chat>_" prefix), so match that form too.
           const suffix = String(p.id).split('_').pop() || ''
           if (suffix.length < 8) return
           const { data: stored } = await supabaseAdmin()
@@ -314,7 +315,7 @@ export async function POST(request: Request) {
             .select(
               'message_id, conversation_id, created_at, sender_type, conversation:conversations!inner(account_id)',
             )
-            .like('message_id', `%_${suffix}`)
+            .or(`message_id.eq.${suffix},message_id.like.*_${suffix}`)
             .eq('conversation.account_id', config.account_id)
             .limit(1)
             .maybeSingle()
@@ -382,7 +383,7 @@ export async function POST(request: Request) {
               .select(
                 'conversation_id, created_at, sender_type, conversation:conversations!inner(account_id)',
               )
-              .like('message_id', `%_${key.id}`)
+              .or(`message_id.eq.${key.id},message_id.like.*_${key.id}`)
               .eq('conversation.account_id', config.account_id)
               .eq('sender_type', 'customer')
               .limit(1)
