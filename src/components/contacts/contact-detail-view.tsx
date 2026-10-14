@@ -41,7 +41,7 @@ import {
   LayoutTemplate,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { contactHandle } from '@/lib/whatsapp/wa-identity';
+import { contactHandle, displayContactHandle } from '@/lib/whatsapp/wa-identity';
 import { parseInternationalPhone } from '@/lib/whatsapp/phone-utils';
 
 interface ContactDetailViewProps {
@@ -422,7 +422,7 @@ export function ContactDetailView({
                       className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
                     >
                       <Phone className="size-3" />
-                      {contactHandle(contact)}
+                      {displayContactHandle(contact)}
                       {copiedPhone ? (
                         <Check className="size-3 text-primary" />
                       ) : (

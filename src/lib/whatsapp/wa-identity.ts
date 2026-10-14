@@ -28,6 +28,7 @@
  */
 
 import {
+  formatPhoneDisplay,
   isValidE164,
   normalizePhone,
   sanitizePhoneForMeta,
@@ -160,6 +161,20 @@ export function contactHandle(contact: {
   if (contact.phone?.trim()) return contact.phone
   if (contact.wa_username?.trim()) return `@${contact.wa_username.trim()}`
   return contact.wa_user_id?.trim() ?? ''
+}
+
+/**
+ * `contactHandle` for screens: phones are shown with the CRM mask
+ * (`+55 (xx) xxxxx-xxxx`, ninth digit included); usernames / BSUIDs are
+ * left as they are. Display only.
+ */
+export function displayContactHandle(contact: {
+  phone?: string | null
+  wa_username?: string | null
+  wa_user_id?: string | null
+}): string {
+  if (contact.phone?.trim()) return formatPhoneDisplay(contact.phone)
+  return contactHandle(contact)
 }
 
 export interface WaSendTarget {

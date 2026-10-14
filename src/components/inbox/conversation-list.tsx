@@ -13,6 +13,8 @@ import { Search, ChevronDown, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { formatPhoneDisplay } from "@/lib/whatsapp/phone-utils";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -181,7 +183,7 @@ export function ConversationList({
       const q = search.toLowerCase();
       result = result.filter((c) => {
         const name = c.contact?.name?.toLowerCase() ?? "";
-        const phone = c.contact?.phone?.toLowerCase() ?? "";
+        const phone = `${c.contact?.phone ?? ""} ${formatPhoneDisplay(c.contact?.phone)}`.toLowerCase();
         const lastMsg = c.last_message_text?.toLowerCase() ?? "";
         return name.includes(q) || phone.includes(q) || lastMsg.includes(q);
       });
@@ -437,7 +439,8 @@ function ConversationItem({
   t,
 }: ConversationItemProps) {
   const contact = conversation.contact;
-  const displayName = contact?.name || contact?.phone || t("unknown");
+  const displayName =
+    contact?.name || displayContactHandle(contact ?? {}) || t("unknown");
   const initials = displayName.charAt(0).toUpperCase();
 
   const handleClick = useCallback(() => {

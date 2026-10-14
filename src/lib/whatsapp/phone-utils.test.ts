@@ -215,3 +215,27 @@ describe("isRecipientNotAllowedError", () => {
     expect(isRecipientNotAllowedError("")).toBe(false);
   });
 });
+
+import { brazilianCanonical, formatPhoneDisplay } from './phone-utils'
+
+describe('formatPhoneDisplay (Brazil)', () => {
+  it('shows the ninth digit on mobiles stored without it', () => {
+    expect(formatPhoneDisplay('557382395770')).toBe('+55 (73) 98239-5770')
+  })
+  it('keeps mobiles that already have it', () => {
+    expect(formatPhoneDisplay('5573982395770')).toBe('+55 (73) 98239-5770')
+    expect(formatPhoneDisplay('+55 (71) 99727-6632')).toBe('+55 (71) 99727-6632')
+  })
+  it('formats landlines with 4+4', () => {
+    expect(formatPhoneDisplay('557332161234')).toBe('+55 (73) 3216-1234')
+  })
+  it('falls back to +digits for other countries', () => {
+    expect(formatPhoneDisplay('393401234567')).toBe('+393401234567')
+    expect(formatPhoneDisplay('')).toBe('')
+  })
+  it('brazilianCanonical yields the ninth-digit key and ignores non-BR', () => {
+    expect(brazilianCanonical('557382395770')?.digits).toBe('5573982395770')
+    expect(brazilianCanonical('5573982395770')?.digits).toBe('5573982395770')
+    expect(brazilianCanonical('393401234567')).toBeNull()
+  })
+})

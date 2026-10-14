@@ -138,3 +138,52 @@ export function phoneVariants(sanitized: string): string[] {
 export function isRecipientNotAllowedError(message: string): boolean {
   return /131030|not in allowed list|not in the allowed list/i.test(message)
 }
+
+/**
+ * Brazilian number in its canonical, ninth-digit form (digits only), for
+ * DISPLAY and for matching against external systems (e.g. ssOtica).
+ *
+ * WhatsApp/WAHA still identify many older Brazilian mobiles WITHOUT the
+ * ninth digit (55 + DDD + 8 digits). The stored number must stay exactly
+ * as WhatsApp reports it, so this never touches storage — it only derives
+ * the form people write: 55 + DDD + 9 + 8 digits.
+ *
+ * Returns null for anything that isn't a Brazilian number.
+ */
+export function brazilianCanonical(
+  phone: string | null | undefined
+): { digits: string; kind: 'mobile' | 'landline'; ddd: string; local: string } | null {
+  const d = normalizePhone(phone ?? '')
+  if (!d.startsWith('55')) return null
+  const ddd = d.slice(2, 4)
+  const rest = d.slice(4)
+  if (!/^[1-9]\d$/.test(ddd)) return null
+  // 9 digits starting with 9 → mobile with the ninth digit.
+  if (/^9\d{8}$/.test(rest)) return { digits: d, kind: 'mobile', ddd, local: rest }
+  // 8 digits starting 6–9 → mobile stored without the ninth digit.
+  if (/^[6-9]\d{7}$/.test(rest)) {
+    return { digits: `55${ddd}9${rest}`, kind: 'mobile', ddd, local: `9${rest}` }
+  }
+  // 8 digits starting 2–5 → landline.
+  if (/^[2-5]\d{7}$/.test(rest)) return { digits: d, kind: 'landline', ddd, local: rest }
+  return null
+}
+
+/**
+ * Display mask for the CRM screens:
+ *   mobile   +55 (xx) xxxxx-xxxx   (ninth digit always shown)
+ *   landline +55 (xx) xxxx-xxxx
+ * Other countries / unrecognised shapes fall back to "+<digits>".
+ * Display only — never write the result back to the database.
+ */
+export function formatPhoneDisplay(phone: string | null | undefined): string {
+  const raw = phone?.trim() ?? ''
+  if (!raw) return ''
+  const br = brazilianCanonical(raw)
+  if (br) {
+    const cut = br.local.length - 4
+    return `+55 (${br.ddd}) ${br.local.slice(0, cut)}-${br.local.slice(cut)}`
+  }
+  const d = normalizePhone(raw)
+  return d ? `+${d}` : raw
+}

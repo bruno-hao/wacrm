@@ -53,7 +53,7 @@ import { TemplatePicker } from "./template-picker";
 import { AiThreadBanner } from "./ai-thread-banner";
 import { buildReplyPreview } from "./reply-quote";
 import { renderTemplateBody } from "@/lib/whatsapp/template-body";
-import { contactHandle } from "@/lib/whatsapp/wa-identity";
+import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { toast } from "sonner";
 
 interface ReplyDraft {
@@ -753,7 +753,7 @@ export function MessageThread({
   }, [reactions]);
 
   const contactDisplayName =
-    contact?.name || (contact ? contactHandle(contact) : "") || t("customer");
+    contact?.name || (contact ? displayContactHandle(contact) : "") || t("customer");
 
   // Author label for a quoted message: "You" when we sent the parent,
   // contact name when the customer sent it.
@@ -881,7 +881,7 @@ export function MessageThread({
     );
   }
 
-  const displayName = contact.name || contactHandle(contact);
+  const displayName = contact.name || displayContactHandle(contact);
   const messageGroups = groupMessagesByDate(messages);
   const currentStatus = STATUS_OPTIONS.find(
     (s) => s.value === conversation.status
@@ -924,7 +924,7 @@ export function MessageThread({
           <div className="min-w-0">
             <h2 className="truncate text-sm font-semibold text-foreground">{displayName}</h2>
             <p className="truncate text-xs text-muted-foreground">
-              {contactHandle(contact)}
+              {displayContactHandle(contact)}
             </p>
           </div>
           {/* Session timer badge — hidden on the narrowest phones so
@@ -1117,7 +1117,7 @@ export function MessageThread({
                           authorLabel:
                             parent.sender_type === "agent" || parent.sender_type === "bot"
                               ? t("me") 
-                              : contact?.name || contact?.phone || t("unknown"),
+                              : contact?.name || displayContactHandle(contact ?? {}) || t("unknown"),
                           preview: buildReplyPreview(parent, tQuote),
                         }
                       : null;
