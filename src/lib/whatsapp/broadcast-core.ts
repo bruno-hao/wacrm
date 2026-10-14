@@ -19,6 +19,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { sendTemplateMessage } from '@/lib/whatsapp/meta-api';
+import { wahaPause } from '@/lib/whatsapp/waha-api';
 import { decrypt } from '@/lib/whatsapp/encryption';
 import {
   parseInternationalPhone,
@@ -71,6 +72,11 @@ export interface BroadcastPlan {
   planned: PlannedRecipient[];
   /** Phones rejected up front (invalid E.164) — counted as failed. */
   rejected: number;
+  /**
+   * WAHA accounts only: minimum pause between two sends (ms). Unset for
+   * the Meta Cloud API, which has its own rate limiting.
+   */
+  sendDelayMs?: number;
 }
 
 const MAX_RECIPIENTS = 1000;
@@ -242,6 +248,8 @@ export async function createBroadcast(
     templateRow,
     planned,
     rejected,
+    sendDelayMs:
+      config.provider === 'waha' ? (config.waha_send_delay_ms ?? 4000) : undefined,
   };
 }
 
@@ -262,7 +270,12 @@ export async function deliverBroadcast(
   db: SupabaseClient,
   plan: BroadcastPlan
 ): Promise<void> {
+  let first = true;
   for (const recipient of plan.planned) {
+    if (plan.sendDelayMs) {
+      if (!first) await wahaPause(plan.sendDelayMs);
+      first = false;
+    }
     const variants = phoneVariants(recipient.phone);
     let sentMessageId: string | null = null;
     let lastError: string | null = null;

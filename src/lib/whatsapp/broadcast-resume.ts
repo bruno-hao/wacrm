@@ -255,6 +255,8 @@ export async function planBroadcastResume(
         : [],
     })),
     rejected: 0,
+    sendDelayMs:
+      config.provider === 'waha' ? (config.waha_send_delay_ms ?? 4000) : undefined,
   };
 
   return { plan, remaining, unsendable: unsendable.length };

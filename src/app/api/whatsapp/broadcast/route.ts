@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { sendTemplateMessage } from '@/lib/whatsapp/meta-api'
+import { wahaPause } from '@/lib/whatsapp/waha-api'
 import { decrypt } from '@/lib/whatsapp/encryption'
 import type { SendTimeParams } from '@/lib/whatsapp/template-send-builder'
 import { resolveTemplateRow } from '@/lib/whatsapp/template-body'
@@ -167,7 +168,14 @@ export async function POST(request: Request) {
     let sentCount = 0
     let failedCount = 0
 
+    const paceMs =
+      config.provider === 'waha' ? (config.waha_send_delay_ms ?? 4000) : 0
+    let firstSend = true
     for (const recipient of recipients) {
+      if (paceMs) {
+        if (!firstSend) await wahaPause(paceMs)
+        firstSend = false
+      }
       const sanitized = sanitizePhoneForMeta(recipient.phone)
 
       if (!isValidE164(sanitized)) {

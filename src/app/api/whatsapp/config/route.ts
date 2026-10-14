@@ -126,7 +126,7 @@ export async function GET() {
 
     const { data: config, error: configError } = await supabase
       .from('whatsapp_config')
-      .select('phone_number_id, waba_id, access_token, status')
+      .select('phone_number_id, waba_id, access_token, status, provider')
       .eq('account_id', accountId)
       .maybeSingle()
 
@@ -138,7 +138,9 @@ export async function GET() {
       )
     }
 
-    if (!config) {
+    // A WAHA row has no Meta credentials — report "not configured" so the
+    // Meta form starts clean if the account switches provider.
+    if (!config || config.provider === 'waha') {
       return NextResponse.json(
         {
           connected: false,
@@ -508,6 +510,10 @@ export async function POST(request: Request) {
       waba_id: waba_id || null,
       access_token: encryptedAccessToken,
       verify_token: encryptedVerifyToken,
+      provider: 'meta',
+      waha_base_url: null,
+      waha_session: null,
+      waha_webhook_secret: null,
       status: registrationError ? 'disconnected' : 'connected',
       connected_at: registrationError ? null : new Date().toISOString(),
       registered_at: registrationError ? null : registeredAt,

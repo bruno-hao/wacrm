@@ -11,6 +11,15 @@
 
 import { isBusinessScopedUserId } from './wa-identity'
 import { getT } from '@/lib/i18n/translate'
+import {
+  isWahaTarget,
+  parseWahaCreds,
+  renderInteractiveAsText,
+  wahaMarkReadAndType,
+  wahaSendMedia,
+  wahaSendReaction,
+  wahaSendText,
+} from './waha-api'
 
 const ti = getT('Validation.interactive')
 
@@ -361,6 +370,14 @@ export async function sendTextMessage(
   args: SendTextMessageArgs
 ): Promise<MetaSendResult> {
   const { phoneNumberId, accessToken, to, text, contextMessageId } = args
+  if (isWahaTarget(phoneNumberId)) {
+    return wahaSendText({
+      creds: parseWahaCreds(accessToken),
+      to,
+      text,
+      replyToMessageId: contextMessageId,
+    })
+  }
   const url = `${META_API_BASE}/${phoneNumberId}/messages`
   const body: Record<string, unknown> = {
     messaging_product: 'whatsapp',
@@ -419,6 +436,17 @@ export async function sendMediaMessage(
 ): Promise<MetaSendResult> {
   const { phoneNumberId, accessToken, to, kind, link, caption, filename, contextMessageId } = args
   if (!link) throw new Error('sendMediaMessage requires a link.')
+  if (isWahaTarget(phoneNumberId)) {
+    return wahaSendMedia({
+      creds: parseWahaCreds(accessToken),
+      to,
+      kind,
+      link,
+      caption,
+      filename,
+      replyToMessageId: contextMessageId,
+    })
+  }
   const url = `${META_API_BASE}/${phoneNumberId}/messages`
 
   // Audio accepts neither caption nor filename per Meta's spec — adding
@@ -513,6 +541,21 @@ export async function sendTemplateMessage(
     messageParams,
     contextMessageId,
   } = args
+  if (isWahaTarget(phoneNumberId)) {
+    // WAHA has no Meta-approved templates: send the template's body with
+    // its variables substituted, as ordinary text.
+    const values = messageParams?.body ?? params ?? []
+    const raw = template?.body_text ?? ''
+    const rendered = raw.replace(/\{\{\s*(\d+)\s*\}\}/g, (_m, n: string) =>
+      String(values[Number(n) - 1] ?? ''),
+    )
+    return wahaSendText({
+      creds: parseWahaCreds(accessToken),
+      to,
+      text: rendered || templateName,
+      replyToMessageId: contextMessageId,
+    })
+  }
   const url = `${META_API_BASE}/${phoneNumberId}/messages`
 
   const templatePayload: Record<string, unknown> = {
@@ -806,6 +849,14 @@ export async function sendReactionMessage(
   args: SendReactionMessageArgs
 ): Promise<MetaSendResult> {
   const { phoneNumberId, accessToken, to, targetMessageId, emoji } = args
+  if (isWahaTarget(phoneNumberId)) {
+    void to
+    return wahaSendReaction({
+      creds: parseWahaCreds(accessToken),
+      targetMessageId,
+      emoji,
+    })
+  }
   const url = `${META_API_BASE}/${phoneNumberId}/messages`
   const response = await fetch(url, {
     method: 'POST',
@@ -857,6 +908,13 @@ export async function sendTypingIndicator(
   args: SendTypingIndicatorArgs
 ): Promise<void> {
   const { phoneNumberId, accessToken, messageId } = args
+  if (isWahaTarget(phoneNumberId)) {
+    await wahaMarkReadAndType({
+      creds: parseWahaCreds(accessToken),
+      inboundMessageId: messageId,
+    })
+    return
+  }
   const url = `${META_API_BASE}/${phoneNumberId}/messages`
   const response = await fetch(url, {
     method: 'POST',
@@ -943,6 +1001,19 @@ export async function sendInteractiveButtons(
     phoneNumberId, accessToken, to,
     bodyText, headerText, footerText, buttons, contextMessageId,
   } = args
+  if (isWahaTarget(phoneNumberId)) {
+    return wahaSendText({
+      creds: parseWahaCreds(accessToken),
+      to,
+      text: renderInteractiveAsText({
+        bodyText,
+        headerText,
+        footerText,
+        options: buttons.map((b) => ({ title: b.title })),
+      }),
+      replyToMessageId: contextMessageId,
+    })
+  }
   validateInteractiveBody(bodyText)
   validateInteractiveHeaderFooter(headerText, footerText)
   if (buttons.length < 1 || buttons.length > INTERACTIVE_LIMITS.maxButtons) {
@@ -1050,6 +1121,21 @@ export async function sendInteractiveList(
     phoneNumberId, accessToken, to,
     bodyText, buttonLabel, headerText, footerText, sections, contextMessageId,
   } = args
+  if (isWahaTarget(phoneNumberId)) {
+    return wahaSendText({
+      creds: parseWahaCreds(accessToken),
+      to,
+      text: renderInteractiveAsText({
+        bodyText,
+        headerText,
+        footerText,
+        options: sections.flatMap((s) =>
+          s.rows.map((r) => ({ title: r.title, description: r.description })),
+        ),
+      }),
+      replyToMessageId: contextMessageId,
+    })
+  }
   validateInteractiveBody(bodyText)
   validateInteractiveHeaderFooter(headerText, footerText)
   if (!buttonLabel) throw new Error(ti('listRequiresButtonLabel'))

@@ -134,10 +134,22 @@ export async function POST(request: Request) {
       process.env.WHATSAPP_TEMPLATES_DRY_RUN === 'true' ||
       process.env.WHATSAPP_TEMPLATES_DRY_RUN === '1'
 
-    let metaTemplateId: string
+    let metaTemplateId: string | null
     let metaStatus: string
 
-    if (dryRun) {
+    // WAHA accounts have no Meta template approval: a template is just a
+    // saved, variable-substituted message body. Store it locally as
+    // APPROVED, with no Meta id, so broadcasts and the picker can use it.
+    const { data: providerRow } = await supabase
+      .from('whatsapp_config')
+      .select('provider')
+      .eq('account_id', accountId)
+      .maybeSingle()
+
+    if (providerRow?.provider === 'waha') {
+      metaTemplateId = null
+      metaStatus = 'APPROVED'
+    } else if (dryRun) {
       metaTemplateId = `dry-run-${crypto.randomUUID()}`
       metaStatus = 'PENDING'
     } else {
