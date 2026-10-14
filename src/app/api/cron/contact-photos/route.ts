@@ -6,7 +6,7 @@ import { parseWahaCreds } from '@/lib/whatsapp/waha-api'
 import { syncContactPhoto } from '@/lib/whatsapp/contact-photo'
 
 /**
- * GET /api/whatsapp/waha/photos?limit=10
+ * GET /api/cron/contact-photos?limit=10
  *
  * Backfills WhatsApp profile photos for contacts that were never synced
  * (e.g. a freshly imported address book). Each call handles up to `limit`
