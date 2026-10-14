@@ -87,20 +87,9 @@ async function translateMessage(
   // type handles exactly one direction so nothing is processed twice.
   const fromMe = !!p.fromMe
   if (fromMe !== (event.event === 'message.any')) return null
-  // For our own messages the chat is the recipient, not the sender.
-  const from: string = (fromMe ? p.to : p.from) || ''
-  if (fromMe) {
-    console.log('[waha-webhook] own message', {
-      id: p.id,
-      from: p.from,
-      to: p.to,
-      source: p.source,
-      hasBody: typeof p.body === 'string' && p.body.length > 0,
-      hasMedia: !!p.hasMedia,
-      jid: p._data?.key?.remoteJid,
-      jidAlt: p._data?.key?.remoteJidAlt,
-    })
-  }
+  // For our own messages the chat is the recipient. NOWEB leaves `to`
+  // unset and puts the chat id in `from`, so fall back to it.
+  const from: string = (fromMe ? p.to || p.from : p.from) || ''
   // Only 1:1 chats — no groups, status updates or broadcast lists.
   if (!from || from.endsWith('@g.us') || from.includes('status@broadcast')) return null
 
