@@ -234,6 +234,9 @@ export async function POST(request: Request) {
         event.event,
         event.payload?.fromMe ? 'out' : 'in',
         event.payload?.ackName ?? event.payload?.status ?? '',
+        event.event === 'engine.event'
+          ? JSON.stringify(event.payload).slice(0, 400)
+          : '',
       )
       switch (event.event) {
         case 'message':
