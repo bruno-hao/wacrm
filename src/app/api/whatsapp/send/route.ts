@@ -168,6 +168,7 @@ export async function POST(request: Request) {
         templateMessageParams: template_message_params,
         interactivePayload: interactive_payload,
         replyToMessageId: reply_to_message_id,
+        senderUserId: userId,
       })
 
       return NextResponse.json({
@@ -177,6 +178,9 @@ export async function POST(request: Request) {
       })
     } catch (err) {
       if (err instanceof SendMessageError) {
+        console.error(
+          `[whatsapp/send] ${err.code} (${err.status}): ${err.message}`
+        )
         return NextResponse.json(
           { error: err.message },
           { status: err.status }

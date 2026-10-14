@@ -87,6 +87,13 @@ export interface SendMessageParams {
   /** Structured payload for `messageType === 'interactive'`. */
   interactivePayload?: InteractiveMessagePayload | null;
   replyToMessageId?: string | null;
+  /**
+   * The signed-in agent who typed the message. Their name is what the
+   * customer sees on top of the message (when the conversation has an
+   * assigned agent). Absent for API-key sends — the assigned agent's
+   * name is used then.
+   */
+  senderUserId?: string | null;
 }
 
 export interface SendMessageResult {
@@ -184,12 +191,14 @@ export function validateSendMessageParams(params: {
 }
 
 /**
- * "_*Atendente: Maria*_" for the conversation's assigned agent, or null
- * when nobody is assigned / the message type can't carry the line.
+ * "_*Maria Silva*_" — the full name of whoever typed the message — or null
+ * when the conversation has no assigned agent / the message type can't
+ * carry the line.
  */
 async function resolveAgentTag(
   accountId: string,
   assignedAgentId: string | null | undefined,
+  senderUserId: string | null | undefined,
   messageType: string
 ): Promise<string | null> {
   if (!assignedAgentId) return null;
@@ -204,11 +213,11 @@ async function resolveAgentTag(
     const { data } = await supabaseAdmin()
       .from('profiles')
       .select('full_name')
-      .eq('user_id', assignedAgentId)
+      .eq('user_id', senderUserId || assignedAgentId)
       .eq('account_id', accountId)
       .maybeSingle();
     const name = (data?.full_name ?? '').trim();
-    return name ? `_*Atendente: ${name}*_` : null;
+    return name ? `_*${name}*_` : null;
   } catch (err) {
     console.warn(
       '[send-message] agent tag lookup failed; sending without it:',
@@ -243,6 +252,7 @@ export async function sendMessageToConversation(
     templateMessageParams,
     interactivePayload,
     replyToMessageId,
+    senderUserId,
   } = params;
 
   if (!conversationId) {
@@ -299,13 +309,14 @@ export async function sendMessageToConversation(
 
   // When an agent is assigned to the conversation, the customer sees who
   // is talking: the outgoing text (or media caption) gets a bold-italic
-  // "Atendente: <name>" line on top. Unassigned conversations — and
+  // line with the full name of whoever typed it on top. Unassigned conversations — and
   // messages with nowhere to put a line (audio, templates, interactive) —
   // are sent exactly as written. The stored message keeps the original
   // text, so the inbox thread is not cluttered with the tag.
   const agentTag = await resolveAgentTag(
     accountId,
     conversation.assigned_agent_id,
+    senderUserId,
     messageType
   );
   const outboundText = withAgentTag(contentText, agentTag);
