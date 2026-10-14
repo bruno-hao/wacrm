@@ -482,11 +482,16 @@ export async function wahaGetProfilePictureUrl(
   const digits = normalizePhone(phone)
   if (!digits) return null
   try {
+    // Ask WhatsApp for the real id first: a Brazilian number may be
+    // registered with or without the ninth digit, and only the registered
+    // form has a photo.
+    const chatId = await resolveChatId(creds, digits).catch(() => null)
+    if (!chatId) return null
     const r = await wahaJson<{ profilePictureURL?: string | null }>(
       creds,
-      `/api/contacts/profile-picture?contactId=${digits}&session=${encodeURIComponent(
-        creds.session,
-      )}`,
+      `/api/contacts/profile-picture?contactId=${encodeURIComponent(
+        chatId,
+      )}&session=${encodeURIComponent(creds.session)}`,
       { timeoutMs: 15_000 },
     )
     return r.profilePictureURL || null
