@@ -234,9 +234,7 @@ export async function POST(request: Request) {
         event.event,
         event.payload?.fromMe ? 'out' : 'in',
         event.payload?.ackName ?? event.payload?.status ?? '',
-        event.event === 'engine.event'
-          ? JSON.stringify(event.payload).slice(0, 400)
-          : '',
+        event.event === 'engine.event' ? (event.payload?.event ?? '') : '',
       )
       switch (event.event) {
         case 'message':
@@ -364,6 +362,35 @@ export async function POST(request: Request) {
               },
             ],
           })
+          return
+        }
+
+        case 'engine.event': {
+          // NOWEB does not turn "you read this on another device" into a
+          // message.ack. The raw Baileys event is `messages.update` with
+          // key.fromMe=false and update.status >= 4 (READ / PLAYED).
+          const p = event.payload
+          if (p?.event !== 'messages.update' || !Array.isArray(p.data)) return
+          for (const item of p.data) {
+            const key = item?.key
+            const st = Number(item?.update?.status)
+            if (!key?.id || key.fromMe !== false || !(st >= 4)) continue
+            if (String(key.remoteJid || '').includes('@g.us')) continue
+            if (String(key.remoteJid || '').includes('status@broadcast')) continue
+            const { data: stored } = await supabaseAdmin()
+              .from('messages')
+              .select(
+                'conversation_id, created_at, sender_type, conversation:conversations!inner(account_id)',
+              )
+              .like('message_id', `%_${key.id}`)
+              .eq('conversation.account_id', config.account_id)
+              .eq('sender_type', 'customer')
+              .limit(1)
+              .maybeSingle()
+            if (stored) {
+              await markInboundRead(stored.conversation_id, stored.created_at)
+            }
+          }
           return
         }
 

@@ -371,9 +371,11 @@ export async function wahaEnsureSession(args: {
     webhooks: [
       {
         url: webhookUrl,
+        // `engine.event` is only used to see read receipts for customer messages
+        // read on another device (NOWEB emits no message.ack for them).
         // `message.any` also carries messages WE sent from other devices
         // (phone, WhatsApp Web); plain `message` is inbound-only.
-        events: ['message', 'message.any', 'message.ack', 'message.reaction', 'session.status'],
+        events: ['message', 'message.any', 'message.ack', 'message.reaction', 'session.status', 'engine.event'],
         retries: { policy: 'constant', delaySeconds: 2, attempts: 5 },
       },
     ],
