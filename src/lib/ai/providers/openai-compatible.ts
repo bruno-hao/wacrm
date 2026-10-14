@@ -18,7 +18,7 @@ function normalizeHost(host: string): string {
   return host.trim().toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '')
 }
 
-function allowedPrivateHosts(): Set<string> {
+export function allowedPrivateHosts(): Set<string> {
   return new Set(
     (process.env[PRIVATE_HOST_ALLOWLIST_ENV] ?? '')
       .split(',')

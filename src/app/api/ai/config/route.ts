@@ -34,7 +34,7 @@ export async function GET() {
       // `api_key` is selected only to derive `has_key` — it is stripped
       // out below and never returned to the client.
       .select(
-        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, handoff_agent_id, api_key, embeddings_api_key',
+        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model',
       )
       .eq('account_id', accountId)
       .maybeSingle()
@@ -121,6 +121,18 @@ export async function POST(request: Request) {
       handoffAgentId = rawHandoff
     }
 
+    // Voice-note transcription (reuses this provider's base URL + key).
+    // Absent → left unchanged on update; the form always sends both.
+    const transcriptionProvided = 'transcription_enabled' in body
+    const transcriptionEnabled = body.transcription_enabled === true
+    const transcriptionModel =
+      typeof body.transcription_model === 'string' && body.transcription_model.trim()
+        ? body.transcription_model.trim().slice(0, 120)
+        : 'whisper-large-v3-turbo'
+    if (transcriptionEnabled && provider === 'anthropic') {
+      return bad(t('ai.transcriptionUnsupported'))
+    }
+
     const rawKey = typeof body.api_key === 'string' ? body.api_key.trim() : ''
 
     // Embeddings key (optional, for semantic KB search): a non-empty
@@ -191,6 +203,8 @@ export async function POST(request: Request) {
           autoReplyMaxPerConversation: maxPer,
           handoffAgentId: null,
           embeddingsApiKey: null,
+          transcriptionEnabled: false,
+          transcriptionModel: 'whisper-large-v3-turbo',
         })
       } catch (err) {
         if (err instanceof AiError) {
@@ -234,6 +248,10 @@ export async function POST(request: Request) {
     // Only touch the handoff target when the form actually sent the field,
     // so a partial save (e.g. flipping a toggle) doesn't wipe it.
     if (handoffProvided) shared.handoff_agent_id = handoffAgentId
+    if (transcriptionProvided) {
+      shared.transcription_enabled = transcriptionEnabled
+      shared.transcription_model = transcriptionModel
+    }
     if (rawEmbeddingsKey) {
       shared.embeddings_api_key = encrypt(rawEmbeddingsKey)
     } else if (clearEmbeddingsKey) {

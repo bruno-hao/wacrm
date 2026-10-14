@@ -74,6 +74,8 @@ export function AiConfig() {
   const [isActive, setIsActive] = useState(false);
   const [autoReplyEnabled, setAutoReplyEnabled] = useState(false);
   const [maxPerConversation, setMaxPerConversation] = useState(3);
+  const [transcriptionEnabled, setTranscriptionEnabled] = useState(false);
+  const [transcriptionModel, setTranscriptionModel] = useState('whisper-large-v3-turbo');
   // Empty string = leave unassigned (shared queue).
   const [handoffAgentId, setHandoffAgentId] = useState('');
   const [members, setMembers] = useState<AccountMember[]>([]);
@@ -102,6 +104,8 @@ export function AiConfig() {
         setIsActive(data.is_active);
         setAutoReplyEnabled(data.auto_reply_enabled);
         setMaxPerConversation(data.auto_reply_max_per_conversation ?? 3);
+        setTranscriptionEnabled(Boolean(data.transcription_enabled));
+        setTranscriptionModel(data.transcription_model || 'whisper-large-v3-turbo');
         setHandoffAgentId(data.handoff_agent_id ?? '');
         setHasStoredKey(Boolean(data.has_key));
         setApiKey(data.has_key ? MASKED_KEY : '');
@@ -156,6 +160,8 @@ export function AiConfig() {
     auto_reply_enabled: autoReplyEnabled,
     auto_reply_max_per_conversation: maxPerConversation,
     handoff_agent_id: handoffAgentId || null,
+    transcription_enabled: transcriptionEnabled && provider !== 'anthropic',
+    transcription_model: transcriptionModel.trim() || 'whisper-large-v3-turbo',
   });
 
   const handleTest = async () => {
@@ -230,6 +236,8 @@ export function AiConfig() {
         setAutoReplyEnabled(false);
         setSystemPrompt('');
         setHandoffAgentId('');
+        setTranscriptionEnabled(false);
+        setTranscriptionModel('whisper-large-v3-turbo');
       } else {
         const data = await res.json();
         toast.error(data.error ?? t('removeFailed'));
@@ -460,6 +468,48 @@ export function AiConfig() {
                 onCheckedChange={setAutoReplyEnabled}
                 disabled={disabled || !isActive}
               />
+            </div>
+
+            <div className="rounded-md border border-border p-3">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {t('transcription')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('transcriptionDesc')}
+                  </p>
+                </div>
+                <Switch
+                  checked={transcriptionEnabled && provider !== 'anthropic'}
+                  onCheckedChange={setTranscriptionEnabled}
+                  disabled={disabled || provider === 'anthropic'}
+                />
+              </div>
+              {provider === 'anthropic' && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t('transcriptionUnsupported')}
+                </p>
+              )}
+              {transcriptionEnabled && provider !== 'anthropic' && (
+                <div className="mt-3 space-y-2">
+                  <Label htmlFor="ai-transcription-model">
+                    {t('transcriptionModel')}
+                  </Label>
+                  <Input
+                    id="ai-transcription-model"
+                    value={transcriptionModel}
+                    onChange={(e) => setTranscriptionModel(e.target.value)}
+                    placeholder="whisper-large-v3-turbo"
+                    disabled={disabled}
+                    autoComplete="off"
+                    className="max-w-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('transcriptionModelHint')}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between gap-4">

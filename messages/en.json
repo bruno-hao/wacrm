@@ -1784,7 +1784,8 @@
       "fields": "Fields & tags",
       "deals": "Deals & currency",
       "members": "Team members",
-      "api": "API keys"
+      "api": "API keys",
+      "ssotica": "ssOtica"
     },
     "groups": {
       "account": "Account",
@@ -1975,7 +1976,12 @@
       "providerOpenAiCompatible": "OpenAI-compatible API",
       "baseUrl": "Base URL",
       "baseUrlHint": "Base URL for the OpenAI-compatible API, for example https://api.groq.com/openai/v1. /chat/completions is added automatically unless you include that path yourself.",
-      "missingBaseUrl": "Enter the Base URL for the OpenAI-compatible API."
+      "missingBaseUrl": "Enter the Base URL for the OpenAI-compatible API.",
+      "transcription": "Enable audio transcription assistant",
+      "transcriptionDesc": "Transcribes incoming voice notes to text. The text shows in the conversation and lets the AI, automations and flows respond to voice messages. Uses the same base URL and key as the provider above.",
+      "transcriptionModel": "Transcription model",
+      "transcriptionModelHint": "Default: whisper-large-v3-turbo (Groq). On a direct OpenAI account, use whisper-1.",
+      "transcriptionUnsupported": "Anthropic does not offer audio transcription. Use the OpenAI provider or an OpenAI-compatible API (e.g. Groq)."
     },
     "aiKnowledge": {
       "loadFailed": "Failed to load knowledge base",
@@ -2025,6 +2031,32 @@
       "textPlaceholder": "The message text to insert",
       "cancel": "Cancel",
       "save": "Save"
+    },
+    "ssotica": {
+      "title": "ssOtica",
+      "description": "Connect the CRM to the ssOtica Consultative API (read-only) to query sales, stock and service orders.",
+      "adminOnly": "Only admins and owners can change the ssOtica integration.",
+      "credentials": "API credentials",
+      "encryptionNotice": "The key is encrypted at rest (AES-256-GCM) and never shown again after saving. Find it in the user record in ssOtica (admin user).",
+      "apiKey": "API key",
+      "apiKeyPlaceholder": "ssOtica access key",
+      "apiKeyHint": "Paste the key shown when you open the user for editing in ssOtica. Do not use the login route: it invalidates the key.",
+      "showKey": "Show key",
+      "hideKey": "Hide key",
+      "cnpj": "Store CNPJ",
+      "testKey": "Test key",
+      "save": "Save",
+      "remove": "Remove",
+      "testSuccess": "Connected to ssOtica.",
+      "testRejected": "ssOtica rejected the request.",
+      "testNetworkError": "Could not reach ssOtica.",
+      "testPassedHint": "Test passed — you can save now.",
+      "saveSuccess": "ssOtica integration saved.",
+      "saveFailed": "Failed to save.",
+      "removeSuccess": "ssOtica integration removed.",
+      "removeFailed": "Failed to remove.",
+      "loadFailed": "Failed to load the ssOtica configuration.",
+      "connectedAt": "Connected — verified {date}"
     }
   },
   "SignupPage": {
@@ -2620,7 +2652,8 @@
         "saveDocFailed": "Failed to save document",
         "savedIndexFailed": "Saved, but semantic indexing failed ({message}). Lexical search still works; use Reindex to retry.",
         "savedKeywordOnly": "Saved with keyword search only — your embeddings key could not be decrypted (check ENCRYPTION_KEY, then re-enter the key)."
-      }
+      },
+      "transcriptionUnsupported": "Audio transcription requires the OpenAI provider or an OpenAI-compatible API."
     },
     "automations": {
       "copyName": "{name} (Copy)",
@@ -2715,6 +2748,21 @@
       "submitFailed": "Failed to submit template.",
       "metaApiStatus": "Meta API error: {status}",
       "syncFailed": "Failed to sync templates"
+    },
+    "ssotica": {
+      "cnpjInvalid": "Enter a valid CNPJ (14 digits).",
+      "apiKeyRequired": "The ssOtica API key is required.",
+      "storedKeyReenter": "The stored key could not be decrypted — enter the key again.",
+      "invalidKey": "Invalid API key. Copy the key from the user record in ssOtica.",
+      "userBlocked": "The key's user is blocked or has no active store in ssOtica.",
+      "storeNotFound": "CNPJ not found in this user's network in ssOtica.",
+      "apiNotContracted": "This store does not have the Consultative API contracted in ssOtica.",
+      "contractUnreadable": "Temporary failure checking the contract in ssOtica. Try again shortly.",
+      "network": "Could not reach ssOtica. Try again.",
+      "unexpected": "Unexpected response from ssOtica.",
+      "loadFailed": "Failed to load the ssOtica configuration.",
+      "saveFailed": "Failed to save the ssOtica configuration.",
+      "deleteFailed": "Failed to remove the ssOtica configuration."
     }
   }
 }

@@ -1784,7 +1784,8 @@
       "fields": "필드 & 태그",
       "deals": "딜 & 통화",
       "members": "팀원",
-      "api": "API 키"
+      "api": "API 키",
+      "ssotica": "ssOtica"
     },
     "groups": {
       "account": "계정",
@@ -1975,7 +1976,12 @@
       "providerOpenAiCompatible": "OpenAI 호환 API",
       "baseUrl": "기본 URL",
       "baseUrlHint": "OpenAI 호환 API의 기본 URL입니다. 예: https://api.groq.com/openai/v1. /chat/completions 경로는 직접 입력하지 않는 경우 자동으로 추가됩니다.",
-      "missingBaseUrl": "OpenAI 호환 API의 기본 URL을 입력하세요."
+      "missingBaseUrl": "OpenAI 호환 API의 기본 URL을 입력하세요.",
+      "transcription": "음성 전사 도우미 사용",
+      "transcriptionDesc": "수신한 음성 메시지를 텍스트로 전사합니다. 텍스트는 대화에 표시되며 AI, 자동화, 플로우가 음성 메시지에 응답할 수 있게 합니다. 위 제공업체와 동일한 기본 URL과 키를 사용합니다.",
+      "transcriptionModel": "전사 모델",
+      "transcriptionModelHint": "기본값: whisper-large-v3-turbo (Groq). OpenAI 직접 계정에서는 whisper-1을 사용하세요.",
+      "transcriptionUnsupported": "Anthropic은 음성 전사를 제공하지 않습니다. OpenAI 제공업체 또는 OpenAI 호환 API(예: Groq)를 사용하세요."
     },
     "aiKnowledge": {
       "loadFailed": "지식베이스를 불러오지 못했습니다",
@@ -2025,6 +2031,32 @@
       "textPlaceholder": "삽입할 메시지 텍스트",
       "cancel": "취소",
       "save": "저장"
+    },
+    "ssotica": {
+      "title": "ssOtica",
+      "description": "CRM을 ssOtica 조회용 API(읽기 전용)에 연결하여 판매, 재고, 서비스 주문을 조회합니다.",
+      "adminOnly": "관리자와 소유자만 ssOtica 연동을 변경할 수 있습니다.",
+      "credentials": "API 자격 증명",
+      "encryptionNotice": "키는 저장 시 암호화(AES-256-GCM)되며 저장 후 다시 표시되지 않습니다. ssOtica의 사용자 정보(관리자 사용자)에서 확인하세요.",
+      "apiKey": "API 키",
+      "apiKeyPlaceholder": "ssOtica 액세스 키",
+      "apiKeyHint": "ssOtica에서 사용자를 편집하려고 열면 표시되는 키를 붙여넣으세요. 로그인 경로는 키를 무효화하므로 사용하지 마세요.",
+      "showKey": "키 표시",
+      "hideKey": "키 숨기기",
+      "cnpj": "매장 CNPJ",
+      "testKey": "키 테스트",
+      "save": "저장",
+      "remove": "제거",
+      "testSuccess": "ssOtica에 연결되었습니다.",
+      "testRejected": "ssOtica가 요청을 거부했습니다.",
+      "testNetworkError": "ssOtica에 연결할 수 없습니다.",
+      "testPassedHint": "테스트 통과 — 이제 저장할 수 있습니다.",
+      "saveSuccess": "ssOtica 연동이 저장되었습니다.",
+      "saveFailed": "저장하지 못했습니다.",
+      "removeSuccess": "ssOtica 연동이 제거되었습니다.",
+      "removeFailed": "제거하지 못했습니다.",
+      "loadFailed": "ssOtica 설정을 불러오지 못했습니다.",
+      "connectedAt": "연결됨 — {date} 확인"
     }
   },
   "SignupPage": {
@@ -2620,7 +2652,8 @@
         "saveDocFailed": "문서를 저장하지 못했습니다",
         "savedIndexFailed": "저장되었지만 의미 기반 색인에 실패했습니다({message}). 키워드 검색은 계속 작동합니다. 재색인을 사용해 다시 시도하세요.",
         "savedKeywordOnly": "키워드 검색만으로 저장되었습니다 — 임베딩 키를 복호화할 수 없습니다(ENCRYPTION_KEY를 확인한 후 키를 다시 입력하세요)."
-      }
+      },
+      "transcriptionUnsupported": "음성 전사에는 OpenAI 제공업체 또는 OpenAI 호환 API가 필요합니다."
     },
     "automations": {
       "copyName": "{name} (복사본)",
@@ -2715,6 +2748,21 @@
       "submitFailed": "템플릿을 제출하지 못했습니다.",
       "metaApiStatus": "Meta API 오류: {status}",
       "syncFailed": "템플릿을 동기화하지 못했습니다"
+    },
+    "ssotica": {
+      "cnpjInvalid": "유효한 CNPJ(14자리)를 입력하세요.",
+      "apiKeyRequired": "ssOtica API 키가 필요합니다.",
+      "storedKeyReenter": "저장된 키를 복호화할 수 없습니다 — 키를 다시 입력하세요.",
+      "invalidKey": "잘못된 API 키입니다. ssOtica 사용자 정보에서 키를 복사하세요.",
+      "userBlocked": "키의 사용자가 차단되었거나 ssOtica에 활성 매장이 없습니다.",
+      "storeNotFound": "이 사용자의 ssOtica 네트워크에서 CNPJ를 찾을 수 없습니다.",
+      "apiNotContracted": "이 매장은 ssOtica 조회용 API를 계약하지 않았습니다.",
+      "contractUnreadable": "ssOtica에서 계약을 확인하는 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.",
+      "network": "ssOtica에 연결할 수 없습니다. 다시 시도하세요.",
+      "unexpected": "ssOtica에서 예상치 못한 응답이 왔습니다.",
+      "loadFailed": "ssOtica 설정을 불러오지 못했습니다.",
+      "saveFailed": "ssOtica 설정을 저장하지 못했습니다.",
+      "deleteFailed": "ssOtica 설정을 제거하지 못했습니다."
     }
   }
 }

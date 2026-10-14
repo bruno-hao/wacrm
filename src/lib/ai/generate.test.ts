@@ -14,6 +14,8 @@ function config(overrides: Partial<AiConfig> = {}): AiConfig {
     autoReplyMaxPerConversation: 3,
     handoffAgentId: null,
     embeddingsApiKey: null,
+    transcriptionEnabled: false,
+    transcriptionModel: 'whisper-large-v3-turbo',
     ...overrides,
   }
 }

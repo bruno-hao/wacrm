@@ -31,6 +31,9 @@ export interface AiConfig {
    *  knowledge base is embedded and semantic retrieval turns on; when
    *  null, retrieval falls back to lexical full-text search. */
   embeddingsApiKey: string | null
+  /** Transcribe inbound voice notes with this provider's audio API. */
+  transcriptionEnabled: boolean
+  transcriptionModel: string
 }
 
 /** A single conversation turn in the shape both providers accept. */

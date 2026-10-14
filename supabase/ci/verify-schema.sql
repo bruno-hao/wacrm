@@ -133,6 +133,18 @@ BEGIN
       'idx_automation_pending_awaiting_reply is missing — migration 045 did not apply';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ai_configs' AND column_name = 'transcription_enabled'
+  ) THEN
+    RAISE EXCEPTION
+      'ai_configs.transcription_enabled is missing — migration 049 did not apply';
+  END IF;
+  IF to_regclass('public.ssotica_config') IS NULL THEN
+    RAISE EXCEPTION
+      'public.ssotica_config is missing — migration 049 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

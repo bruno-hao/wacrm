@@ -1784,7 +1784,8 @@
       "fields": "Campos e tags",
       "deals": "Negócios e moeda",
       "members": "Membros da equipe",
-      "api": "Chaves de API"
+      "api": "Chaves de API",
+      "ssotica": "ssOtica"
     },
     "groups": {
       "account": "Conta",
@@ -1975,7 +1976,12 @@
       "providerOpenAiCompatible": "API compatível com OpenAI",
       "baseUrl": "URL base",
       "baseUrlHint": "URL base da API compatível com OpenAI, por exemplo https://api.groq.com/openai/v1. O caminho /chat/completions é adicionado automaticamente, a menos que você informe esse caminho.",
-      "missingBaseUrl": "Informe a URL base da API compatível com OpenAI."
+      "missingBaseUrl": "Informe a URL base da API compatível com OpenAI.",
+      "transcription": "Ativar assistente de transcrição de áudio",
+      "transcriptionDesc": "Transcreve os áudios recebidos em texto. O texto aparece na conversa e permite que a IA, as automações e os fluxos respondam a mensagens de voz. Usa a mesma URL e chave do provedor acima.",
+      "transcriptionModel": "Modelo de transcrição",
+      "transcriptionModelHint": "Padrão: whisper-large-v3-turbo (Groq). Em uma conta OpenAI direta, use whisper-1.",
+      "transcriptionUnsupported": "A Anthropic não oferece transcrição de áudio. Use o provedor OpenAI ou uma API compatível com OpenAI (ex.: Groq)."
     },
     "aiKnowledge": {
       "loadFailed": "Falha ao carregar a base de conhecimento",
@@ -2025,6 +2031,32 @@
       "textPlaceholder": "O texto da mensagem a inserir",
       "cancel": "Cancelar",
       "save": "Salvar"
+    },
+    "ssotica": {
+      "title": "ssOtica",
+      "description": "Conecte o CRM à API Consultiva do ssOtica (somente leitura) para consultar vendas, estoque e ordens de serviço.",
+      "adminOnly": "Somente administradores e proprietários podem alterar a integração com o ssOtica.",
+      "credentials": "Credenciais da API",
+      "encryptionNotice": "A chave é criptografada em repouso (AES-256-GCM) e nunca é exibida novamente depois de salva. Encontre-a no cadastro do usuário no ssOtica (usuário administrador).",
+      "apiKey": "Chave de API",
+      "apiKeyPlaceholder": "Chave de acesso do ssOtica",
+      "apiKeyHint": "Cole a chave exibida ao abrir o usuário para edição no ssOtica. Não use a rota de login: ela invalida a chave.",
+      "showKey": "Mostrar chave",
+      "hideKey": "Ocultar chave",
+      "cnpj": "CNPJ da loja",
+      "testKey": "Testar chave",
+      "save": "Salvar",
+      "remove": "Remover",
+      "testSuccess": "Conexão com o ssOtica estabelecida.",
+      "testRejected": "O ssOtica rejeitou a solicitação.",
+      "testNetworkError": "Não foi possível conectar ao ssOtica.",
+      "testPassedHint": "Teste aprovado — já é possível salvar.",
+      "saveSuccess": "Integração com o ssOtica salva.",
+      "saveFailed": "Falha ao salvar.",
+      "removeSuccess": "Integração com o ssOtica removida.",
+      "removeFailed": "Falha ao remover.",
+      "loadFailed": "Falha ao carregar a configuração do ssOtica.",
+      "connectedAt": "Conectado — verificado em {date}"
     }
   },
   "SignupPage": {
@@ -2620,7 +2652,8 @@
         "saveDocFailed": "Falha ao salvar o documento",
         "savedIndexFailed": "Salvo, mas a indexação semântica falhou ({message}). A busca por palavras-chave continua funcionando; use Reindexar para tentar novamente.",
         "savedKeywordOnly": "Salvo apenas com busca por palavras-chave — não foi possível descriptografar sua chave de embeddings (verifique a ENCRYPTION_KEY e informe a chave novamente)."
-      }
+      },
+      "transcriptionUnsupported": "A transcrição de áudio exige o provedor OpenAI ou uma API compatível com OpenAI."
     },
     "automations": {
       "copyName": "{name} (Cópia)",
@@ -2715,6 +2748,21 @@
       "submitFailed": "Falha ao enviar o modelo.",
       "metaApiStatus": "Erro da API da Meta: {status}",
       "syncFailed": "Falha ao sincronizar os modelos"
+    },
+    "ssotica": {
+      "cnpjInvalid": "Informe um CNPJ válido (14 dígitos).",
+      "apiKeyRequired": "A chave de API do ssOtica é obrigatória.",
+      "storedKeyReenter": "Não foi possível descriptografar a chave salva — informe a chave novamente.",
+      "invalidKey": "Chave de API inválida. Copie a chave no cadastro do usuário no ssOtica.",
+      "userBlocked": "O usuário da chave está bloqueado ou não tem loja ativa no ssOtica.",
+      "storeNotFound": "CNPJ não localizado na rede deste usuário no ssOtica.",
+      "apiNotContracted": "Esta loja não tem a API Consultiva contratada no ssOtica.",
+      "contractUnreadable": "Falha temporária ao verificar o contrato no ssOtica. Tente novamente em instantes.",
+      "network": "Não foi possível conectar ao ssOtica. Tente novamente.",
+      "unexpected": "Resposta inesperada do ssOtica.",
+      "loadFailed": "Falha ao carregar a configuração do ssOtica.",
+      "saveFailed": "Falha ao salvar a configuração do ssOtica.",
+      "deleteFailed": "Falha ao remover a configuração do ssOtica."
     }
   }
 }
