@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
@@ -213,27 +212,19 @@ export default function AvisosPage() {
   };
 
   // ---------------- selection ----------------
-  const eligible = rows.filter((r) => r.has_phone);
-  const allOnPage = eligible.length > 0 && eligible.every((r) => r.number in selected);
-  const someOnPage = eligible.some((r) => r.number in selected);
+  // Click anywhere on a row to select / unselect it. The selection is kept
+  // while filters, search and pages change, until "Limpar seleção" is used.
   const selectedCount = Object.keys(selected).length;
 
-  const toggleRow = (r: Row) =>
+  const toggleRow = (r: Row) => {
+    if (!r.has_phone) return;
     setSelected((cur) => {
       const next = { ...cur };
       if (r.number in next) delete next[r.number];
       else next[r.number] = r.date;
       return next;
     });
-  const togglePage = () =>
-    setSelected((cur) => {
-      const next = { ...cur };
-      for (const r of eligible) {
-        if (allOnPage) delete next[r.number];
-        else next[r.number] = r.date;
-      }
-      return next;
-    });
+  };
 
   // ---------------- sending ----------------
   const openDialog = async () => {
@@ -267,7 +258,6 @@ export default function AvisosPage() {
       }
       toast.success(t('queuedToast', { queued: data.queued, skipped: data.skipped }));
       setDialogOpen(false);
-      setSelected({});
       await load(true);
     } catch {
       toast.error(t('batchErrors.generic'));
@@ -385,23 +375,13 @@ export default function AvisosPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border">
-              <TableHead className="w-10">
-                <Checkbox
-                  checked={allOnPage}
-                  indeterminate={!allOnPage && someOnPage}
-                  onCheckedChange={togglePage}
-                  disabled={eligible.length === 0}
-                  aria-label={t('selectPage')}
-                />
-              </TableHead>
               <TableHead>{t('colDate')}</TableHead>
               <TableHead>{t('colOs')}</TableHead>
               <TableHead>{t('colName')}</TableHead>
               <TableHead className="hidden md:table-cell">{t('colSeller')}</TableHead>
               <TableHead className="hidden lg:table-cell">{t('colLab')}</TableHead>
               <TableHead>
-                <div className="flex items-center justify-end gap-3">
-                  <span>{t('colAction')}</span>
+                <div className="flex items-center justify-end">
                   <Button
                     size="sm"
                     disabled={!canSend || selectedCount === 0}
@@ -419,34 +399,45 @@ export default function AvisosPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center">
+                <TableCell colSpan={6} className="py-12 text-center">
                   <Loader2 className="mx-auto size-6 animate-spin text-primary" />
                 </TableCell>
               </TableRow>
             ) : errorText ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center text-sm text-destructive">
+                <TableCell colSpan={6} className="py-12 text-center text-sm text-destructive">
                   {errorText}
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
                   {t('noResults')}
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((r) => (
-                <TableRow key={r.number} className="border-border">
-                  <TableCell>
-                    <Checkbox
-                      checked={r.number in selected}
-                      onCheckedChange={() => toggleRow(r)}
-                      disabled={!r.has_phone}
-                      title={r.has_phone ? undefined : t('noPhone')}
-                      aria-label={t('selectRow', { number: r.number })}
-                    />
-                  </TableCell>
+                <TableRow
+                  key={r.number}
+                  role="row"
+                  tabIndex={r.has_phone ? 0 : -1}
+                  aria-selected={r.number in selected}
+                  title={r.has_phone ? undefined : t('noPhone')}
+                  onClick={() => toggleRow(r)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleRow(r);
+                    }
+                  }}
+                  className={`border-border select-none ${
+                    r.has_phone ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                  } ${
+                    r.number in selected
+                      ? 'bg-primary/10 shadow-[inset_3px_0_0_var(--color-primary)] hover:bg-primary/15'
+                      : 'hover:bg-muted/50'
+                  }`}
+                >
                   <TableCell className="whitespace-nowrap text-muted-foreground">{fmtDate(r.date)}</TableCell>
                   <TableCell className="font-medium">{r.number}</TableCell>
                   <TableCell>{r.customer_name || '—'}</TableCell>
@@ -464,7 +455,22 @@ export default function AvisosPage() {
         </Table>
 
         <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm text-muted-foreground">
-          <span>{t('showing', { total })}</span>
+          <div className="flex items-center gap-3">
+            {selectedCount > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setSelected({})}>
+                {t('clearSelection')}
+              </Button>
+            )}
+            <span>
+              {t('showing', { total })}
+              {selectedCount > 0 && (
+                <span className="font-medium text-foreground">
+                  {' · '}
+                  {t('selectedCount', { count: selectedCount })}
+                </span>
+              )}
+            </span>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"

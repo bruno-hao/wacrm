@@ -2952,6 +2952,8 @@
       "quick_reply_not_found": "Resposta rápida não encontrada.",
       "bad_request": "Pedido inválido.",
       "generic": "Não foi possível colocar as mensagens na fila."
-    }
+    },
+    "clearSelection": "Limpar seleção",
+    "selectedCount": "{count} linha(s) selecionada(s)"
   }
 }

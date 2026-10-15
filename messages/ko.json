@@ -2952,6 +2952,8 @@
       "quick_reply_not_found": "빠른 답장을 찾을 수 없습니다.",
       "bad_request": "잘못된 요청입니다.",
       "generic": "메시지를 대기열에 추가할 수 없습니다."
-    }
+    },
+    "clearSelection": "선택 해제",
+    "selectedCount": "{count}개 행 선택됨"
   }
 }

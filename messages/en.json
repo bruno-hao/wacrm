@@ -2952,6 +2952,8 @@
       "quick_reply_not_found": "Quick reply not found.",
       "bad_request": "Invalid request.",
       "generic": "Could not queue the messages."
-    }
+    },
+    "clearSelection": "Clear selection",
+    "selectedCount": "{count} row(s) selected"
   }
 }

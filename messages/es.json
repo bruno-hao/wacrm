@@ -2952,6 +2952,8 @@
       "quick_reply_not_found": "Respuesta rápida no encontrada.",
       "bad_request": "Solicitud inválida.",
       "generic": "No se pudieron poner los mensajes en cola."
-    }
+    },
+    "clearSelection": "Limpiar selección",
+    "selectedCount": "{count} fila(s) seleccionada(s)"
   }
 }
