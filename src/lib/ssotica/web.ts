@@ -157,11 +157,12 @@ export interface GraphqlQuote {
     valor?: string | number | null
     produto?: { descricao_completa?: string | null } | null
   }[]
+  convertido_em?: string | null
   venda_hashed_id?: string | null
   os_hashed_id?: string | null
 }
 
-const QUOTES_QUERY = `query OrcamentoByEmpresas($empresa:String,$busca:String,$funcionario:String,$situacao:[String],$periodo_inicio:String,$periodo_fim:String,$page:Int,$per_page:Int){GetPaginatedOrcamentos(empresa:$empresa,busca:$busca,funcionario:$funcionario,situacao:$situacao,periodo_inicio:$periodo_inicio,periodo_fim:$periodo_fim,page:$page,per_page:$per_page){total last_page current_page data{hashed_id numero total desconto acrescimo vencimento data_orcamento status observacao cliente_nome cliente_telefone cliente_DDI funcionario{nome} itens{quantidade valor produto{descricao_completa}} venda_hashed_id os_hashed_id}}}`
+const QUOTES_QUERY = `query OrcamentoByEmpresas($empresa:String,$busca:String,$funcionario:String,$situacao:[String],$periodo_inicio:String,$periodo_fim:String,$page:Int,$per_page:Int){GetPaginatedOrcamentos(empresa:$empresa,busca:$busca,funcionario:$funcionario,situacao:$situacao,periodo_inicio:$periodo_inicio,periodo_fim:$periodo_fim,page:$page,per_page:$per_page){total last_page current_page data{hashed_id numero total desconto acrescimo vencimento data_orcamento status observacao cliente_nome cliente_telefone cliente_DDI funcionario{nome} itens{quantidade valor produto{descricao_completa}} convertido_em venda_hashed_id os_hashed_id}}}`
 
 const ddmmyyyy = (d: Date) =>
   `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
@@ -176,7 +177,7 @@ export async function fetchQuotes(
   storeHash: string,
   from: Date,
   to: Date,
-  maxPages = 20,
+  maxPages = 300,
 ): Promise<GraphqlQuote[]> {
   const out: GraphqlQuote[] = []
   for (let page = 1; page <= maxPages; page++) {
@@ -196,7 +197,7 @@ export async function fetchQuotes(
           busca: '',
           funcionario: null,
           page,
-          per_page: 50,
+          per_page: 100,
           periodo_inicio: ddmmyyyy(from),
           periodo_fim: ddmmyyyy(to),
           situacao: ['ATIVO', 'CONVERTIDO', 'CANCELADO', 'EXPIRADO'],
@@ -219,4 +220,23 @@ export async function fetchQuotes(
     if (page >= (block.last_page ?? 1)) break
   }
   return out
+}
+
+/**
+ * The service-order number behind an ssOtica OS hash, read from the OS page
+ * header ("Ordem de Serviço no. 1183 - Dados Principais"). Null when the page
+ * does not show it. Read-only GET.
+ */
+export async function fetchOsNumber(jar: CookieJar, osHash: string): Promise<string | null> {
+  if (!/^[A-Za-z0-9]{4,16}$/.test(osHash)) return null
+  const res = await req(`/movimentacao/ordem-servico/${osHash}/editar`, jar, {
+    headers: { Accept: 'text/html' },
+  })
+  if (res.status >= 300 && res.status < 400) {
+    throw new SsoticaWebError('session_expired', `HTTP ${res.status}`)
+  }
+  if (!res.ok) return null
+  const html = await res.text()
+  const m = /Ordem de Servi[c\u00e7]o\s+no\.?\s*(\d+)/i.exec(html)
+  return m ? m[1] : null
 }

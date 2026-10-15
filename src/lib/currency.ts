@@ -62,6 +62,28 @@ export const CURRENCIES: CurrencyOption[] = [
  * "United States". We never let that crash a render — on a bad code
  * we fall back to "CODE 1,234".
  */
+/**
+ * Full-precision money for details panels: "R$ 1.200,00" for BRL (pt-BR
+ * grouping, two decimals), other currencies in their own style with two
+ * decimals. Never throws on a bad currency code.
+ */
+export function formatMoney(value: number, currency: string = DEFAULT_CURRENCY): string {
+  const code = (currency || DEFAULT_CURRENCY).trim().toUpperCase();
+  const amount = Number(value) || 0;
+  try {
+    return new Intl.NumberFormat(code === "BRL" ? "pt-BR" : undefined, {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+      .format(amount)
+      .replace(/\u00a0/g, " ");
+  } catch {
+    return `${code} ${amount.toFixed(2)}`;
+  }
+}
+
 export function formatCurrency(
   value: number,
   currency: string = DEFAULT_CURRENCY,

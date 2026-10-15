@@ -237,6 +237,10 @@ export function MessageThread({
 
   // 24-hour session timer
   const sessionInfo = useMemo(() => {
+    // WhatsApp (WAHA): conversations never expire, so there is no window to
+    // count down. Instagram keeps Meta's rule: 24 h free, 7 days with the
+    // human-agent tag.
+    if (conversation?.channel !== "instagram") return { expired: false, remaining: "" };
     if (!messages.length) return { expired: false, remaining: "" };
 
     // Find last customer message
@@ -248,7 +252,7 @@ export function MessageThread({
 
     // WhatsApp: 24 h. Instagram: 24 h free + up to 7 days with the
     // human-agent tag, so the thread stays writable for 7 days.
-    const windowHours = conversation?.channel === "instagram" ? 168 : 24;
+    const windowHours = 168;
     const hoursSince = differenceInHours(new Date(), new Date(lastCustomerMsg.created_at));
     const expired = hoursSince >= windowHours;
 
@@ -937,16 +941,18 @@ export function MessageThread({
           </div>
           {/* Session timer badge — hidden on the narrowest phones so
               the name + back arrow keep their room. */}
-          <Badge
-            variant="outline"
-            className={cn(
-              "ml-1 hidden gap-1 border-border text-[10px] sm:inline-flex sm:ml-2",
-              sessionInfo.expired ? "text-red-400" : "text-primary"
-            )}
-          >
-            <Clock className="h-3 w-3" />
-            {sessionInfo.remaining}
-          </Badge>
+          {sessionInfo.remaining && (
+            <Badge
+              variant="outline"
+              className={cn(
+                "ml-1 hidden gap-1 border-border text-[10px] sm:inline-flex sm:ml-2",
+                sessionInfo.expired ? "text-red-400" : "text-primary"
+              )}
+            >
+              <Clock className="h-3 w-3" />
+              {sessionInfo.remaining}
+            </Badge>
+          )}
           <ChannelBadge channel={conversation.channel ?? "whatsapp"} className="ml-1 hidden sm:inline-flex" />
           {/* ssOtica: customer / new customer. */}
           <SsoticaStatusBadge lookup={ssotica} className="ml-1 hidden sm:inline-flex" />

@@ -25,6 +25,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { contactHandle, displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { formatMoney } from "@/lib/currency";
 import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
 import { SsoticaDetailList, SsoticaStatusBadge } from "./ssotica-badges";
 
@@ -366,8 +367,7 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
                     </p>
                     <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
                       <span>
-                        {deal.currency ?? "$"}
-                        {deal.value.toLocaleString()}
+                        {formatMoney(deal.value, deal.currency ?? "BRL")}
                       </span>
                       {deal.stage && (
                         <span

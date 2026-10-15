@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   addDays,
+  buildTitle,
+  closeDate,
   contentHash,
   matchSeller,
   normalizeQuote,
@@ -24,6 +26,23 @@ describe('parsers', () => {
   it('addDays crosses month ends (close date = quote date + 20 days)', () => {
     expect(addDays('2026-10-15', 20)).toBe('2026-11-04')
     expect(addDays('2026-01-25', 20)).toBe('2026-02-14')
+  })
+})
+
+describe('buildTitle', () => {
+  it('builds ORC / OS / VEN, each part only when it exists', () => {
+    expect(buildTitle('149')).toBe('ORC 149')
+    expect(buildTitle('149', '1256')).toBe('ORC 149 / OS 1256')
+    expect(buildTitle('149', '1256', '1200')).toBe('ORC 149 / OS 1256 / VEN 1200')
+    expect(buildTitle('149', null, '1200')).toBe('ORC 149 / VEN 1200')
+  })
+})
+
+describe('closeDate', () => {
+  it('uses the budget validity, falling back to creation + 20 days', () => {
+    expect(closeDate({ validUntil: '2026-11-11', createdAt: '2026-10-14' })).toBe('2026-11-11')
+    expect(closeDate({ validUntil: null, createdAt: '2026-10-15' })).toBe('2026-11-04')
+    expect(closeDate({ validUntil: null, createdAt: null })).toBeNull()
   })
 })
 
@@ -56,6 +75,9 @@ describe('normalizeQuote', () => {
     total: '1200.00',
     status: 'ativo',
     data_orcamento: '01/10/2026 12:10',
+    vencimento: '15/10/2026',
+    os_hashed_id: 'OSHASH1',
+    venda_hashed_id: null,
     cliente_telefone: '(73) 98239-5770',
     cliente_DDI: '55',
     funcionario: { nome: 'Ingrid Silva de Jesus' },
@@ -71,6 +93,9 @@ describe('normalizeQuote', () => {
       total: 1200,
       status: 'ATIVO',
       createdAt: '2026-10-01',
+      validUntil: '2026-10-15',
+      osHash: 'OSHASH1',
+      saleHash: null,
       phone: '5573982395770',
       seller: 'Ingrid Silva de Jesus',
     })
@@ -82,6 +107,8 @@ describe('normalizeQuote', () => {
     const b = normalizeQuote({ ...raw, total: '1300' })!
     expect(contentHash(a)).toBe(contentHash(normalizeQuote(raw)!))
     expect(contentHash(a)).not.toBe(contentHash(b))
+    // OS / sale numbers are part of the hash, so resolving them updates the deal title.
+    expect(contentHash(a, { osNumber: '1256' })).not.toBe(contentHash(a))
   })
 })
 
