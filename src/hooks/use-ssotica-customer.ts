@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export type SsoticaLookup =
   | { status: 'loading' }
@@ -73,17 +73,17 @@ export function useSsoticaCustomer(phone: string | null | undefined): SsoticaLoo
   return state.key === key ? state.value : { status: 'loading' };
 }
 
-// ---- Conversation list: customer / new for many phones in one request ----
+// ---- Many phones in one request: conversation list, deal cards ----
 
-const batchCache = new Map<string, { at: number; status: 'customer' | 'new' }>();
+interface BatchEntry {
+  status: 'customer' | 'new';
+  name: string | null;
+}
+const batchCache = new Map<string, { at: number; entry: BatchEntry }>();
 
-/**
- * `customer` / `new` per phone for the visible conversations. Phones the
- * server cannot decide (not configured, first sync running) are absent.
- */
-export function useSsoticaStatuses(phones: string[]): Record<string, 'customer' | 'new'> {
+function useSsoticaBatch(phones: string[]): Record<string, BatchEntry> {
   const key = [...new Set(phones.filter(Boolean))].sort().join(',');
-  const [state, setState] = useState<{ key: string; map: Record<string, 'customer' | 'new'> }>({
+  const [state, setState] = useState<{ key: string; map: Record<string, BatchEntry> }>({
     key: '',
     map: {},
   });
@@ -91,11 +91,11 @@ export function useSsoticaStatuses(phones: string[]): Record<string, 'customer' 
   useEffect(() => {
     if (!key) return;
     const list = key.split(',');
-    const fresh: Record<string, 'customer' | 'new'> = {};
+    const fresh: Record<string, BatchEntry> = {};
     const missing: string[] = [];
     for (const p of list) {
       const hit = batchCache.get(p);
-      if (hit && Date.now() - hit.at < TTL_MS) fresh[p] = hit.status;
+      if (hit && Date.now() - hit.at < TTL_MS) fresh[p] = hit.entry;
       else missing.push(p);
     }
     let cancelled = false;
@@ -112,10 +112,12 @@ export function useSsoticaStatuses(phones: string[]): Record<string, 'customer' 
     })
       .then((r) => (r.ok ? r.json() : { status: {} }))
       .catch(() => ({ status: {} }))
-      .then((d: { status?: Record<string, 'customer' | 'new'> }) => {
-        const map = { ...fresh, ...(d.status ?? {}) };
+      .then((d: { status?: Record<string, 'customer' | 'new'>; names?: Record<string, string> }) => {
+        const map = { ...fresh };
         for (const [p, st] of Object.entries(d.status ?? {})) {
-          batchCache.set(p, { at: Date.now(), status: st });
+          const entry = { status: st, name: d.names?.[p] ?? null };
+          map[p] = entry;
+          batchCache.set(p, { at: Date.now(), entry });
         }
         if (!cancelled) setState({ key, map });
       });
@@ -125,4 +127,30 @@ export function useSsoticaStatuses(phones: string[]): Record<string, 'customer' 
   }, [key]);
 
   return state.key === key ? state.map : {};
+}
+
+/**
+ * `customer` / `new` per phone. Phones the server cannot decide (not
+ * configured, first sync running) are absent.
+ */
+export function useSsoticaStatuses(phones: string[]): Record<string, 'customer' | 'new'> {
+  const batch = useSsoticaBatch(phones);
+  return useMemo(
+    () => Object.fromEntries(Object.entries(batch).map(([p, e]) => [p, e.status])),
+    [batch],
+  );
+}
+
+/** The ssOtica customer name per phone (only for phones found in ssOtica). */
+export function useSsoticaNames(phones: string[]): Record<string, string> {
+  const batch = useSsoticaBatch(phones);
+  return useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(batch)
+          .filter(([, e]) => e.name)
+          .map(([p, e]) => [p, e.name as string]),
+      ),
+    [batch],
+  );
 }

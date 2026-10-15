@@ -8,6 +8,7 @@ import {
   normalizeQuote,
   parseDay,
   parseMoney,
+  parseTimestamp,
 } from './quotes'
 import { parseLoginForm } from './web'
 
@@ -26,6 +27,15 @@ describe('parsers', () => {
   it('addDays crosses month ends (close date = quote date + 20 days)', () => {
     expect(addDays('2026-10-15', 20)).toBe('2026-11-04')
     expect(addDays('2026-01-25', 20)).toBe('2026-02-14')
+  })
+})
+
+describe('parseTimestamp', () => {
+  it('keeps the budget time in the store timezone', () => {
+    expect(parseTimestamp('01/10/2026 12:10')).toBe('2026-10-01T12:10:00-03:00')
+    expect(parseTimestamp('2026-10-01 09:05:00')).toBe('2026-10-01T09:05:00-03:00')
+    expect(parseTimestamp('15/10/2026')).toBe('2026-10-15T12:00:00-03:00')
+    expect(parseTimestamp('')).toBeNull()
   })
 })
 

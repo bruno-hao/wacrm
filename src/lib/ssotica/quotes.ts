@@ -58,6 +58,7 @@ export interface Quote {
   total: number
   status: QuoteStatus
   createdAt: string | null // yyyy-mm-dd
+  createdTs: string | null // full timestamp of the budget (America/Bahia, -03:00)
   validUntil: string | null // yyyy-mm-dd
   convertedDay: string | null
   phone: string | null
@@ -93,6 +94,15 @@ export function addDays(day: string, n: number): string {
   const d = new Date(`${day}T00:00:00Z`)
   d.setUTCDate(d.getUTCDate() + n)
   return d.toISOString().slice(0, 10)
+}
+
+/** "01/10/2026 12:10" → "2026-10-01T12:10:00-03:00" (budget time, store timezone). */
+export function parseTimestamp(v: unknown): string | null {
+  const s = String(v ?? '').trim()
+  let m = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/.exec(s)
+  if (m) return `${m[3]}-${m[2]}-${m[1]}T${m[4] ?? '12'}:${m[5] ?? '00'}:00-03:00`
+  m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(s)
+  return m ? `${m[1]}-${m[2]}-${m[3]}T${m[4] ?? '12'}:${m[5] ?? '00'}:00-03:00` : null
 }
 
 /** ORC 149 / OS 1256 / VEN 1200 — each part only when it exists. */
@@ -149,6 +159,7 @@ export function normalizeQuote(g: GraphqlQuote): Quote | null {
     total: parseMoney(g.total),
     status,
     createdAt: parseDay(g.data_orcamento),
+    createdTs: parseTimestamp(g.data_orcamento),
     validUntil: parseDay(g.vencimento),
     convertedDay: parseDay(g.convertido_em),
     phone,
@@ -167,7 +178,7 @@ export function contentHash(
     .createHash('sha1')
     .update(
       JSON.stringify([
-        q.number, q.total, q.status, q.createdAt, q.validUntil, q.seller, q.notes,
+        'v2', q.number, q.total, q.status, q.createdTs, q.validUntil, q.seller, q.notes,
         links.osNumber ?? null, links.saleNumber ?? null,
       ]),
     )
@@ -463,6 +474,8 @@ export async function syncQuotes(db: SupabaseClient, accountId: string): Promise
       notes: q.notes,
       assigned_to: assignee?.id ?? null,
       expected_close_date: closeDate(q),
+      // The board orders deals by creation date: use the budget's own.
+      ...(q.createdTs ? { created_at: q.createdTs } : {}),
     }
     const status = q.status === 'CONVERTIDO' ? 'won' : q.status === 'EXPIRADO' ? 'lost' : 'open'
     const targetStage =

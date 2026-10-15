@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { contactHandle, displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { formatMoney } from "@/lib/currency";
+import { phoneForCopy } from "@/lib/whatsapp/phone-utils";
 import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
 import { SsoticaDetailList, SsoticaStatusBadge } from "./ssotica-badges";
 
@@ -101,7 +102,12 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
   const handleCopyPhone = useCallback(async () => {
     // Copies whatever the row displays — a BSUID-only contact has no
     // phone number to copy, but its @username still identifies them.
-    const handle = contact ? contactHandle(contact) : '';
+    // A phone is copied as DDD + number (73982395770); a username as-is.
+    const handle = contact
+      ? contact.phone?.trim()
+        ? phoneForCopy(contact.phone)
+        : contactHandle(contact)
+      : '';
     if (!handle) return;
     await navigator.clipboard.writeText(handle);
     setCopied(true);

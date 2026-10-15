@@ -41,11 +41,25 @@ export async function GET(request: Request) {
       console.error('[ssotica/customer] lookup error:', error)
       return NextResponse.json({ status: 'unavailable' })
     }
-    if (!rows?.length) return NextResponse.json({ status: 'new' })
+    let found = rows ?? []
+    if (!found.length) {
+      // Same person registered with another DDD / without the ninth digit:
+      // fall back to the last 8 digits, like contact de-duplication does.
+      const { data: byTail } = await supabase
+        .from('ssotica_customers')
+        .select(
+          'name, last_os_number, last_os_date, last_os_status, last_os_etapa, last_os_sold, last_receita_date, last_seller, last_sale_number, last_sale_date, last_sale_value',
+        )
+        .eq('account_id', accountId)
+        .contains('phone_tails', [phone.slice(-8)])
+        .limit(5)
+      found = byTail ?? []
+    }
+    if (!found.length) return NextResponse.json({ status: 'new' })
 
     // Same phone on several customer records (family): show the one with
     // the most recent sale.
-    const best = [...rows].sort((a, b) =>
+    const best = [...found].sort((a, b) =>
       String(b.last_sale_date ?? '').localeCompare(String(a.last_sale_date ?? '')),
     )[0]
     const { data: cfg } = await supabase

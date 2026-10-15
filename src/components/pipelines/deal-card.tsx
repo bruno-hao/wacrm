@@ -10,6 +10,8 @@ interface DealCardProps {
   stage: PipelineStage | null;
   onEdit: (deal: Deal) => void;
   isOverlay?: boolean;
+  /** Customer name in ssOtica, when the contact's phone matches one. */
+  ssoticaName?: string;
 }
 
 function formatDate(dateStr: string) {
@@ -26,7 +28,7 @@ function initials(name?: string, fallback?: string) {
   return source.charAt(0).toUpperCase();
 }
 
-export function DealCard({ deal, stage, onEdit, isOverlay }: DealCardProps) {
+export function DealCard({ deal, stage, onEdit, isOverlay, ssoticaName }: DealCardProps) {
   const t = useTranslations("Pipelines.card");
   const contactLabel = deal.contact?.name || deal.contact?.phone || t("noContact");
   const assigneeLabel = deal.assignee?.full_name || null;
@@ -79,6 +81,14 @@ export function DealCard({ deal, stage, onEdit, isOverlay }: DealCardProps) {
         </span>
         <span className="truncate text-xs text-muted-foreground">{contactLabel}</span>
       </div>
+      {ssoticaName && (
+        <p
+          title={ssoticaName}
+          className="mt-0.5 truncate pl-7 text-[11px] text-blue-600 dark:text-blue-400"
+        >
+          {ssoticaName}
+        </p>
+      )}
 
       <div className="mt-2 flex items-center justify-between">
         <span className="text-sm font-bold text-primary">

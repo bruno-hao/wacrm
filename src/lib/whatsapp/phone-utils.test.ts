@@ -216,7 +216,7 @@ describe("isRecipientNotAllowedError", () => {
   });
 });
 
-import { brazilianCanonical, formatPhoneDisplay } from './phone-utils'
+import { brazilianCanonical, formatPhoneDisplay, phoneForCopy } from './phone-utils'
 
 describe('formatPhoneDisplay (Brazil)', () => {
   it('shows the ninth digit on mobiles stored without it', () => {
@@ -237,5 +237,16 @@ describe('formatPhoneDisplay (Brazil)', () => {
     expect(brazilianCanonical('557382395770')?.digits).toBe('5573982395770')
     expect(brazilianCanonical('5573982395770')?.digits).toBe('5573982395770')
     expect(brazilianCanonical('393401234567')).toBeNull()
+  })
+})
+
+describe('phoneForCopy', () => {
+  it('copies DDD + number with the ninth digit, no 55 and no dash', () => {
+    expect(phoneForCopy('557382395770')).toBe('73982395770')
+    expect(phoneForCopy('5573982395770')).toBe('73982395770')
+    expect(phoneForCopy('+55 (71) 99727-6632')).toBe('71997276632')
+    expect(phoneForCopy('557332161234')).toBe('7332161234')
+    expect(phoneForCopy('393401234567')).toBe('393401234567')
+    expect(phoneForCopy('')).toBe('')
   })
 })

@@ -170,6 +170,17 @@ export function brazilianCanonical(
 }
 
 /**
+ * What to put on the clipboard for a phone: DDD + number, digits only, no
+ * country code and no dash — "73982395770". Brazilian numbers use the
+ * ninth-digit form; anything else is just its digits.
+ */
+export function phoneForCopy(phone: string | null | undefined): string {
+  const br = brazilianCanonical(phone)
+  if (br) return br.digits.slice(2)
+  return normalizePhone(phone ?? '')
+}
+
+/**
  * Display mask for the CRM screens:
  *   mobile   +55 (xx) xxxxx-xxxx   (ninth digit always shown)
  *   landline +55 (xx) xxxx-xxxx

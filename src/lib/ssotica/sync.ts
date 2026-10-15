@@ -133,6 +133,7 @@ interface Row {
   ssotica_id: number
   name: string | null
   phones: string[]
+  phone_tails?: string[]
   last_os_number: string | null
   last_os_date: string | null
   last_os_status: string | null
@@ -190,6 +191,9 @@ async function mergePage<T>(
   records: T[],
   customerOf: (r: T) => ApiCustomer | null | undefined,
   apply: (row: Row, r: T) => void,
+  // The customer listing is authoritative for phones (it drops numbers that
+  // were edited out in ssOtica); sale/OS payloads only ever add.
+  replacePhones = false,
 ): Promise<number> {
   const withCustomer = records.filter((r) => customerOf(r)?.id)
   const ids = [...new Set(withCustomer.map((r) => Number(customerOf(r)!.id)))]
@@ -200,16 +204,21 @@ async function mergePage<T>(
     const id = Number(c.id)
     const row = existing.get(id) ?? blank(accountId, id)
     if (c.nome) row.name = c.nome
-    const phones = new Set([...row.phones, ...customerPhones(c)])
-    row.phones = [...phones]
+    row.phones = replacePhones
+      ? customerPhones(c)
+      : [...new Set([...row.phones, ...customerPhones(c)])]
     apply(row, r)
     existing.set(id, row)
   }
 
-  const upserts = ids.map((id) => ({
-    ...existing.get(id)!,
-    updated_at: new Date().toISOString(),
-  }))
+  const upserts = ids.map((id) => {
+    const row = existing.get(id)!
+    return {
+      ...row,
+      phone_tails: row.phones.map((p) => p.slice(-8)),
+      updated_at: new Date().toISOString(),
+    }
+  })
   if (upserts.length) {
     const { error } = await db
       .from('ssotica_customers')
@@ -281,7 +290,7 @@ export async function runSsoticaSync(
 
   const { data: stateRow } = await db
     .from('ssotica_sync_state')
-    .select('phase, page, cursor_date, live_since, running_until')
+    .select('phase, page, cursor_date, live_since, running_until, customers_refreshed_at')
     .eq('account_id', accountId)
     .maybeSingle()
 
@@ -319,6 +328,7 @@ export async function runSsoticaSync(
   })
 
   let calls = 0
+  let fullRefreshDone = false
   let touched = 0
   let stopped: SyncResult['stopped'] = 'done'
   let error: string | undefined
@@ -336,10 +346,11 @@ export async function runSsoticaSync(
       baseParams: Record<string, string>,
       customerOf: (r: T) => ApiCustomer | null | undefined,
       apply: (row: Row, r: T) => void,
+      replacePhones = false,
     ): Promise<boolean> => {
       for (;;) {
         const res = await get<T>(path, { ...baseParams, page: state.page })
-        touched += await mergePage(db, accountId, res.data ?? [], customerOf, apply)
+        touched += await mergePage(db, accountId, res.data ?? [], customerOf, apply, replacePhones)
         if (state.page >= (res.totalPages ?? 1)) return true
         state.page++
         await save()
@@ -393,6 +404,14 @@ export async function runSsoticaSync(
       )
     }
     if (state.phase === 'live') {
+      // Once a day, re-read every customer so phones edited in ssOtica (a new
+      // number, a corrected DDD) reach the index.
+      const lastFull = stateRow?.customers_refreshed_at
+      if (!lastFull || Date.now() - new Date(lastFull).getTime() > 24 * 3_600_000) {
+        state.page = 1
+        await walk<ApiCustomer>('/integracoes/clientes', {}, (c) => c, applyNothing, true)
+        fullRefreshDone = true
+      }
       const since = addDays(state.live_since ?? today, -LIVE_LOOKBACK_DAYS)
       state.page = 1
       await walk<ApiCustomer>(
@@ -400,6 +419,7 @@ export async function runSsoticaSync(
         { cadastro_inicio: since, cadastro_fim: today },
         (c) => c,
         applyNothing,
+        true,
       )
       state.page = 1
       await walk<ApiSale>(
@@ -435,6 +455,7 @@ export async function runSsoticaSync(
 
   await save({
     running_until: null,
+    ...(fullRefreshDone ? { customers_refreshed_at: new Date().toISOString() } : {}),
     last_run_at: new Date().toISOString(),
     last_error: error ?? null,
   })

@@ -16,6 +16,7 @@ import {
 } from "@dnd-kit/core";
 import type { Deal, PipelineStage } from "@/types";
 import { DealCard } from "./deal-card";
+import { useSsoticaNames } from "@/hooks/use-ssotica-customer";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,8 +53,17 @@ export function PipelineBoard({
       const bucket = map.get(deal.stage_id);
       if (bucket) bucket.push(deal);
     }
+    // Newest on top, oldest at the bottom — always, in every column.
+    for (const bucket of map.values()) {
+      bucket.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+    }
     return map;
   }, [sortedStages, deals]);
+
+  // ssOtica customer name of each deal's contact (matched by phone).
+  const ssoticaNames = useSsoticaNames(deals.map((d) => d.contact?.phone ?? ""));
 
   const sensors = useSensors(
     // 5px activation distance avoids clicks being interpreted as drags.
@@ -119,6 +129,7 @@ export function PipelineBoard({
               currency={defaultCurrency}
               onAddDeal={onAddDeal}
               onEditDeal={onEditDeal}
+              ssoticaNames={ssoticaNames}
             />
           );
         })}
@@ -138,6 +149,7 @@ export function PipelineBoard({
                 sortedStages.find((s) => s.id === activeDeal.stage_id) ?? null
               }
               onEdit={() => {}}
+              ssoticaName={ssoticaNames[activeDeal.contact?.phone ?? ""]}
               isOverlay
             />
           </div>
@@ -193,6 +205,7 @@ function StageColumn({
   currency,
   onAddDeal,
   onEditDeal,
+  ssoticaNames,
 }: {
   stage: PipelineStage;
   deals: Deal[];
@@ -200,6 +213,7 @@ function StageColumn({
   currency: string;
   onAddDeal: (stageId: string) => void;
   onEditDeal: (deal: Deal) => void;
+  ssoticaNames: Record<string, string>;
 }) {
   const t = useTranslations("Pipelines.board");
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
@@ -248,6 +262,7 @@ function StageColumn({
               deal={deal}
               stage={stage}
               onEdit={onEditDeal}
+              ssoticaName={ssoticaNames[deal.contact?.phone ?? ""]}
             />
           ))
         )}
@@ -270,10 +285,12 @@ function DraggableDealCard({
   deal,
   stage,
   onEdit,
+  ssoticaName,
 }: {
   deal: Deal;
   stage: PipelineStage;
   onEdit: (deal: Deal) => void;
+  ssoticaName?: string;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: deal.id,
@@ -286,7 +303,7 @@ function DraggableDealCard({
       {...attributes}
       style={{ opacity: isDragging ? 0.3 : 1, touchAction: "none" }}
     >
-      <DealCard deal={deal} stage={stage} onEdit={onEdit} />
+      <DealCard deal={deal} stage={stage} onEdit={onEdit} ssoticaName={ssoticaName} />
     </div>
   );
 }

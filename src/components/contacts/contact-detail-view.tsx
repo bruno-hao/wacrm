@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { contactHandle, displayContactHandle } from '@/lib/whatsapp/wa-identity';
+import { phoneForCopy } from '@/lib/whatsapp/phone-utils';
 import { parseInternationalPhone } from '@/lib/whatsapp/phone-utils';
 
 interface ContactDetailViewProps {
@@ -194,7 +195,9 @@ export function ContactDetailView({
 
   async function copyPhone() {
     if (!contact) return;
-    await navigator.clipboard.writeText(contactHandle(contact));
+    await navigator.clipboard.writeText(
+      contact.phone?.trim() ? phoneForCopy(contact.phone) : contactHandle(contact),
+    );
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
   }

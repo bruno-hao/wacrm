@@ -23,7 +23,7 @@
     "inbox": "Caixa de entrada",
     "notifications": "Notificações",
     "contacts": "Contatos",
-    "pipelines": "Pipelines",
+    "pipelines": "Negociações",
     "broadcasts": "Disparos",
     "automations": "Automações",
     "flows": "Fluxos",
@@ -49,7 +49,7 @@
     "inbox": "Caixa de entrada",
     "notifications": "Notificações",
     "contacts": "Contatos",
-    "pipelines": "Pipelines",
+    "pipelines": "Negociações",
     "broadcasts": "Disparos",
     "automations": "Automações",
     "settings": "Configurações",
@@ -139,7 +139,7 @@
       "title": "Valor do pipeline",
       "description": "Negócios abertos por etapa",
       "noOpenDeals": "Nenhum negócio aberto ainda",
-      "noOpenDealsHint": "Crie negócios em Pipelines para ver a divisão por etapa aqui.",
+      "noOpenDealsHint": "Crie negócios em Negociações para ver a divisão por etapa aqui.",
       "dealCount": "{count} {count, plural, =1 {negócio} other {negócios}}",
       "total": "Total",
       "ariaLabel": "Valor do pipeline por etapa"
@@ -621,7 +621,7 @@
     "page": {
       "selectPipeline": "Selecionar pipeline",
       "noPipelinesYet": "Nenhum pipeline ainda",
-      "managePipelines": "Gerenciar pipelines",
+      "managePipelines": "Gerenciar negociações",
       "addPipeline": "Adicionar pipeline",
       "addDeal": "Adicionar negócio",
       "createToStartTracking": "Crie um pipeline para começar a acompanhar negócios",
@@ -633,7 +633,7 @@
       "cancel": "Cancelar",
       "creating": "Criando...",
       "createPipelineBtn": "Criar pipeline",
-      "toastFailedLoadPipelines": "Falha ao carregar os pipelines",
+      "toastFailedLoadPipelines": "Falha ao carregar as negociações",
       "toastFailedMoveDeal": "Falha ao mover o negócio",
       "toastFailedCreatePipeline": "Falha ao criar o pipeline",
       "toastPipelineCreated": "Pipeline criado",
@@ -2341,7 +2341,7 @@
       "addOrImportContacts": "adicionar ou importar contatos",
       "deleteContacts": "excluir contatos",
       "createFlows": "criar fluxos",
-      "createPipelines": "criar pipelines",
+      "createPipelines": "criar negociações",
       "createDeals": "criar negócios",
       "sendMessages": "enviar mensagens"
     }

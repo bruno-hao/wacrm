@@ -32,19 +32,32 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (state?.phase !== 'live') return NextResponse.json({ status: {} })
 
+    const canons = [...byCanonical.keys()]
+    const tails = [...new Set(canons.map((c) => c.slice(-8)))]
     const { data: rows, error } = await supabase
       .from('ssotica_customers')
-      .select('phones')
+      .select('name, phones, phone_tails, last_sale_date')
       .eq('account_id', accountId)
-      .overlaps('phones', [...byCanonical.keys()])
+      .or(`phones.ov.{${canons.join(',')}},phone_tails.ov.{${tails.join(',')}}`)
     if (error) return NextResponse.json({ status: {} })
 
-    const known = new Set<string>((rows ?? []).flatMap((r) => r.phones as string[]))
+    // Exact phone first; otherwise the last 8 digits (other DDD / ninth digit).
+    // When several customers share a number, the most recent buyer wins.
+    const recent = [...(rows ?? [])].sort((a, b) =>
+      String(b.last_sale_date ?? '').localeCompare(String(a.last_sale_date ?? '')),
+    )
     const status: Record<string, 'customer' | 'new'> = {}
+    const names: Record<string, string> = {}
     for (const [canon, originals] of byCanonical) {
-      for (const o of originals) status[o] = known.has(canon) ? 'customer' : 'new'
+      const hit =
+        recent.find((r) => (r.phones as string[]).includes(canon)) ??
+        recent.find((r) => ((r.phone_tails as string[]) ?? []).includes(canon.slice(-8)))
+      for (const o of originals) {
+        status[o] = hit ? 'customer' : 'new'
+        if (hit?.name) names[o] = hit.name as string
+      }
     }
-    return NextResponse.json({ status })
+    return NextResponse.json({ status, names })
   } catch (err) {
     return toErrorResponse(err)
   }
