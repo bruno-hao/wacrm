@@ -60,6 +60,12 @@ export function SsoticaSettings() {
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [webLogin, setWebLogin] = useState('');
+  const [webPassword, setWebPassword] = useState('');
+  const [hasWebPassword, setHasWebPassword] = useState(false);
+  const [webVerifiedAt, setWebVerifiedAt] = useState<string | null>(null);
+  const [webTestedFor, setWebTestedFor] = useState<string | null>(null);
+  const [webBusy, setWebBusy] = useState<'test' | 'save' | 'remove' | null>(null);
   const [storeHash, setStoreHash] = useState('');
   const [savingHash, setSavingHash] = useState(false);
   const [sync, setSync] = useState<{
@@ -101,6 +107,9 @@ export function SsoticaSettings() {
         setVerifiedAt(data.verified_at ?? null);
         setSync(data.sync ?? null);
         setStoreHash(data.store_hash ?? '');
+        setWebLogin(data.web_login ?? '');
+        setHasWebPassword(Boolean(data.has_web_password));
+        setWebVerifiedAt(data.web_verified_at ?? null);
         setApiKey(data.has_key ? MASKED_KEY : '');
         setKeyEdited(false);
       }
@@ -193,6 +202,60 @@ export function SsoticaSettings() {
       toast.error(t('removeFailed'));
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const webFingerprint = `${webLogin.trim()}|${webPassword}`;
+  const webTestPassed = webTestedFor !== null && webTestedFor === webFingerprint;
+  const canTestWeb = !!webLogin.trim() && (!!webPassword || hasWebPassword);
+
+  const callWebLogin = async (kind: 'test' | 'save') => {
+    setWebBusy(kind);
+    try {
+      const res = await fetch(
+        kind === 'test' ? '/api/ssotica/web-login/test' : '/api/ssotica/web-login',
+        {
+          method: kind === 'test' ? 'POST' : 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login: webLogin.trim(), password: webPassword || undefined }),
+        },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (kind === 'test') {
+          setWebTestedFor(webFingerprint);
+          toast.success(t('webLoginTestOk'));
+        } else {
+          toast.success(t('webLoginSaved'));
+          setWebPassword('');
+          setWebTestedFor(null);
+          await fetchConfig();
+        }
+      } else {
+        if (kind === 'test') setWebTestedFor(null);
+        toast.error(data.error ?? t('saveFailed'));
+      }
+    } catch {
+      toast.error(t('testNetworkError'));
+    } finally {
+      setWebBusy(null);
+    }
+  };
+
+  const handleRemoveWebLogin = async () => {
+    setWebBusy('remove');
+    try {
+      const res = await fetch('/api/ssotica/web-login', { method: 'DELETE' });
+      if (res.ok) {
+        toast.success(t('webLoginRemoved'));
+        setWebLogin('');
+        setWebPassword('');
+        setHasWebPassword(false);
+        setWebVerifiedAt(null);
+        setWebTestedFor(null);
+      } else toast.error(t('removeFailed'));
+    } finally {
+      setWebBusy(null);
     }
   };
 
@@ -386,6 +449,81 @@ export function SsoticaSettings() {
                 {savingHash && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {t('save')}
               </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {configured && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              {t('webLoginTitle')}
+              {hasWebPassword && webVerifiedAt && (
+                <span className="ml-auto flex items-center gap-1 text-xs font-normal text-muted-foreground">
+                  <CheckCircle2 className="size-3.5 text-primary" />
+                  {t('connectedAt', { date: new Date(webVerifiedAt).toLocaleString() })}
+                </span>
+              )}
+            </CardTitle>
+            <CardDescription>{t('webLoginDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="ssotica-web-login">{t('webLoginUser')}</Label>
+                <Input
+                  id="ssotica-web-login"
+                  value={webLogin}
+                  onChange={(e) => setWebLogin(e.target.value)}
+                  disabled={!canEdit || webBusy !== null}
+                  autoComplete="off"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ssotica-web-password">{t('webLoginPassword')}</Label>
+                <Input
+                  id="ssotica-web-password"
+                  type="password"
+                  value={webPassword}
+                  onChange={(e) => setWebPassword(e.target.value)}
+                  placeholder={hasWebPassword ? MASKED_KEY : ''}
+                  disabled={!canEdit || webBusy !== null}
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+            {canEdit && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => callWebLogin('test')}
+                  disabled={webBusy !== null || !canTestWeb}
+                >
+                  {webBusy === 'test' && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  {t('webLoginTest')}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => callWebLogin('save')}
+                  disabled={webBusy !== null || !webTestPassed}
+                >
+                  {webBusy === 'save' && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  {t('save')}
+                </Button>
+                {hasWebPassword && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="ml-auto text-destructive"
+                    onClick={handleRemoveWebLogin}
+                    disabled={webBusy !== null}
+                  >
+                    <Trash2 className="mr-2 size-4" /> {t('remove')}
+                  </Button>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>

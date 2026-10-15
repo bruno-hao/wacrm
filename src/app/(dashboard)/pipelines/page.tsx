@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GitBranch, Plus, ChevronDown, Settings } from "lucide-react";
+import { GitBranch, Plus, ChevronDown, Settings, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
@@ -55,6 +55,7 @@ export default function PipelinesPage() {
   const canCreateDeals = useCan("send-messages");
   const { accountId } = useAuth();
 
+  const [syncingQuotes, setSyncingQuotes] = useState(false);
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [selectedPipelineId, setSelectedPipelineId] = useState<string>("");
   const [stages, setStages] = useState<PipelineStage[]>([]);
@@ -316,6 +317,34 @@ export default function PipelinesPage() {
     );
   }
 
+  const handleSyncQuotes = async () => {
+    setSyncingQuotes(true);
+    try {
+      const res = await fetch("/api/ssotica/quotes/sync", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        toast.success(
+          t("syncSsoticaDone", {
+            created: data.created ?? 0,
+            updated: data.updated ?? 0,
+            won: data.won ?? 0,
+            lost: data.lost ?? 0,
+            deleted: data.deleted ?? 0,
+            noContact: data.noContact ?? 0,
+          }),
+        );
+        // Reload the board so new deals show up.
+        window.location.reload();
+      } else {
+        toast.error(t(`syncSsoticaError_${data.error ?? "unexpected"}` as never) || t("syncSsoticaError_unexpected"));
+      }
+    } catch {
+      toast.error(t("syncSsoticaError_unexpected"));
+    } finally {
+      setSyncingQuotes(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -367,6 +396,17 @@ export default function PipelinesPage() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={syncingQuotes || !canCreateDeals}
+            onClick={handleSyncQuotes}
+            className="border-border bg-card text-foreground hover:bg-muted"
+          >
+            <RefreshCw className={`mr-1 h-4 w-4 ${syncingQuotes ? "animate-spin" : ""}`} />
+            {t("syncSsotica")}
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">

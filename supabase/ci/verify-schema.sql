@@ -176,6 +176,11 @@ BEGIN
       'instagram_config / conversations.channel are missing — migration 054 did not apply';
   END IF;
 
+  IF to_regclass('public.ssotica_quotes') IS NULL THEN
+    RAISE EXCEPTION
+      'public.ssotica_quotes is missing — migration 055 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

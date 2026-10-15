@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/automations/admin-client'
 import { decrypt } from '@/lib/whatsapp/encryption'
 import { runSsoticaSync } from '@/lib/ssotica/sync'
+import { syncQuotes } from '@/lib/ssotica/quotes'
 
 /**
  * GET /api/cron/ssotica-sync
@@ -39,7 +40,9 @@ export async function GET(request: Request) {
         apiKey: decrypt(cfg.api_key),
         cnpj: cfg.cnpj,
       })
-      results.push({ account: cfg.account_id, ...out })
+      // Budgets → pipeline deals (needs the optional web login; skipped when absent).
+      const quotes = await syncQuotes(db, cfg.account_id).catch(() => null)
+      results.push({ account: cfg.account_id, ...out, quotes })
     } catch (err) {
       console.error('[ssotica-sync] account failed:', err)
       results.push({ account: cfg.account_id, stopped: 'error' })

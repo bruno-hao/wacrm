@@ -1,5 +1,6 @@
 import { getT } from '@/lib/i18n/translate'
 import type { SsoticaError } from './client'
+import { SsoticaWebError } from './web'
 
 const t = getT('Api')
 
@@ -21,4 +22,13 @@ export function ssoticaErrorMessage(err: SsoticaError): string {
     default:
       return t('ssotica.unexpected')
   }
+}
+
+/** User-facing text for a failed ssOtica web login (budgets). */
+export function webLoginErrorMessage(err: unknown): string {
+  const code = err instanceof SsoticaWebError ? err.code : 'unexpected'
+  if (code === 'login_failed') return t('ssotica.webLoginFailed')
+  if (code === 'captcha') return t('ssotica.webLoginCaptcha')
+  if (code === 'network') return t('ssotica.network')
+  return t('ssotica.webLoginUnexpected')
 }

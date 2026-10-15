@@ -645,7 +645,18 @@
         "proposalSent": "Proposal Sent",
         "negotiation": "Negotiation",
         "won": "Won"
-      }
+      },
+      "syncSsotica": "Sync ssOtica",
+      "syncSsoticaDone": "ssOtica synced: {created} new, {updated} updated, {won} won, {lost} lost, {deleted} deleted, {noContact} without a CRM contact.",
+      "syncSsoticaError_not_configured": "Set up the ssOtica (budgets) login in Settings → ssOtica.",
+      "syncSsoticaError_login_failed": "ssOtica rejected the login. Review it in Settings → ssOtica.",
+      "syncSsoticaError_captcha": "ssOtica login asks for a captcha.",
+      "syncSsoticaError_pipeline_missing": "Pipeline \"Fluxo de Vendas\" not found.",
+      "syncSsoticaError_stage_missing": "Stage \"Identificação e Demanda\" not found in the pipeline.",
+      "syncSsoticaError_network": "Could not reach ssOtica.",
+      "syncSsoticaError_session_expired": "The ssOtica session expired. Try again.",
+      "syncSsoticaError_graphql": "ssOtica returned an error listing budgets.",
+      "syncSsoticaError_unexpected": "Failed to sync with ssOtica."
     },
     "board": {
       "dropDealHere": "Drop a deal here",
@@ -2120,7 +2131,15 @@
       "linkTitle": "Links to ssOtica",
       "linkDesc": "ssOtica identifies the store in its URLs by a short code (e.g. in .../movimentacao/vendas/LzBQZm/listar the code is LzBQZm). Enter it so the sale number and value in the contact panel open the sale in ssOtica.",
       "storeHash": "Store code in links",
-      "linkSaved": "Store code saved."
+      "linkSaved": "Store code saved.",
+      "webLoginTitle": "ssOtica login (budgets)",
+      "webLoginDesc": "The ssOtica API has no budgets. To bring them into the Sales Flow, the CRM signs in to ssOtica with this user and only reads the Budgets screen (nothing is changed in ssOtica). Use a user just for the CRM. The password is encrypted and never shown again.",
+      "webLoginUser": "User (e-mail)",
+      "webLoginPassword": "Password",
+      "webLoginTest": "Test login",
+      "webLoginTestOk": "ssOtica login worked.",
+      "webLoginSaved": "ssOtica login saved.",
+      "webLoginRemoved": "ssOtica login removed."
     },
     "instagram": {
       "title": "Instagram",
@@ -2856,7 +2875,11 @@
       "saveFailed": "Failed to save the ssOtica configuration.",
       "deleteFailed": "Failed to remove the ssOtica configuration.",
       "notConfigured": "Set up the ssOtica integration first.",
-      "storeHashInvalid": "The store code must be 3 to 32 letters or digits."
+      "storeHashInvalid": "The store code must be 3 to 32 letters or digits.",
+      "webLoginRequired": "Enter the ssOtica user and password.",
+      "webLoginFailed": "ssOtica rejected the user or password.",
+      "webLoginCaptcha": "ssOtica login is asking for a captcha; it cannot be automated.",
+      "webLoginUnexpected": "Could not sign in to ssOtica (unexpected response)."
     }
   },
   "Announcements": {

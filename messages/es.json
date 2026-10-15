@@ -645,7 +645,18 @@
         "proposalSent": "Propuesta enviada",
         "negotiation": "Negociación",
         "won": "Ganado"
-      }
+      },
+      "syncSsotica": "Sincronizar ssOtica",
+      "syncSsoticaDone": "ssOtica sincronizado: {created} nuevo(s), {updated} actualizado(s), {won} ganado(s), {lost} perdido(s), {deleted} eliminado(s), {noContact} sin contacto en el CRM.",
+      "syncSsoticaError_not_configured": "Configura el login de ssOtica (presupuestos) en Configuración → ssOtica.",
+      "syncSsoticaError_login_failed": "ssOtica rechazó el login. Revísalo en Configuración → ssOtica.",
+      "syncSsoticaError_captcha": "El login de ssOtica pide captcha.",
+      "syncSsoticaError_pipeline_missing": "No se encontró el pipeline \"Fluxo de Vendas\".",
+      "syncSsoticaError_stage_missing": "No se encontró la etapa \"Identificação e Demanda\" en el pipeline.",
+      "syncSsoticaError_network": "No se pudo conectar con ssOtica.",
+      "syncSsoticaError_session_expired": "La sesión de ssOtica expiró. Inténtalo de nuevo.",
+      "syncSsoticaError_graphql": "ssOtica devolvió un error al listar presupuestos.",
+      "syncSsoticaError_unexpected": "Error al sincronizar con ssOtica."
     },
     "board": {
       "dropDealHere": "Suelta un negocio aquí",
@@ -2120,7 +2131,15 @@
       "linkTitle": "Enlaces a ssOtica",
       "linkDesc": "ssOtica identifica la tienda en sus direcciones con un código corto (p. ej., en .../movimentacao/vendas/LzBQZm/listar el código es LzBQZm). Indícalo para que el número de venta y el valor del panel del contacto abran la venta en ssOtica.",
       "storeHash": "Código de la tienda en los enlaces",
-      "linkSaved": "Código de la tienda guardado."
+      "linkSaved": "Código de la tienda guardado.",
+      "webLoginTitle": "Login de ssOtica (presupuestos)",
+      "webLoginDesc": "La API de ssOtica no tiene presupuestos. Para traerlos al Flujo de Ventas, el CRM entra en ssOtica con este usuario y solo lee la pantalla de Presupuestos (no se cambia nada en ssOtica). Usa un usuario solo para el CRM. La contraseña se cifra y no se vuelve a mostrar.",
+      "webLoginUser": "Usuario (e-mail)",
+      "webLoginPassword": "Contraseña",
+      "webLoginTest": "Probar login",
+      "webLoginTestOk": "El login en ssOtica funcionó.",
+      "webLoginSaved": "Login de ssOtica guardado.",
+      "webLoginRemoved": "Login de ssOtica eliminado."
     },
     "instagram": {
       "title": "Instagram",
@@ -2856,7 +2875,11 @@
       "saveFailed": "Error al guardar la configuración de ssOtica.",
       "deleteFailed": "Error al eliminar la configuración de ssOtica.",
       "notConfigured": "Configura primero la integración con ssOtica.",
-      "storeHashInvalid": "El código de la tienda debe tener de 3 a 32 letras o números."
+      "storeHashInvalid": "El código de la tienda debe tener de 3 a 32 letras o números.",
+      "webLoginRequired": "Ingresa el usuario y la contraseña de ssOtica.",
+      "webLoginFailed": "ssOtica rechazó el usuario o la contraseña.",
+      "webLoginCaptcha": "El login de ssOtica pide captcha; no se puede automatizar.",
+      "webLoginUnexpected": "No se pudo entrar en ssOtica (respuesta inesperada)."
     }
   },
   "Announcements": {

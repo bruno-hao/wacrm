@@ -32,7 +32,7 @@ export async function GET() {
     const { supabase, accountId } = await getCurrentAccount()
     const { data, error } = await supabase
       .from('ssotica_config')
-      .select('cnpj, verified_at, api_key, store_hash')
+      .select('cnpj, verified_at, api_key, store_hash, web_login, web_password, web_verified_at')
       .eq('account_id', accountId)
       .maybeSingle()
     if (error) {
@@ -57,6 +57,9 @@ export async function GET() {
       verified_at: data.verified_at,
       has_key: !!data.api_key,
       store_hash: data.store_hash ?? null,
+      web_login: data.web_login ?? null,
+      has_web_password: !!data.web_password,
+      web_verified_at: data.web_verified_at ?? null,
       sync: {
         phase: state?.phase ?? 'customers',
         last_run_at: state?.last_run_at ?? null,

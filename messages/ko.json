@@ -645,7 +645,18 @@
         "proposalSent": "제안서 발송",
         "negotiation": "협상",
         "won": "성사"
-      }
+      },
+      "syncSsotica": "ssOtica 동기화",
+      "syncSsoticaDone": "ssOtica 동기화 완료: 신규 {created}, 업데이트 {updated}, 성사 {won}, 실패 {lost}, 삭제 {deleted}, CRM 연락처 없음 {noContact}.",
+      "syncSsoticaError_not_configured": "설정 → ssOtica에서 ssOtica(견적) 로그인을 설정하세요.",
+      "syncSsoticaError_login_failed": "ssOtica가 로그인을 거부했습니다. 설정 → ssOtica에서 확인하세요.",
+      "syncSsoticaError_captcha": "ssOtica 로그인이 캡차를 요구합니다.",
+      "syncSsoticaError_pipeline_missing": "\"Fluxo de Vendas\" 파이프라인을 찾을 수 없습니다.",
+      "syncSsoticaError_stage_missing": "파이프라인에서 \"Identificação e Demanda\" 단계를 찾을 수 없습니다.",
+      "syncSsoticaError_network": "ssOtica에 연결할 수 없습니다.",
+      "syncSsoticaError_session_expired": "ssOtica 세션이 만료되었습니다. 다시 시도하세요.",
+      "syncSsoticaError_graphql": "견적 목록 조회 중 ssOtica가 오류를 반환했습니다.",
+      "syncSsoticaError_unexpected": "ssOtica 동기화에 실패했습니다."
     },
     "board": {
       "dropDealHere": "여기에 딜을 놓으세요",
@@ -2120,7 +2131,15 @@
       "linkTitle": "ssOtica 링크",
       "linkDesc": "ssOtica는 주소에서 짧은 코드로 매장을 식별합니다(예: .../movimentacao/vendas/LzBQZm/listar 에서 코드는 LzBQZm). 이를 입력하면 연락처 패널의 판매 번호와 금액이 ssOtica의 판매를 엽니다.",
       "storeHash": "링크의 매장 코드",
-      "linkSaved": "매장 코드가 저장되었습니다."
+      "linkSaved": "매장 코드가 저장되었습니다.",
+      "webLoginTitle": "ssOtica 로그인(견적)",
+      "webLoginDesc": "ssOtica API에는 견적이 없습니다. 견적을 영업 플로우로 가져오기 위해 CRM이 이 사용자로 ssOtica에 로그인하여 견적 화면만 읽습니다(ssOtica는 변경되지 않음). CRM 전용 사용자를 사용하세요. 비밀번호는 암호화되며 다시 표시되지 않습니다.",
+      "webLoginUser": "사용자(이메일)",
+      "webLoginPassword": "비밀번호",
+      "webLoginTest": "로그인 테스트",
+      "webLoginTestOk": "ssOtica 로그인에 성공했습니다.",
+      "webLoginSaved": "ssOtica 로그인이 저장되었습니다.",
+      "webLoginRemoved": "ssOtica 로그인이 제거되었습니다."
     },
     "instagram": {
       "title": "Instagram",
@@ -2856,7 +2875,11 @@
       "saveFailed": "ssOtica 설정을 저장하지 못했습니다.",
       "deleteFailed": "ssOtica 설정을 제거하지 못했습니다.",
       "notConfigured": "먼저 ssOtica 연동을 설정하세요.",
-      "storeHashInvalid": "매장 코드는 3~32자의 영문 또는 숫자여야 합니다."
+      "storeHashInvalid": "매장 코드는 3~32자의 영문 또는 숫자여야 합니다.",
+      "webLoginRequired": "ssOtica 사용자와 비밀번호를 입력하세요.",
+      "webLoginFailed": "ssOtica가 사용자 또는 비밀번호를 거부했습니다.",
+      "webLoginCaptcha": "ssOtica 로그인이 캡차를 요구하여 자동화할 수 없습니다.",
+      "webLoginUnexpected": "ssOtica에 로그인할 수 없습니다(예상치 못한 응답)."
     }
   },
   "Announcements": {
