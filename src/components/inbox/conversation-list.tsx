@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { useSsoticaStatuses } from "@/hooks/use-ssotica-customer";
+import { ChannelBadge } from "./channel-badge";
 import { formatPhoneDisplay } from "@/lib/whatsapp/phone-utils";
 import {
   DropdownMenu,
@@ -486,8 +487,13 @@ function ConversationItem({
       {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-medium text-foreground">
-            {displayName}
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-sm font-medium text-foreground">
+              {displayName}
+            </span>
+            {conversation.channel === "instagram" && (
+              <ChannelBadge channel="instagram" iconOnly />
+            )}
           </span>
           <span className="shrink-0 text-[10px] text-muted-foreground">{timeAgo}</span>
         </div>

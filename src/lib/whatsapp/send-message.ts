@@ -42,6 +42,7 @@ import {
 } from '@/lib/whatsapp/phone-utils';
 import { resolveContactSendTarget } from '@/lib/whatsapp/wa-identity';
 import type { MessageTemplate } from '@/types';
+import { sendInstagramReply, InstagramSendError } from '@/lib/instagram/send';
 import {
   resolveTemplateRow,
   templateBodyParams,
@@ -286,6 +287,28 @@ export async function sendMessageToConversation(
   }
 
   const contact = conversation.contact;
+
+  // Instagram conversations take a different transport (text / one media
+  // attachment, replies only); everything below is WhatsApp-specific.
+  if (conversation.channel === 'instagram') {
+    try {
+      const r = await sendInstagramReply({
+        db,
+        accountId,
+        conversationId,
+        contact: contact ?? {},
+        messageType,
+        contentText,
+        mediaUrl,
+      });
+      return { messageId: r.messageId, whatsappMessageId: r.instagramMessageId };
+    } catch (err) {
+      if (err instanceof InstagramSendError) {
+        throw new SendMessageError(err.code, err.message, err.status);
+      }
+      throw err;
+    }
+  }
 
   // A contact is addressable by phone number OR by business-scoped user
   // ID. Meta withholds the phone number for a customer who has adopted

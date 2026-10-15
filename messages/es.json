@@ -387,6 +387,9 @@
       "osDate": "FECHA O.S.",
       "dayOne": "día",
       "dayMany": "días"
+    },
+    "channel": {
+      "instagram": "Instagram"
     }
   },
   "Contacts": {
@@ -1821,7 +1824,8 @@
       "deals": "Negocios y moneda",
       "members": "Miembros del equipo",
       "api": "Claves de API",
-      "ssotica": "ssOtica"
+      "ssotica": "ssOtica",
+      "instagram": "Instagram"
     },
     "groups": {
       "account": "Cuenta",
@@ -2112,6 +2116,30 @@
       "linkDesc": "ssOtica identifica la tienda en sus direcciones con un código corto (p. ej., en .../movimentacao/vendas/LzBQZm/listar el código es LzBQZm). Indícalo para que el número de venta y el valor del panel del contacto abran la venta en ssOtica.",
       "storeHash": "Código de la tienda en los enlaces",
       "linkSaved": "Código de la tienda guardado."
+    },
+    "instagram": {
+      "title": "Instagram",
+      "description": "Recibe y responde los mensajes directos (DM) de Instagram en la misma bandeja que WhatsApp.",
+      "adminOnly": "Solo administradores y propietarios pueden conectar Instagram.",
+      "account": "Cuenta de Instagram",
+      "accountDesc": "Conecta un perfil profesional (Empresa o Creador). Solo puedes responder: hasta 24 h después del último mensaje del cliente, y hasta 7 días con la etiqueta de agente humano.",
+      "connected": "Conectado",
+      "profile": "Perfil",
+      "tokenExpires": "Acceso válido hasta",
+      "needsReconnect": "El acceso expiró. Conecta Instagram de nuevo.",
+      "connect": "Conectar Instagram",
+      "reconnect": "Reconectar",
+      "disconnect": "Desconectar",
+      "envMissing": "El servidor aún no tiene las variables de la app Meta (INSTAGRAM_APP_ID, INSTAGRAM_APP_SECRET, INSTAGRAM_VERIFY_TOKEN y NEXT_PUBLIC_SITE_URL).",
+      "metaSetup": "Configuración en la app Meta",
+      "metaSetupDesc": "En Meta for Developers (producto Instagram), registra estas URL: el webhook (campos messages y messaging_seen) y el URI de redirección OAuth.",
+      "webhookUrl": "URL de callback del webhook",
+      "redirectUri": "URI de redirección OAuth",
+      "copied": "Copiado.",
+      "connectedToast": "Instagram conectado.",
+      "connectFailed": "No se pudo conectar Instagram ({reason}).",
+      "disconnected": "Instagram desconectado.",
+      "disconnectFailed": "Error al desconectar."
     }
   },
   "SignupPage": {

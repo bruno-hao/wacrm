@@ -387,6 +387,9 @@
       "osDate": "O.S. 날짜",
       "dayOne": "일",
       "dayMany": "일"
+    },
+    "channel": {
+      "instagram": "Instagram"
     }
   },
   "Contacts": {
@@ -1821,7 +1824,8 @@
       "deals": "딜 & 통화",
       "members": "팀원",
       "api": "API 키",
-      "ssotica": "ssOtica"
+      "ssotica": "ssOtica",
+      "instagram": "Instagram"
     },
     "groups": {
       "account": "계정",
@@ -2112,6 +2116,30 @@
       "linkDesc": "ssOtica는 주소에서 짧은 코드로 매장을 식별합니다(예: .../movimentacao/vendas/LzBQZm/listar 에서 코드는 LzBQZm). 이를 입력하면 연락처 패널의 판매 번호와 금액이 ssOtica의 판매를 엽니다.",
       "storeHash": "링크의 매장 코드",
       "linkSaved": "매장 코드가 저장되었습니다."
+    },
+    "instagram": {
+      "title": "Instagram",
+      "description": "Instagram 다이렉트 메시지(DM)를 WhatsApp과 같은 받은편지함에서 받고 답장합니다.",
+      "adminOnly": "관리자와 소유자만 Instagram을 연결할 수 있습니다.",
+      "account": "Instagram 계정",
+      "accountDesc": "프로페셔널 프로필(비즈니스 또는 크리에이터)을 연결하세요. 답장만 가능합니다: 고객의 마지막 메시지 후 24시간 이내, 상담원 태그로는 최대 7일.",
+      "connected": "연결됨",
+      "profile": "프로필",
+      "tokenExpires": "접근 유효 기간",
+      "needsReconnect": "접근이 만료되었습니다. Instagram을 다시 연결하세요.",
+      "connect": "Instagram 연결",
+      "reconnect": "다시 연결",
+      "disconnect": "연결 해제",
+      "envMissing": "서버에 Meta 앱 변수(INSTAGRAM_APP_ID, INSTAGRAM_APP_SECRET, INSTAGRAM_VERIFY_TOKEN, NEXT_PUBLIC_SITE_URL)가 아직 없습니다.",
+      "metaSetup": "Meta 앱 설정",
+      "metaSetupDesc": "Meta for Developers(Instagram 제품)에 다음 URL을 등록하세요: 웹훅(messages, messaging_seen 필드)과 OAuth 리디렉션 URI.",
+      "webhookUrl": "웹훅 콜백 URL",
+      "redirectUri": "OAuth 리디렉션 URI",
+      "copied": "복사되었습니다.",
+      "connectedToast": "Instagram이 연결되었습니다.",
+      "connectFailed": "Instagram을 연결할 수 없습니다 ({reason}).",
+      "disconnected": "Instagram 연결이 해제되었습니다.",
+      "disconnectFailed": "연결 해제에 실패했습니다."
     }
   },
   "SignupPage": {

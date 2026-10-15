@@ -387,6 +387,9 @@
       "osDate": "WO DATE",
       "dayOne": "day",
       "dayMany": "days"
+    },
+    "channel": {
+      "instagram": "Instagram"
     }
   },
   "Contacts": {
@@ -1821,7 +1824,8 @@
       "deals": "Deals & currency",
       "members": "Team members",
       "api": "API keys",
-      "ssotica": "ssOtica"
+      "ssotica": "ssOtica",
+      "instagram": "Instagram"
     },
     "groups": {
       "account": "Account",
@@ -2112,6 +2116,30 @@
       "linkDesc": "ssOtica identifies the store in its URLs by a short code (e.g. in .../movimentacao/vendas/LzBQZm/listar the code is LzBQZm). Enter it so the sale number and value in the contact panel open the sale in ssOtica.",
       "storeHash": "Store code in links",
       "linkSaved": "Store code saved."
+    },
+    "instagram": {
+      "title": "Instagram",
+      "description": "Receive and reply to Instagram direct messages (DMs) in the same inbox as WhatsApp.",
+      "adminOnly": "Only admins and owners can connect Instagram.",
+      "account": "Instagram account",
+      "accountDesc": "Connect a professional profile (Business or Creator). You can only reply: within 24 h of the customer's last message, and up to 7 days with the human-agent tag.",
+      "connected": "Connected",
+      "profile": "Profile",
+      "tokenExpires": "Access valid until",
+      "needsReconnect": "Access expired. Connect Instagram again.",
+      "connect": "Connect Instagram",
+      "reconnect": "Reconnect",
+      "disconnect": "Disconnect",
+      "envMissing": "The server does not have the Meta app variables yet (INSTAGRAM_APP_ID, INSTAGRAM_APP_SECRET, INSTAGRAM_VERIFY_TOKEN and NEXT_PUBLIC_SITE_URL).",
+      "metaSetup": "Meta app setup",
+      "metaSetupDesc": "In Meta for Developers (Instagram product), register these URLs: the webhook (fields messages and messaging_seen) and the OAuth redirect URI.",
+      "webhookUrl": "Webhook callback URL",
+      "redirectUri": "OAuth redirect URI",
+      "copied": "Copied.",
+      "connectedToast": "Instagram connected.",
+      "connectFailed": "Could not connect Instagram ({reason}).",
+      "disconnected": "Instagram disconnected.",
+      "disconnectFailed": "Failed to disconnect."
     }
   },
   "SignupPage": {

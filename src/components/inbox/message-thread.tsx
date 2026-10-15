@@ -56,6 +56,7 @@ import { renderTemplateBody } from "@/lib/whatsapp/template-body";
 import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
 import { SsoticaSellerBadge, SsoticaStatusBadge } from "./ssotica-badges";
+import { ChannelBadge } from "./channel-badge";
 import { toast } from "sonner";
 
 interface ReplyDraft {
@@ -245,21 +246,24 @@ export function MessageThread({
 
     if (!lastCustomerMsg) return { expired: true, remaining: tTimer("noCustomerMessages") };
 
+    // WhatsApp: 24 h. Instagram: 24 h free + up to 7 days with the
+    // human-agent tag, so the thread stays writable for 7 days.
+    const windowHours = conversation?.channel === "instagram" ? 168 : 24;
     const hoursSince = differenceInHours(new Date(), new Date(lastCustomerMsg.created_at));
-    const expired = hoursSince >= 24;
+    const expired = hoursSince >= windowHours;
 
     if (expired) {
       return { expired: true, remaining: tTimer("expired") };
     }
 
-    const hoursLeft = 24 - hoursSince;
+    const hoursLeft = windowHours - hoursSince;
     const remaining =
       hoursLeft >= 1
         ? tTimer("xhRemaining", { hours: Math.floor(hoursLeft) })
         : tTimer("xmRemaining", { minutes: Math.floor(hoursLeft * 60) });
 
     return { expired, remaining };
-  }, [messages, tTimer]);
+  }, [messages, tTimer, conversation?.channel]);
 
   const ssotica = useSsoticaCustomer(contact?.phone);
 
@@ -943,6 +947,7 @@ export function MessageThread({
             <Clock className="h-3 w-3" />
             {sessionInfo.remaining}
           </Badge>
+          {conversation.channel === "instagram" && <ChannelBadge channel="instagram" className="ml-1 hidden sm:inline-flex" />}
           {/* ssOtica: customer / new customer. */}
           <SsoticaStatusBadge lookup={ssotica} className="ml-1 hidden sm:inline-flex" />
           <SsoticaSellerBadge lookup={ssotica} className="hidden sm:inline-flex" />
@@ -1191,6 +1196,7 @@ export function MessageThread({
         onSendMedia={handleSendMedia}
         onSendInteractive={handleSendInteractive}
         onOpenTemplates={handleOpenTemplates}
+        channel={conversation.channel}
         replyTo={replyTo}
         onClearReply={() => setReplyTo(null)}
       />

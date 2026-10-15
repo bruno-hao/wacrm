@@ -115,6 +115,8 @@ export interface Contact {
   /** WhatsApp username without the leading @. Display only: usernames
    *  are user-changeable, so they must never key a contact. */
   wa_username?: string | null;
+  /** Instagram-scoped ID of an Instagram DM contact (migration 054). */
+  ig_user_id?: string | null;
   name?: string;
   email?: string;
   company?: string;
@@ -177,6 +179,8 @@ export interface Conversation {
   last_message_text?: string;
   last_message_at?: string;
   unread_count: number;
+  /** Where the thread lives: WhatsApp (default) or Instagram DMs (migration 054). */
+  channel?: 'whatsapp' | 'instagram';
   created_at: string;
   updated_at: string;
   contact?: Contact;

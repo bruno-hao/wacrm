@@ -167,6 +167,15 @@ BEGIN
       'ssotica_customers.last_seller is missing — migration 053 did not apply';
   END IF;
 
+  IF to_regclass('public.instagram_config') IS NULL
+     OR NOT EXISTS (
+       SELECT 1 FROM information_schema.columns
+       WHERE table_name = 'conversations' AND column_name = 'channel'
+     ) THEN
+    RAISE EXCEPTION
+      'instagram_config / conversations.channel are missing — migration 054 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;
