@@ -181,6 +181,11 @@ BEGIN
       'public.ssotica_quotes is missing — migration 055 did not apply';
   END IF;
 
+  IF to_regclass('public.os_notices') IS NULL THEN
+    RAISE EXCEPTION
+      'public.os_notices is missing — migration 058 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;
