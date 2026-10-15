@@ -41,7 +41,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "announcements": "Avisos"
   },
   "Header": {
     "dashboard": "Painel",
@@ -58,7 +59,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "announcements": "Avisos"
   },
   "ModeToggle": {
     "switchMode": "Mudar para o modo {mode}"
@@ -173,7 +175,9 @@
       "clearAll": "Limpar tudo",
       "noConversations": "Nenhuma conversa encontrada",
       "noMessagesYet": "Nenhuma mensagem ainda",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "ssoticaCustomer": "Cliente ssOtica",
+      "ssoticaNew": "Cliente novo"
     },
     "messageThread": {
       "backToConversations": "Voltar às conversas",
@@ -379,7 +383,10 @@
       "osCancelled": "Cancelada",
       "osLost": "Perda",
       "osSold": "Vendida",
-      "osNotSold": "Não Vendida"
+      "osNotSold": "Não Vendida",
+      "osDate": "DATA O.S.",
+      "dayOne": "dia",
+      "dayMany": "dias"
     }
   },
   "Contacts": {
@@ -2818,5 +2825,9 @@
       "notConfigured": "Configure a integração com o ssOtica primeiro.",
       "storeHashInvalid": "O código da loja deve ter de 3 a 32 letras ou números."
     }
+  },
+  "Announcements": {
+    "title": "Avisos",
+    "description": "Esta área ainda não tem função. Em breve."
   }
 }

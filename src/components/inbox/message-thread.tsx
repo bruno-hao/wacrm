@@ -55,7 +55,7 @@ import { buildReplyPreview } from "./reply-quote";
 import { renderTemplateBody } from "@/lib/whatsapp/template-body";
 import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
-import { SsoticaStatusBadge } from "./ssotica-badges";
+import { SsoticaSellerBadge, SsoticaStatusBadge } from "./ssotica-badges";
 import { toast } from "sonner";
 
 interface ReplyDraft {
@@ -945,6 +945,7 @@ export function MessageThread({
           </Badge>
           {/* ssOtica: customer / new customer. */}
           <SsoticaStatusBadge lookup={ssotica} className="ml-1 hidden sm:inline-flex" />
+          <SsoticaSellerBadge lookup={ssotica} className="hidden sm:inline-flex" />
         </div>
 
         <div className="flex items-center gap-2">

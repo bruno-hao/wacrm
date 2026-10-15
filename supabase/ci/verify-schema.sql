@@ -159,6 +159,14 @@ BEGIN
       'ssotica_customers.last_os_status is missing — migration 052 did not apply';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ssotica_customers' AND column_name = 'last_seller'
+  ) THEN
+    RAISE EXCEPTION
+      'ssotica_customers.last_seller is missing — migration 053 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

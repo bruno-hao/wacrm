@@ -14,6 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { useSsoticaStatuses } from "@/hooks/use-ssotica-customer";
 import { formatPhoneDisplay } from "@/lib/whatsapp/phone-utils";
 import {
   DropdownMenu,
@@ -159,6 +160,11 @@ export function ConversationList({
     for (const t of tags) m.set(t.id, t);
     return m;
   }, [tags]);
+
+  // ssOtica customer / new, for every conversation currently loaded.
+  const ssoticaStatuses = useSsoticaStatuses(
+    conversations.map((c) => c.contact?.phone ?? "")
+  );
 
   const filtered = useMemo(() => {
     let result = conversations;
@@ -415,6 +421,7 @@ export function ConversationList({
                 conversation={conv}
                 isActive={conv.id === activeConversationId}
                 onSelect={handleSelect}
+                ssoticaStatus={ssoticaStatuses[conv.contact?.phone ?? ""]}
                 t={t}
               />
             ))}
@@ -429,6 +436,7 @@ interface ConversationItemProps {
   conversation: Conversation;
   isActive: boolean;
   onSelect: (conversation: Conversation) => void;
+  ssoticaStatus?: "customer" | "new";
   t: ReturnType<typeof useTranslations>;
 }
 
@@ -436,6 +444,7 @@ function ConversationItem({
   conversation,
   isActive,
   onSelect,
+  ssoticaStatus,
   t,
 }: ConversationItemProps) {
   const contact = conversation.contact;
@@ -491,6 +500,15 @@ function ConversationItem({
               <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                 {conversation.unread_count}
               </span>
+            )}
+            {ssoticaStatus && (
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  ssoticaStatus === "customer" ? "bg-blue-500" : "bg-red-500"
+                )}
+                title={ssoticaStatus === "customer" ? t("ssoticaCustomer") : t("ssoticaNew")}
+              />
             )}
             <span
               className={cn(

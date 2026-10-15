@@ -46,6 +46,14 @@ export function SsoticaStatusBadge({
   return null;
 }
 
+/** "22/09/2026 (23 dias)" — days counted up to today. */
+function osDate(customer: Customer, t: Translator): string {
+  if (!customer.os_date) return '—';
+  const n = daysSince(customer.os_date);
+  const date = formatIsoDate(customer.os_date);
+  return n == null ? date : `${date} (${n} ${n === 1 ? t('dayOne') : t('dayMany')})`;
+}
+
 /** The stage only exists for an OS that was sold (not cancelled / lost). */
 export function showStage(customer: Customer): boolean {
   return (
@@ -53,6 +61,40 @@ export function showStage(customer: Customer): boolean {
     customer.os_status !== 'CANCELADO' &&
     customer.os_status !== 'PERDA'
   );
+}
+
+/** Yellow badge with the seller linked to the customer in ssOtica. */
+export function SsoticaSellerBadge({
+  lookup,
+  className,
+}: {
+  lookup: SsoticaLookup;
+  className?: string;
+}) {
+  if (lookup.status !== 'customer') return null;
+  // "Juliana Santos" → "Juliana"; nothing when there is no seller.
+  const first = lookup.seller?.trim().split(/\s+/)[0];
+  if (!first) return null;
+  return (
+    <span
+      className={cn(
+        pill('border-transparent bg-yellow-400/25 text-yellow-700 dark:text-yellow-300'),
+        className,
+      )}
+    >
+      {first}
+    </span>
+  );
+}
+
+/** Whole days from an ISO date (yyyy-mm-dd) to today, in the browser's day. */
+export function daysSince(iso: string | null | undefined): number | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
+  if (!m) return null;
+  const then = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const now = new Date();
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.round((today - then) / 86_400_000));
 }
 
 type Translator = ReturnType<typeof useTranslations>;
@@ -85,6 +127,7 @@ export function SsoticaDetailList({ customer }: { customer: Customer }) {
   const rows: { label: string; value: string; href: string | null }[] = [
     { label: t('name'), value: customer.name ?? '—', href: null },
     { label: t('osNumber'), value: customer.os_number ?? '—', href: null },
+    { label: t('osDate'), value: osDate(customer, t), href: null },
     { label: t('osSituation'), value: osSituation(customer, t), href: null },
     ...(showStage(customer)
       ? [{ label: t('osStage'), value: customer.os_stage || '—', href: null }]

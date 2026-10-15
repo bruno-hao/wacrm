@@ -55,6 +55,7 @@ interface ApiSale {
   numero?: number | string | null
   data?: string | null
   valor_liquido?: number | string | null
+  funcionario?: { nome?: string | null } | null
   cliente?: ApiCustomer | null
 }
 
@@ -65,6 +66,7 @@ interface ApiOs {
   status?: string | null
   etapa_atual?: string | null
   id_venda_vinculada?: number | string | null
+  funcionario?: { nome?: string | null } | null
   cliente?: ApiCustomer | null
 }
 
@@ -137,6 +139,7 @@ interface Row {
   last_os_etapa: string | null
   last_os_sold: boolean | null
   last_receita_date: string | null
+  last_seller: string | null
   last_sale_number: string | null
   last_sale_date: string | null
   last_sale_value: number | null
@@ -148,7 +151,7 @@ async function loadRows(db: SupabaseClient, accountId: string, ids: number[]) {
   const { data, error } = await db
     .from('ssotica_customers')
     .select(
-      'account_id, ssotica_id, name, phones, last_os_number, last_os_date, last_os_status, last_os_etapa, last_os_sold, last_receita_date, last_sale_number, last_sale_date, last_sale_value',
+      'account_id, ssotica_id, name, phones, last_os_number, last_os_date, last_os_status, last_os_etapa, last_os_sold, last_receita_date, last_seller, last_sale_number, last_sale_date, last_sale_value',
     )
     .eq('account_id', accountId)
     .in('ssotica_id', ids)
@@ -169,6 +172,7 @@ function blank(accountId: string, id: number): Row {
     last_os_etapa: null,
     last_os_sold: null,
     last_receita_date: null,
+    last_seller: null,
     last_sale_number: null,
     last_sale_date: null,
     last_sale_value: null,
@@ -225,6 +229,9 @@ function applySale(row: Row, s: ApiSale) {
     row.last_sale_number = number
     const v = Number(s.valor_liquido)
     row.last_sale_value = Number.isFinite(v) ? v : null
+    // The customer's seller is the one on the most recent sale.
+    const seller = s.funcionario?.nome?.trim()
+    if (seller) row.last_seller = seller
   }
 }
 
@@ -242,6 +249,9 @@ function applyOs(row: Row, o: ApiOs) {
     // The stage is only kept for sold OS.
     row.last_os_etapa = row.last_os_sold ? o.etapa_atual?.trim() || null : null
   }
+  // No sale yet → fall back to the OS's seller.
+  const osSeller = o.funcionario?.nome?.trim()
+  if (osSeller && !row.last_seller) row.last_seller = osSeller
   // "Receita": date of the most recent OS that carries a prescription.
   if (
     (o.possui_receita === 1 || o.possui_receita === true) &&
