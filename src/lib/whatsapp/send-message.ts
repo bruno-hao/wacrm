@@ -95,6 +95,8 @@ export interface SendMessageParams {
    * name is used then.
    */
   senderUserId?: string | null;
+  /** Send exactly as written, without the agent-name line (automated notices). */
+  skipAgentTag?: boolean;
 }
 
 export interface SendMessageResult {
@@ -254,6 +256,7 @@ export async function sendMessageToConversation(
     interactivePayload,
     replyToMessageId,
     senderUserId,
+    skipAgentTag,
   } = params;
 
   if (!conversationId) {
@@ -336,12 +339,14 @@ export async function sendMessageToConversation(
   // messages with nowhere to put a line (audio, templates, interactive) —
   // are sent exactly as written. The stored message keeps the original
   // text, so the inbox thread is not cluttered with the tag.
-  const agentTag = await resolveAgentTag(
-    accountId,
-    conversation.assigned_agent_id,
-    senderUserId,
-    messageType
-  );
+  const agentTag = skipAgentTag
+    ? null
+    : await resolveAgentTag(
+        accountId,
+        conversation.assigned_agent_id,
+        senderUserId,
+        messageType
+      );
   const outboundText = withAgentTag(contentText, agentTag);
 
   // WhatsApp config, account-scoped.

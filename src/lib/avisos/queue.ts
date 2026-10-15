@@ -197,6 +197,7 @@ export async function deliverNotice(db: SupabaseClient, notice: NoticeRow): Prom
       const sent = await sendMessageToConversation(db, accountId, {
         conversationId,
         senderUserId: notice.sent_by,
+        skipAgentTag: true,
         ...(reply.kind === 'interactive'
           ? { messageType: 'interactive', interactivePayload: reply.interactive_payload }
           : { messageType: 'text', contentText: reply.content_text }),
