@@ -48,6 +48,7 @@ interface Paged<T> {
 interface ApiCustomer {
   id: number
   nome?: string | null
+  nascimento?: string | null
   telefones?: (string | { numero?: string | null })[] | null
 }
 
@@ -144,6 +145,7 @@ interface Row {
   last_sale_number: string | null
   last_sale_date: string | null
   last_sale_value: number | null
+  birth_date: string | null
 }
 
 async function loadRows(db: SupabaseClient, accountId: string, ids: number[]) {
@@ -152,7 +154,7 @@ async function loadRows(db: SupabaseClient, accountId: string, ids: number[]) {
   const { data, error } = await db
     .from('ssotica_customers')
     .select(
-      'account_id, ssotica_id, name, phones, last_os_number, last_os_date, last_os_status, last_os_etapa, last_os_sold, last_receita_date, last_seller, last_sale_number, last_sale_date, last_sale_value',
+      'account_id, ssotica_id, name, phones, last_os_number, last_os_date, last_os_status, last_os_etapa, last_os_sold, last_receita_date, last_seller, last_sale_number, last_sale_date, last_sale_value, birth_date',
     )
     .eq('account_id', accountId)
     .in('ssotica_id', ids)
@@ -177,6 +179,7 @@ function blank(accountId: string, id: number): Row {
     last_sale_number: null,
     last_sale_date: null,
     last_sale_value: null,
+    birth_date: null,
   }
 }
 
@@ -204,6 +207,8 @@ async function mergePage<T>(
     const id = Number(c.id)
     const row = existing.get(id) ?? blank(accountId, id)
     if (c.nome) row.name = c.nome
+    const born = String(c.nascimento ?? '').slice(0, 10)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(born)) row.birth_date = born
     row.phones = replacePhones
       ? customerPhones(c)
       : [...new Set([...row.phones, ...customerPhones(c)])]

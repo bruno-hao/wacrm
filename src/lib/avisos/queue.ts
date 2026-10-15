@@ -14,6 +14,9 @@ import { decrypt } from '@/lib/whatsapp/encryption'
 import { findExistingContact } from '@/lib/contacts/dedupe'
 import { SendMessageError, sendMessageToConversation } from '@/lib/whatsapp/send-message'
 import { fetchOsRange } from './os'
+import { fillStandardMessage } from './standard-messages'
+
+export type NoticeModule = 'avisos' | 'posvenda' | 'receitas' | 'aniversario'
 
 export const MIN_GAP_MS = 5_000
 export const MAX_GAP_MS = 15_000
@@ -35,6 +38,7 @@ function addDays(day: string, n: number): string {
 }
 
 export interface QueueItem {
+  /** O.S. number, or "<customer id>-<year>" for birthdays. */
   os_number: string
   os_date: string
 }
@@ -42,9 +46,18 @@ export interface QueueItem {
 /** Put the selected O.S. in the queue; notices already sent / in flight are skipped. */
 export async function enqueueNotices(
   db: SupabaseClient,
-  args: { accountId: string; userId: string; reply: { id: string; title: string }; items: QueueItem[] },
+  args: {
+    accountId: string
+    userId: string
+    module?: NoticeModule
+    /** `quick` = a quick reply (Avisos); `standard` = a standard message. */
+    reply: { id: string; title: string; source?: 'quick' | 'standard' }
+    items: QueueItem[]
+  },
 ): Promise<{ queued: number; skipped: number }> {
   const { accountId, userId, reply, items } = args
+  const mod = args.module ?? 'avisos'
+  const messageColumn = reply.source === 'standard' ? 'standard_message_id' : 'quick_reply_id'
   let queued = 0
   let skipped = 0
   const base = Date.now()
@@ -55,8 +68,9 @@ export async function enqueueNotices(
       .from('os_notices')
       .select('id, status, updated_at')
       .eq('account_id', accountId)
+      .eq('module', mod)
       .eq('os_number', it.os_number)
-      .eq('quick_reply_id', reply.id)
+      .eq(messageColumn, reply.id)
       .maybeSingle()
 
     const inFlight =
@@ -86,7 +100,8 @@ export async function enqueueNotices(
       const { error } = await db.from('os_notices').insert({
         account_id: accountId,
         os_number: it.os_number,
-        quick_reply_id: reply.id,
+        module: mod,
+        [messageColumn]: reply.id,
         ...row,
       })
       if (error) skipped++ // lost a race with a concurrent request
@@ -102,6 +117,8 @@ interface NoticeRow {
   os_number: string
   os_date: string | null
   quick_reply_id: string | null
+  standard_message_id?: string | null
+  module?: NoticeModule | null
   sent_by: string | null
 }
 
@@ -117,7 +134,8 @@ export async function deliverNotice(db: SupabaseClient, notice: NoticeRow): Prom
 
   try {
     const accountId = notice.account_id
-    const { data: reply } = notice.quick_reply_id
+    // The message: a quick reply (Avisos) or a standard message (other modules).
+    const { data: quick } = notice.quick_reply_id
       ? await db
           .from('quick_replies')
           .select('id, kind, content_text, interactive_payload')
@@ -125,7 +143,15 @@ export async function deliverNotice(db: SupabaseClient, notice: NoticeRow): Prom
           .eq('account_id', accountId)
           .maybeSingle()
       : { data: null }
-    if (!reply) return void (await fail('quick_reply_not_found'))
+    const { data: standard } = !quick && notice.standard_message_id
+      ? await db
+          .from('standard_messages')
+          .select('id, content_text')
+          .eq('id', notice.standard_message_id)
+          .eq('account_id', accountId)
+          .maybeSingle()
+      : { data: null }
+    if (!quick && !standard) return void (await fail('quick_reply_not_found'))
 
     const { data: cfg } = await db
       .from('ssotica_config')
@@ -134,19 +160,34 @@ export async function deliverNotice(db: SupabaseClient, notice: NoticeRow): Prom
       .maybeSingle()
     if (!cfg || !notice.os_date) return void (await fail('not_configured'))
 
-    // The O.S. and its customer, straight from ssOtica.
-    let os
-    try {
-      const list = await fetchOsRange(
-        { apiKey: decrypt(cfg.api_key), cnpj: cfg.cnpj },
-        addDays(notice.os_date, -1),
-        addDays(notice.os_date, 1),
-      )
-      os = list.find((o) => o.number === notice.os_number)
-    } catch {
-      return void (await fail('ssotica_unavailable'))
+    // The customer to message: the O.S. straight from ssOtica, or — for
+    // birthdays — the customer in the local index ("<customer id>-<year>").
+    let os: { customerName: string; phones: string[] }
+    if (notice.module === 'aniversario') {
+      const customerId = Number(notice.os_number.split('-')[0])
+      const { data: cust } = await db
+        .from('ssotica_customers')
+        .select('name, phones')
+        .eq('account_id', accountId)
+        .eq('ssotica_id', customerId)
+        .maybeSingle()
+      if (!cust) return void (await fail('os_not_found'))
+      os = { customerName: (cust.name as string) ?? '', phones: (cust.phones as string[]) ?? [] }
+    } else {
+      let found
+      try {
+        const list = await fetchOsRange(
+          { apiKey: decrypt(cfg.api_key), cnpj: cfg.cnpj },
+          addDays(notice.os_date, -1),
+          addDays(notice.os_date, 1),
+        )
+        found = list.find((o) => o.number === notice.os_number)
+      } catch {
+        return void (await fail('ssotica_unavailable'))
+      }
+      if (!found) return void (await fail('os_not_found'))
+      os = found
     }
-    if (!os) return void (await fail('os_not_found'))
     if (!os.phones.length) return void (await fail('no_phone'))
 
     // CRM contact by phone (any of the customer's numbers); create if missing.
@@ -198,9 +239,14 @@ export async function deliverNotice(db: SupabaseClient, notice: NoticeRow): Prom
         conversationId,
         senderUserId: notice.sent_by,
         skipAgentTag: true,
-        ...(reply.kind === 'interactive'
-          ? { messageType: 'interactive', interactivePayload: reply.interactive_payload }
-          : { messageType: 'text', contentText: reply.content_text }),
+        ...(quick?.kind === 'interactive'
+          ? { messageType: 'interactive', interactivePayload: quick.interactive_payload }
+          : {
+              messageType: 'text',
+              contentText: quick
+                ? quick.content_text
+                : fillStandardMessage(standard!.content_text as string, os.customerName),
+            }),
       })
       await finish({
         status: 'sent',
@@ -262,7 +308,7 @@ export async function runNoticeWorker(db: SupabaseClient, accountId: string): Pr
         .update({ status: 'sending', updated_at: new Date().toISOString() })
         .eq('id', next[0].id)
         .eq('status', 'queued')
-        .select('id, account_id, os_number, os_date, quick_reply_id, sent_by')
+        .select('id, account_id, os_number, os_date, quick_reply_id, standard_message_id, module, sent_by')
       if (!claimed?.length) continue
       await deliverNotice(db, claimed[0] as NoticeRow)
     }

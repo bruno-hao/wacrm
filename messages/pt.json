@@ -42,7 +42,7 @@
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
     "menuSignOut": "Sair",
-    "announcements": "Avisos"
+    "announcements": "ZapÓtica"
   },
   "Header": {
     "dashboard": "Painel",
@@ -60,7 +60,7 @@
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
     "menuSignOut": "Sair",
-    "announcements": "Avisos"
+    "announcements": "ZapÓtica"
   },
   "ModeToggle": {
     "switchMode": "Mudar para o modo {mode}"
@@ -1841,7 +1841,8 @@
       "members": "Membros da equipe",
       "api": "Chaves de API",
       "ssotica": "ssOtica",
-      "instagram": "Instagram"
+      "instagram": "Instagram",
+      "standard-messages": "Mensagens Padrão"
     },
     "groups": {
       "account": "Conta",
@@ -2164,6 +2165,30 @@
       "connectFailed": "Não foi possível conectar o Instagram ({reason}).",
       "disconnected": "Instagram desconectado.",
       "disconnectFailed": "Falha ao desconectar."
+    },
+    "standardMessages": {
+      "title": "Mensagens Padrão",
+      "description": "Textos usados pelas funções da ZapÓtica (pós-venda, receitas vencidas e aniversário). Use {nome} para inserir o primeiro nome do cliente.",
+      "adminOnly": "Somente administradores e proprietários podem alterar as mensagens padrão.",
+      "cat_posvenda": "Pós-Venda",
+      "catHint_posvenda": "Adaptação, limpeza, plaquetas e manutenção preventiva.",
+      "cat_receitas": "Receitas Vencidas",
+      "catHint_receitas": "Convite para renovar a receita.",
+      "cat_aniversario": "Aniversário",
+      "catHint_aniversario": "Parabéns pelo aniversário do cliente.",
+      "new": "Nova mensagem",
+      "edit": "Editar mensagem",
+      "empty": "Nenhuma mensagem nesta categoria.",
+      "nameLabel": "Nome",
+      "textLabel": "Texto da mensagem",
+      "textHint": "Use {nome} para inserir o primeiro nome do cliente.",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "required": "Informe o nome e o texto da mensagem.",
+      "saveError": "Não foi possível salvar a mensagem.",
+      "saved": "Mensagem salva.",
+      "deleteConfirm": "Excluir esta mensagem?",
+      "deleteError": "Não foi possível excluir a mensagem."
     }
   },
   "SignupPage": {
@@ -2954,6 +2979,26 @@
       "generic": "Não foi possível colocar as mensagens na fila."
     },
     "clearSelection": "Limpar seleção",
-    "selectedCount": "{count} linha(s) selecionada(s)"
+    "selectedCount": "{count} linha(s) selecionada(s)",
+    "zapTitle": "ZapÓtica",
+    "zapDescription": "Mensagens de WhatsApp para os clientes da ótica.",
+    "tabsNav": "Seções da ZapÓtica",
+    "tab_avisos": "Avisos para Clientes",
+    "tab_posvenda": "Pós-Venda",
+    "tab_receitas": "Receitas Vencidas",
+    "tab_aniversario": "Mensagens de Aniversário",
+    "desc_avisos": "Gerencie seus avisos a partir das O.S.",
+    "desc_posvenda": "Clientes com O.S. vendida ou entregue, para mensagens de pós-venda.",
+    "desc_receitas": "Clientes cuja receita venceu no período escolhido.",
+    "desc_aniversario": "Clientes que fazem aniversário neste mês.",
+    "colExpiry": "Vencimento Receita",
+    "colBirthday": "Data Aniversário",
+    "periodLabel": "Vencimento",
+    "period_this_month": "Este mês",
+    "period_last_month": "Mês anterior",
+    "period_last_3": "Três meses anteriores",
+    "period_last_6": "Seis meses anteriores",
+    "noStandardMessages": "Nenhuma mensagem padrão cadastrada. Crie em Configurações → Mensagens Padrão.",
+    "confirmBodyGeneric": "Enviar “{title}” para {count} cliente(s)? As mensagens saem uma a uma, com intervalo aleatório de 5 a 15 segundos entre elas. Quem já recebeu esta mensagem para o mesmo registro é ignorado."
   }
 }

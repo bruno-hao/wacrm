@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { filterOs, normalizeOs, paginate, situationOf, sortOs, type NoticeOs } from './os'
+import {
+  expiredPrescriptions,
+  expiryWindow,
+  filterOs,
+  normalizeOs,
+  paginate,
+  situationOf,
+  sortOs,
+  type NoticeOs,
+} from './os'
 
 const os = (over: Partial<NoticeOs>): NoticeOs => ({
   number: '1000',
@@ -11,6 +20,8 @@ const os = (over: Partial<NoticeOs>): NoticeOs => ({
   situation: 'nao_entregue',
   sold: true,
   phones: ['5573982395770'],
+  customerId: '1',
+  prescriptionExpiry: null,
   ...over,
 })
 
@@ -82,5 +93,26 @@ describe('sortOs / paginate', () => {
     expect(paginate(many, 3).items).toEqual([20, 21, 22])
     expect(paginate(many, 99).page).toBe(3)
     expect(paginate([], 1)).toMatchObject({ pages: 1, total: 0 })
+  })
+})
+
+describe('expiryWindow / expiredPrescriptions', () => {
+  it('builds the expiry windows ending today', () => {
+    expect(expiryWindow('this_month', '2026-10-15')).toEqual({ from: '2026-10-01', to: '2026-10-15' })
+    expect(expiryWindow('last_month', '2026-10-15')).toEqual({ from: '2026-09-01', to: '2026-09-30' })
+    expect(expiryWindow('last_3', '2026-10-15')).toEqual({ from: '2026-07-15', to: '2026-10-15' })
+    expect(expiryWindow('last_6', '2026-08-31')).toEqual({ from: '2026-02-28', to: '2026-08-31' })
+  })
+  it('keeps one row per customer, the latest prescription, inside the window', () => {
+    const win = { from: '2026-07-15', to: '2026-10-15' }
+    const list = [
+      os({ number: '1', customerId: 'a', prescriptionExpiry: '2026-08-01' }),
+      os({ number: '2', customerId: 'a', prescriptionExpiry: '2026-12-01' }), // newer, still valid → customer out
+      os({ number: '3', customerId: 'b', prescriptionExpiry: '2026-09-10' }),
+      os({ number: '4', customerId: 'c', prescriptionExpiry: '2026-01-01' }), // too old
+      os({ number: '5', customerId: 'd', prescriptionExpiry: '2026-09-20', situation: 'cancelada', status: 'CANCELADO' }),
+      os({ number: '6', customerId: 'e', prescriptionExpiry: null }),
+    ]
+    expect(expiredPrescriptions(list, win).map((o) => o.number)).toEqual(['3'])
   })
 })

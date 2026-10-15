@@ -23,6 +23,8 @@ export interface NoticeOs {
   situation: Situation
   sold: boolean
   phones: string[] // canonical (ninth digit)
+  customerId: string // ssOtica customer id ('' when absent)
+  prescriptionExpiry: string | null // yyyy-mm-dd, from the O.S. prescription
 }
 
 interface RawOs {
@@ -32,7 +34,9 @@ interface RawOs {
   laboratorio?: string | null
   id_venda_vinculada?: number | string | null
   funcionario?: { nome?: string | null } | null
+  receita?: { validade?: string | null } | null
   cliente?: {
+    id?: number | string | null
     nome?: string | null
     telefones?: (string | { numero?: string | null })[] | null
   } | null
@@ -50,6 +54,11 @@ export function situationOf(status: string | null | undefined): Situation {
     default:
       return 'nao_entregue'
   }
+}
+
+function dayOrNull(v: string | null | undefined): string | null {
+  const d = String(v ?? '').slice(0, 10)
+  return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null
 }
 
 export function normalizeOs(raw: RawOs): NoticeOs | null {
@@ -70,6 +79,8 @@ export function normalizeOs(raw: RawOs): NoticeOs | null {
       status === 'VENDIDO' ||
       (raw.id_venda_vinculada != null && String(raw.id_venda_vinculada).trim() !== ''),
     phones: [...new Set(phones)],
+    customerId: raw.cliente?.id != null ? String(raw.cliente.id) : '',
+    prescriptionExpiry: dayOrNull(raw.receita?.validade),
   }
 }
 
@@ -82,12 +93,14 @@ const fold = (s: string) =>
  */
 export function filterOs(
   list: NoticeOs[],
-  opts: { q?: string; situations?: Situation[]; sold?: SoldFilter[] },
+  opts: { q?: string; situations?: Situation[]; sold?: SoldFilter[]; statuses?: string[] },
 ): NoticeOs[] {
   const q = fold(opts.q ?? '')
   const situations = opts.situations?.length ? new Set(opts.situations) : null
   const sold = opts.sold?.length ? new Set(opts.sold) : null
+  const statuses = opts.statuses?.length ? new Set(opts.statuses) : null
   return list.filter((o) => {
+    if (statuses && !statuses.has(o.status)) return false
     if (situations && !situations.has(o.situation)) return false
     if (sold && !sold.has(o.sold ? 'sold' : 'not_sold')) return false
     if (!q) return true
@@ -105,6 +118,58 @@ export function sortOs(list: NoticeOs[]): NoticeOs[] {
   return [...list].sort(
     (a, b) => b.date.localeCompare(a.date) || Number(b.number) - Number(a.number),
   )
+}
+
+export type PrescriptionPeriod = 'this_month' | 'last_month' | 'last_3' | 'last_6'
+export const PRESCRIPTION_PERIODS: PrescriptionPeriod[] = ['this_month', 'last_month', 'last_3', 'last_6']
+
+function addMonths(day: string, n: number): string {
+  const d = new Date(`${day}T00:00:00Z`)
+  const dom = d.getUTCDate()
+  d.setUTCDate(1)
+  d.setUTCMonth(d.getUTCMonth() + n)
+  const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate()
+  d.setUTCDate(Math.min(dom, last))
+  return d.toISOString().slice(0, 10)
+}
+
+/**
+ * Expiry window (inclusive) of a period, ending no later than `today`:
+ * this month = 1st → today; last month = the whole previous month;
+ * 3 / 6 months = the same day N months back → today.
+ */
+export function expiryWindow(period: PrescriptionPeriod, today: string): { from: string; to: string } {
+  const first = `${today.slice(0, 8)}01`
+  switch (period) {
+    case 'this_month':
+      return { from: first, to: today }
+    case 'last_month': {
+      const end = new Date(Date.parse(`${first}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10)
+      return { from: addMonths(first, -1), to: end }
+    }
+    case 'last_3':
+      return { from: addMonths(today, -3), to: today }
+    case 'last_6':
+      return { from: addMonths(today, -6), to: today }
+  }
+}
+
+/**
+ * Customers whose most recent prescription expired inside the window.
+ * One row per customer (the O.S. with the latest expiry); cancelled / lost
+ * O.S. are ignored. Newest expiry first.
+ */
+export function expiredPrescriptions(list: NoticeOs[], win: { from: string; to: string }): NoticeOs[] {
+  const latest = new Map<string, NoticeOs>()
+  for (const o of list) {
+    if (!o.prescriptionExpiry || o.situation === 'cancelada' || o.situation === 'perda') continue
+    const key = o.customerId || `n:${fold(o.customerName)}`
+    const cur = latest.get(key)
+    if (!cur || o.prescriptionExpiry > (cur.prescriptionExpiry ?? '')) latest.set(key, o)
+  }
+  return [...latest.values()]
+    .filter((o) => o.prescriptionExpiry! >= win.from && o.prescriptionExpiry! <= win.to)
+    .sort((a, b) => b.prescriptionExpiry!.localeCompare(a.prescriptionExpiry!) || Number(b.number) - Number(a.number))
 }
 
 export function paginate<T>(list: T[], page: number, size = 10) {

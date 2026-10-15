@@ -194,6 +194,15 @@ BEGIN
       'os_notices.queued_at is missing — migration 059 did not apply';
   END IF;
 
+  IF to_regclass('public.standard_messages') IS NULL
+     OR NOT EXISTS (
+       SELECT 1 FROM information_schema.columns
+       WHERE table_name = 'ssotica_customers' AND column_name = 'birth_date'
+     ) THEN
+    RAISE EXCEPTION
+      'standard_messages / ssotica_customers.birth_date are missing — migration 060 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

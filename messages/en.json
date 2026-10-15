@@ -42,7 +42,7 @@
     "menuProfile": "Profile",
     "menuSettings": "Settings",
     "menuSignOut": "Sign out",
-    "announcements": "Notices"
+    "announcements": "ZapÓtica"
   },
   "Header": {
     "dashboard": "Dashboard",
@@ -60,7 +60,7 @@
     "menuProfile": "Profile",
     "menuSettings": "Settings",
     "menuSignOut": "Sign out",
-    "announcements": "Notices"
+    "announcements": "ZapÓtica"
   },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"
@@ -1841,7 +1841,8 @@
       "members": "Team members",
       "api": "API keys",
       "ssotica": "ssOtica",
-      "instagram": "Instagram"
+      "instagram": "Instagram",
+      "standard-messages": "Standard messages"
     },
     "groups": {
       "account": "Account",
@@ -2164,6 +2165,30 @@
       "connectFailed": "Could not connect Instagram ({reason}).",
       "disconnected": "Instagram disconnected.",
       "disconnectFailed": "Failed to disconnect."
+    },
+    "standardMessages": {
+      "title": "Standard messages",
+      "description": "Texts used by the ZapÓtica functions (after-sales, expired prescriptions and birthdays). Use {nome} to insert the customer's first name.",
+      "adminOnly": "Only admins and owners can change the standard messages.",
+      "cat_posvenda": "After-sales",
+      "catHint_posvenda": "Adaptation, cleaning, nose pads and preventive maintenance.",
+      "cat_receitas": "Expired Prescriptions",
+      "catHint_receitas": "Invitation to renew the prescription.",
+      "cat_aniversario": "Birthday",
+      "catHint_aniversario": "Birthday greeting for the customer.",
+      "new": "New message",
+      "edit": "Edit message",
+      "empty": "No messages in this category.",
+      "nameLabel": "Name",
+      "textLabel": "Message text",
+      "textHint": "Use {nome} to insert the customer's first name.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "required": "Enter the message name and text.",
+      "saveError": "Could not save the message.",
+      "saved": "Message saved.",
+      "deleteConfirm": "Delete this message?",
+      "deleteError": "Could not delete the message."
     }
   },
   "SignupPage": {
@@ -2954,6 +2979,26 @@
       "generic": "Could not queue the messages."
     },
     "clearSelection": "Clear selection",
-    "selectedCount": "{count} row(s) selected"
+    "selectedCount": "{count} row(s) selected",
+    "zapTitle": "ZapÓtica",
+    "zapDescription": "WhatsApp messages for the optical shop customers.",
+    "tabsNav": "ZapÓtica sections",
+    "tab_avisos": "Customer Notices",
+    "tab_posvenda": "After-sales",
+    "tab_receitas": "Expired Prescriptions",
+    "tab_aniversario": "Birthday Messages",
+    "desc_avisos": "Manage your notices from the service orders.",
+    "desc_posvenda": "Customers with a sold or delivered service order, for after-sales messages.",
+    "desc_receitas": "Customers whose prescription expired in the chosen period.",
+    "desc_aniversario": "Customers whose birthday is this month.",
+    "colExpiry": "Prescription expiry",
+    "colBirthday": "Birthday",
+    "periodLabel": "Expiry",
+    "period_this_month": "This month",
+    "period_last_month": "Last month",
+    "period_last_3": "Last three months",
+    "period_last_6": "Last six months",
+    "noStandardMessages": "No standard messages yet. Create them in Settings → Standard messages.",
+    "confirmBodyGeneric": "Send “{title}” to {count} customer(s)? Messages go out one by one, with a random 5–15 second pause between them. Anyone who already got this message for the same record is skipped."
   }
 }

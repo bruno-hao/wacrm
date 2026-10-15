@@ -6,12 +6,17 @@ import { SsoticaError } from '@/lib/ssotica/client'
 import {
   SITUATIONS,
   fetchOsRange,
+  PRESCRIPTION_PERIODS,
+  expiredPrescriptions,
+  expiryWindow,
   filterOs,
   paginate,
   sortOs,
+  type PrescriptionPeriod,
   type Situation,
   type SoldFilter,
 } from '@/lib/avisos/os'
+import type { NoticeModule } from '@/lib/avisos/queue'
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 const MAX_SPAN_DAYS = 400
@@ -33,17 +38,31 @@ function addDays(day: string, n: number): string {
  *   situations  comma list of nao_entregue,entregue,cancelada,perda
  *   sold        comma list of sold,not_sold
  *   page        10 O.S. per page
- * Each row carries the notices already sent for it.
+ *   module      avisos (default) | posvenda (status VENDIDO + ENTREGUE) | receitas
+ *   period      receitas only: this_month | last_month | last_3 | last_6
+ * Each row carries the notices already sent for it (of this module).
  */
 export async function GET(request: Request) {
   try {
     const { accountId } = await getCurrentAccount()
     const sp = new URL(request.url).searchParams
 
-    const to = DAY.test(sp.get('to') ?? '') ? sp.get('to')! : today()
-    const from = DAY.test(sp.get('from') ?? '') ? sp.get('from')! : addDays(to, -60)
+    const mod: NoticeModule =
+      sp.get('module') === 'posvenda' ? 'posvenda' : sp.get('module') === 'receitas' ? 'receitas' : 'avisos'
+    const periodParam = sp.get('period') as PrescriptionPeriod
+    const period: PrescriptionPeriod = PRESCRIPTION_PERIODS.includes(periodParam) ? periodParam : 'last_3'
+    const expiry = expiryWindow(period, today())
+
+    // Prescriptions can be a year or two old: read the O.S. back far enough.
+    const to = mod === 'receitas' ? today() : DAY.test(sp.get('to') ?? '') ? sp.get('to')! : today()
+    const from =
+      mod === 'receitas'
+        ? addDays(expiry.from, -730)
+        : DAY.test(sp.get('from') ?? '')
+          ? sp.get('from')!
+          : addDays(to, -60)
     if (from > to) return NextResponse.json({ error: 'invalid_range' }, { status: 400 })
-    if ((Date.parse(to) - Date.parse(from)) / 86_400_000 > MAX_SPAN_DAYS) {
+    if (mod !== 'receitas' && (Date.parse(to) - Date.parse(from)) / 86_400_000 > MAX_SPAN_DAYS) {
       return NextResponse.json({ error: 'range_too_long' }, { status: 400 })
     }
 
@@ -70,7 +89,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: code }, { status: 502 })
     }
 
-    const filtered = sortOs(filterOs(all, { q: sp.get('q') ?? '', situations, sold }))
+    const q = sp.get('q') ?? ''
+    const filtered =
+      mod === 'receitas'
+        ? expiredPrescriptions(filterOs(all, { q }), expiry)
+        : mod === 'posvenda'
+          ? sortOs(filterOs(all, { q, statuses: ['VENDIDO', 'ENTREGUE'] }))
+          : sortOs(filterOs(all, { q, situations, sold }))
     const pageInfo = paginate(filtered, Number(sp.get('page')) || 1, 10)
 
     const numbers = pageInfo.items.map((o) => o.number)
@@ -79,6 +104,7 @@ export async function GET(request: Request) {
           .from('os_notices')
           .select('os_number, quick_reply_id, status, updated_at, error')
           .eq('account_id', accountId)
+          .eq('module', mod)
           .in('os_number', numbers)
       : { data: [] }
     const byOs = new Map<string, { quick_reply_id: string; status: string; updated_at: string; error: string | null }[]>()
@@ -95,6 +121,8 @@ export async function GET(request: Request) {
       page: pageInfo.page,
       pages: pageInfo.pages,
       items: pageInfo.items.map((o) => ({
+        ref: o.number,
+        extra: o.prescriptionExpiry,
         number: o.number,
         date: o.date,
         customer_name: o.customerName,
