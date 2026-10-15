@@ -652,7 +652,7 @@
       "syncSsoticaError_login_failed": "O ssOtica recusou o login. Revise em Configurações → ssOtica.",
       "syncSsoticaError_captcha": "O login do ssOtica pede captcha.",
       "syncSsoticaError_pipeline_missing": "Pipeline \"Fluxo de Vendas\" não encontrado.",
-      "syncSsoticaError_stage_missing": "Etapa \"Identificação e Demanda\" não encontrada no pipeline.",
+      "syncSsoticaError_stage_missing": "Etapa \"Identificação e Demanda\" (ou \"Orçamento Enviado\") não encontrada na negociação.",
       "syncSsoticaError_network": "Não foi possível conectar ao ssOtica.",
       "syncSsoticaError_session_expired": "Sessão do ssOtica expirou. Tente novamente.",
       "syncSsoticaError_graphql": "O ssOtica respondeu com erro ao listar orçamentos.",

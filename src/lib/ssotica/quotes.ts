@@ -36,6 +36,8 @@ import {
 
 export const PIPELINE_NAME = 'Fluxo de Vendas'
 export const STAGE_ACTIVE = 'Identificação e Demanda'
+/** The same stage was renamed in the CRM; either name receives active budgets. */
+export const STAGE_ACTIVE_ALT = 'Orçamento Enviado'
 export const STAGE_WON = 'Ganho'
 export const STAGE_LOST = 'Perdidos'
 export const CLOSE_DAYS_FALLBACK = 20
@@ -362,7 +364,7 @@ export async function syncQuotes(db: SupabaseClient, accountId: string): Promise
     .eq('pipeline_id', pipeline.id)
   const stageId = (name: string) =>
     (stages ?? []).find((s) => norm(s.name) === norm(name))?.id as string | undefined
-  const activeStage = stageId(STAGE_ACTIVE)
+  const activeStage = stageId(STAGE_ACTIVE) ?? stageId(STAGE_ACTIVE_ALT)
   const wonStage = stageId(STAGE_WON)
   const lostStage = stageId(STAGE_LOST)
   if (!activeStage) return { ...result, ok: false, error: 'stage_missing' }
