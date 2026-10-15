@@ -1,32 +1,40 @@
 'use client';
 
-import { Camera } from 'lucide-react';
+import { Camera, MessageCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
-/** Marks a conversation that lives on Instagram (WhatsApp is the default and is not marked). */
+export type Channel = 'whatsapp' | 'instagram';
+
+const STYLE: Record<Channel, string> = {
+  whatsapp: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+  instagram: 'bg-pink-500/15 text-pink-600 dark:text-pink-400',
+};
+
+/** Where a conversation lives: WhatsApp (green) or Instagram (pink). */
 export function ChannelBadge({
   channel,
   iconOnly,
   className,
 }: {
-  channel: 'instagram';
+  channel: Channel;
   iconOnly?: boolean;
   className?: string;
 }) {
   const t = useTranslations('Inbox.channel');
-  if (channel !== 'instagram') return null;
+  const Icon = channel === 'instagram' ? Camera : MessageCircle;
   return (
     <span
-      title={t('instagram')}
+      title={t(channel)}
       className={cn(
-        'inline-flex shrink-0 items-center gap-1 rounded-full bg-pink-500/15 text-pink-600 dark:text-pink-400',
+        'inline-flex shrink-0 items-center gap-1 rounded-full',
+        STYLE[channel],
         iconOnly ? 'h-4 w-4 justify-center' : 'h-5 px-2 text-[10px] font-medium',
         className,
       )}
     >
-      <Camera className="h-3 w-3" />
-      {!iconOnly && t('instagram')}
+      <Icon className="h-3 w-3" />
+      {!iconOnly && t(channel)}
     </span>
   );
 }

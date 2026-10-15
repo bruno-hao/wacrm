@@ -15,7 +15,7 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { useSsoticaStatuses } from "@/hooks/use-ssotica-customer";
-import { ChannelBadge } from "./channel-badge";
+import { ChannelBadge, type Channel } from "./channel-badge";
 import { formatPhoneDisplay } from "@/lib/whatsapp/phone-utils";
 import {
   DropdownMenu,
@@ -76,6 +76,7 @@ export function ConversationList({
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
 
   // Keep the latest callback in a ref so the fetch effect below can
   // have a stable, empty-dep identity. Previously the fetch useCallback
@@ -176,6 +177,11 @@ export function ConversationList({
       result = result.filter((c) => c.status === filter);
     }
 
+    // Origin: WhatsApp or Instagram (rows without a channel are WhatsApp).
+    if (selectedChannel !== null) {
+      result = result.filter((c) => (c.channel ?? "whatsapp") === selectedChannel);
+    }
+
     // Contact-based filters (tags via OR logic, exact company match).
     if (selectedTagIds.length > 0 || selectedCompany !== null) {
       result = result.filter((c) =>
@@ -197,7 +203,7 @@ export function ConversationList({
     }
 
     return result;
-  }, [conversations, filter, search, selectedTagIds, selectedCompany]);
+  }, [conversations, filter, search, selectedTagIds, selectedCompany, selectedChannel]);
 
   const toggleTag = useCallback((id: string) => {
     setSelectedTagIds((prev) =>
@@ -208,9 +214,11 @@ export function ConversationList({
   const clearContactFilters = useCallback(() => {
     setSelectedTagIds([]);
     setSelectedCompany(null);
+    setSelectedChannel(null);
   }, []);
 
-  const hasContactFilters = selectedTagIds.length > 0 || selectedCompany !== null;
+  const hasContactFilters =
+    selectedTagIds.length > 0 || selectedCompany !== null || selectedChannel !== null;
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -314,6 +322,43 @@ export function ConversationList({
             </DropdownMenu>
           )}
 
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                "inline-flex items-center justify-center h-7 gap-1 px-2 text-xs rounded-md hover:bg-muted",
+                selectedChannel
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {selectedChannel ? t(`channel_${selectedChannel}`) : t("channelFilter")}
+              <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="border-border bg-popover">
+              <DropdownMenuItem
+                onClick={() => setSelectedChannel(null)}
+                className={cn(
+                  "text-sm",
+                  selectedChannel === null ? "text-primary" : "text-popover-foreground"
+                )}
+              >
+                {t("allChannels")}
+              </DropdownMenuItem>
+              {(["whatsapp", "instagram"] as const).map((ch) => (
+                <DropdownMenuItem
+                  key={ch}
+                  onClick={() => setSelectedChannel(ch)}
+                  className={cn(
+                    "text-sm",
+                    selectedChannel === ch ? "text-primary" : "text-popover-foreground"
+                  )}
+                >
+                  {t(`channel_${ch}`)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {companies.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -380,6 +425,15 @@ export function ConversationList({
                 </button>
               );
             })}
+            {selectedChannel && (
+              <button
+                onClick={() => setSelectedChannel(null)}
+                className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-foreground hover:bg-muted/70"
+              >
+                <span className="max-w-24 truncate">{t(`channel_${selectedChannel}`)}</span>
+                <X className="h-3 w-3" />
+              </button>
+            )}
             {selectedCompany && (
               <button
                 onClick={() => setSelectedCompany(null)}
@@ -491,9 +545,7 @@ function ConversationItem({
             <span className="truncate text-sm font-medium text-foreground">
               {displayName}
             </span>
-            {conversation.channel === "instagram" && (
-              <ChannelBadge channel="instagram" iconOnly />
-            )}
+            <ChannelBadge channel={conversation.channel ?? "whatsapp"} iconOnly />
           </span>
           <span className="shrink-0 text-[10px] text-muted-foreground">{timeAgo}</span>
         </div>

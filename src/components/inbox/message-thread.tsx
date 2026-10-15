@@ -947,7 +947,7 @@ export function MessageThread({
             <Clock className="h-3 w-3" />
             {sessionInfo.remaining}
           </Badge>
-          {conversation.channel === "instagram" && <ChannelBadge channel="instagram" className="ml-1 hidden sm:inline-flex" />}
+          <ChannelBadge channel={conversation.channel ?? "whatsapp"} className="ml-1 hidden sm:inline-flex" />
           {/* ssOtica: customer / new customer. */}
           <SsoticaStatusBadge lookup={ssotica} className="ml-1 hidden sm:inline-flex" />
           <SsoticaSellerBadge lookup={ssotica} className="hidden sm:inline-flex" />

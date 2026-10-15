@@ -177,7 +177,11 @@
       "noMessagesYet": "No messages yet",
       "unknown": "Unknown",
       "ssoticaCustomer": "ssOtica customer",
-      "ssoticaNew": "New customer"
+      "ssoticaNew": "New customer",
+      "channelFilter": "Source",
+      "allChannels": "All sources",
+      "channel_whatsapp": "WhatsApp",
+      "channel_instagram": "Instagram"
     },
     "messageThread": {
       "backToConversations": "Back to conversations",
@@ -389,7 +393,8 @@
       "dayMany": "days"
     },
     "channel": {
-      "instagram": "Instagram"
+      "instagram": "Instagram",
+      "whatsapp": "WhatsApp"
     }
   },
   "Contacts": {

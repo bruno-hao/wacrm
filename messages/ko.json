@@ -177,7 +177,11 @@
       "noMessagesYet": "아직 메시지가 없습니다",
       "unknown": "알 수 없음",
       "ssoticaCustomer": "ssOtica 고객",
-      "ssoticaNew": "신규 고객"
+      "ssoticaNew": "신규 고객",
+      "channelFilter": "출처",
+      "allChannels": "모든 출처",
+      "channel_whatsapp": "WhatsApp",
+      "channel_instagram": "Instagram"
     },
     "messageThread": {
       "backToConversations": "대화 목록으로 돌아가기",
@@ -389,7 +393,8 @@
       "dayMany": "일"
     },
     "channel": {
-      "instagram": "Instagram"
+      "instagram": "Instagram",
+      "whatsapp": "WhatsApp"
     }
   },
   "Contacts": {
