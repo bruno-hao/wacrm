@@ -40,11 +40,28 @@ export async function GET() {
       return NextResponse.json({ error: t('ssotica.loadFailed') }, { status: 500 })
     }
     if (!data) return NextResponse.json({ configured: false })
+    const [{ data: state }, { count }] = await Promise.all([
+      supabase
+        .from('ssotica_sync_state')
+        .select('phase, last_run_at, last_error')
+        .eq('account_id', accountId)
+        .maybeSingle(),
+      supabase
+        .from('ssotica_customers')
+        .select('ssotica_id', { count: 'exact', head: true })
+        .eq('account_id', accountId),
+    ])
     return NextResponse.json({
       configured: true,
       cnpj: data.cnpj,
       verified_at: data.verified_at,
       has_key: !!data.api_key,
+      sync: {
+        phase: state?.phase ?? 'customers',
+        last_run_at: state?.last_run_at ?? null,
+        last_error: state?.last_error ?? null,
+        customers: count ?? 0,
+      },
     })
   } catch (err) {
     return toErrorResponse(err)

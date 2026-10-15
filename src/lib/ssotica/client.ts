@@ -16,6 +16,7 @@ export type SsoticaErrorCode =
   | 'api_not_contracted' // 400 API_NAO_CONTRATADA
   | 'contract_unreadable' // 400 CONTRATO_ILEGIVEL (transient)
   | 'bad_request' // any other 400
+  | 'rate_limited' // 429 (60 calls/min per store)
   | 'network' // timeout / DNS / TLS
   | 'unexpected'
 
@@ -112,6 +113,7 @@ export async function ssoticaGet<T = unknown>(
     if (code === 'CONTRATO_ILEGIVEL') throw new SsoticaError('contract_unreadable', info)
     throw new SsoticaError('bad_request', info || code)
   }
+  if (res.status === 429) throw new SsoticaError('rate_limited', 'rate limited')
   throw new SsoticaError('unexpected', `HTTP ${res.status}`)
 }
 

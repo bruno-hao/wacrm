@@ -351,6 +351,16 @@
       "resumed": "AI resumed.",
       "updateError": "Couldn’t update the AI assistant.",
       "networkError": "Couldn’t reach the server."
+    },
+    "ssotica": {
+      "customer": "ssOtica customer",
+      "newCustomer": "New customer",
+      "os": "WO",
+      "lastSale": "Last sale",
+      "lastSaleValue": "Last sale value",
+      "lastSaleShort": "Last sale",
+      "valueBrl": "Value R$",
+      "receita": "Prescription"
     }
   },
   "Contacts": {
@@ -2056,7 +2066,22 @@
       "removeSuccess": "ssOtica integration removed.",
       "removeFailed": "Failed to remove.",
       "loadFailed": "Failed to load the ssOtica configuration.",
-      "connectedAt": "Connected — verified {date}"
+      "connectedAt": "Connected — verified {date}",
+      "syncTitle": "Sync",
+      "syncDesc": "The CRM keeps a local index of ssOtica customers (phones, last service order, last sale and prescription), refreshed automatically every 10 minutes. It powers the \"ssOtica customer\" / \"New customer\" badges in the chat.",
+      "syncStatus": "Status",
+      "syncLive": "Up to date (refreshes every 10 minutes)",
+      "syncBackfill": "Initial load in progress — step: {phase}",
+      "phase_customers": "customers",
+      "phase_sales": "sales",
+      "phase_os": "service orders",
+      "phase_live": "up to date",
+      "syncCustomers": "Indexed customers",
+      "syncLastRun": "Last run",
+      "syncError": "Last error: {error}",
+      "syncNow": "Sync now",
+      "syncStarted": "Sync run completed.",
+      "syncFailed": "Sync failed."
     }
   },
   "SignupPage": {
@@ -2762,7 +2787,8 @@
       "unexpected": "Unexpected response from ssOtica.",
       "loadFailed": "Failed to load the ssOtica configuration.",
       "saveFailed": "Failed to save the ssOtica configuration.",
-      "deleteFailed": "Failed to remove the ssOtica configuration."
+      "deleteFailed": "Failed to remove the ssOtica configuration.",
+      "notConfigured": "Set up the ssOtica integration first."
     }
   }
 }

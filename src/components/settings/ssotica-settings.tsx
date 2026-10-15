@@ -20,6 +20,7 @@ import {
   EyeOff,
   Glasses,
   Loader2,
+  RefreshCw,
   Trash2,
 } from 'lucide-react';
 
@@ -58,6 +59,13 @@ export function SsoticaSettings() {
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [sync, setSync] = useState<{
+    phase: string;
+    last_run_at: string | null;
+    last_error: string | null;
+    customers: number;
+  } | null>(null);
 
   const [configured, setConfigured] = useState(false);
   const [verifiedAt, setVerifiedAt] = useState<string | null>(null);
@@ -89,6 +97,7 @@ export function SsoticaSettings() {
         setConfigured(true);
         setCnpj(maskCnpj(data.cnpj ?? ''));
         setVerifiedAt(data.verified_at ?? null);
+        setSync(data.sync ?? null);
         setApiKey(data.has_key ? MASKED_KEY : '');
         setKeyEdited(false);
       }
@@ -181,6 +190,21 @@ export function SsoticaSettings() {
       toast.error(t('removeFailed'));
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const handleSyncNow = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/ssotica/sync', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) toast.success(t('syncStarted'));
+      else toast.error(data.error ?? t('syncFailed'));
+      await fetchConfig();
+    } catch {
+      toast.error(t('syncFailed'));
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -311,6 +335,57 @@ export function SsoticaSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {configured && sync && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <RefreshCw className="size-4 text-primary" /> {t('syncTitle')}
+            </CardTitle>
+            <CardDescription>{t('syncDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p>
+              <span className="text-muted-foreground">{t('syncStatus')}: </span>
+              <span className="font-medium">
+                {sync.phase === 'live'
+                  ? t('syncLive')
+                  : t('syncBackfill', { phase: t(`phase_${sync.phase}`) })}
+              </span>
+            </p>
+            <p>
+              <span className="text-muted-foreground">{t('syncCustomers')}: </span>
+              <span className="font-medium">{sync.customers}</span>
+            </p>
+            {sync.last_run_at && (
+              <p>
+                <span className="text-muted-foreground">{t('syncLastRun')}: </span>
+                <span className="font-medium">
+                  {new Date(sync.last_run_at).toLocaleString()}
+                </span>
+              </p>
+            )}
+            {sync.last_error && (
+              <p className="text-destructive">{t('syncError', { error: sync.last_error })}</p>
+            )}
+            {canEdit && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSyncNow}
+                disabled={syncing}
+              >
+                {syncing ? (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 size-4" />
+                )}
+                {t('syncNow')}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

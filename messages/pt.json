@@ -351,6 +351,16 @@
       "resumed": "IA retomada.",
       "updateError": "Não foi possível atualizar o assistente de IA.",
       "networkError": "Não foi possível conectar ao servidor."
+    },
+    "ssotica": {
+      "customer": "Cliente ssOtica",
+      "newCustomer": "Cliente Novo",
+      "os": "OS",
+      "lastSale": "Última Venda",
+      "lastSaleValue": "Valor Última Venda",
+      "lastSaleShort": "Ultima Venda",
+      "valueBrl": "Valor R$",
+      "receita": "Receita"
     }
   },
   "Contacts": {
@@ -2056,7 +2066,22 @@
       "removeSuccess": "Integração com o ssOtica removida.",
       "removeFailed": "Falha ao remover.",
       "loadFailed": "Falha ao carregar a configuração do ssOtica.",
-      "connectedAt": "Conectado — verificado em {date}"
+      "connectedAt": "Conectado — verificado em {date}",
+      "syncTitle": "Sincronização",
+      "syncDesc": "O CRM mantém um índice local dos clientes do ssOtica (telefones, última OS, última venda e receita), atualizado automaticamente a cada 10 minutos. É ele que alimenta as etiquetas \"Cliente ssOtica\" / \"Cliente Novo\" na conversa.",
+      "syncStatus": "Situação",
+      "syncLive": "Em dia (atualização a cada 10 minutos)",
+      "syncBackfill": "Carga inicial em andamento — etapa: {phase}",
+      "phase_customers": "clientes",
+      "phase_sales": "vendas",
+      "phase_os": "ordens de serviço",
+      "phase_live": "em dia",
+      "syncCustomers": "Clientes indexados",
+      "syncLastRun": "Última execução",
+      "syncError": "Último erro: {error}",
+      "syncNow": "Sincronizar agora",
+      "syncStarted": "Sincronização executada.",
+      "syncFailed": "Falha ao sincronizar."
     }
   },
   "SignupPage": {
@@ -2762,7 +2787,8 @@
       "unexpected": "Resposta inesperada do ssOtica.",
       "loadFailed": "Falha ao carregar a configuração do ssOtica.",
       "saveFailed": "Falha ao salvar a configuração do ssOtica.",
-      "deleteFailed": "Falha ao remover a configuração do ssOtica."
+      "deleteFailed": "Falha ao remover a configuração do ssOtica.",
+      "notConfigured": "Configure a integração com o ssOtica primeiro."
     }
   }
 }

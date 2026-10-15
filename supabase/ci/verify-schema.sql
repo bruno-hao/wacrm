@@ -145,6 +145,12 @@ BEGIN
       'public.ssotica_config is missing — migration 049 did not apply';
   END IF;
 
+  IF to_regclass('public.ssotica_customers') IS NULL
+     OR to_regclass('public.ssotica_sync_state') IS NULL THEN
+    RAISE EXCEPTION
+      'ssotica_customers / ssotica_sync_state are missing — migration 050 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

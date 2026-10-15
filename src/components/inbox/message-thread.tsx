@@ -54,6 +54,8 @@ import { AiThreadBanner } from "./ai-thread-banner";
 import { buildReplyPreview } from "./reply-quote";
 import { renderTemplateBody } from "@/lib/whatsapp/template-body";
 import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
+import { SsoticaDetailBadge, SsoticaStatusBadge } from "./ssotica-badges";
 import { toast } from "sonner";
 
 interface ReplyDraft {
@@ -258,6 +260,8 @@ export function MessageThread({
 
     return { expired, remaining };
   }, [messages, tTimer]);
+
+  const ssotica = useSsoticaCustomer(contact?.phone);
 
   // Store latest callback in a ref so fetchMessages doesn't need to
   // depend on `onMessagesLoaded` — otherwise parent re-renders cause
@@ -939,6 +943,11 @@ export function MessageThread({
             <Clock className="h-3 w-3" />
             {sessionInfo.remaining}
           </Badge>
+          {/* ssOtica: customer / new customer, plus last OS and sale. */}
+          <SsoticaStatusBadge lookup={ssotica} className="ml-1 hidden sm:inline-flex" />
+          {ssotica.status === "customer" && (
+            <SsoticaDetailBadge customer={ssotica} className="hidden md:inline-flex" />
+          )}
         </div>
 
         <div className="flex items-center gap-2">

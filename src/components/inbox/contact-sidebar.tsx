@@ -22,6 +22,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { contactHandle, displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
+import { SsoticaDetailList, SsoticaStatusBadge } from "./ssotica-badges";
 
 interface ContactSidebarProps {
   contact: Contact | null;
@@ -45,6 +47,7 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
   const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
+  const ssotica = useSsoticaCustomer(contact?.phone);
 
   const fetchContactData = useCallback(async () => {
     if (!contact) return;
@@ -206,6 +209,8 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
             {contact.company && (
               <p className="text-xs text-muted-foreground">{contact.company}</p>
             )}
+            <SsoticaStatusBadge lookup={ssotica} className="mt-1.5" />
+            {ssotica.status === "customer" && <SsoticaDetailList customer={ssotica} />}
           </div>
 
           {/* Phone */}

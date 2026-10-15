@@ -351,6 +351,16 @@
       "resumed": "AI가 재개되었습니다.",
       "updateError": "AI 어시스턴트를 업데이트하지 못했습니다.",
       "networkError": "서버에 연결할 수 없습니다."
+    },
+    "ssotica": {
+      "customer": "ssOtica 고객",
+      "newCustomer": "신규 고객",
+      "os": "OS",
+      "lastSale": "최근 판매",
+      "lastSaleValue": "최근 판매 금액",
+      "lastSaleShort": "최근 판매",
+      "valueBrl": "금액 R$",
+      "receita": "처방전"
     }
   },
   "Contacts": {
@@ -2056,7 +2066,22 @@
       "removeSuccess": "ssOtica 연동이 제거되었습니다.",
       "removeFailed": "제거하지 못했습니다.",
       "loadFailed": "ssOtica 설정을 불러오지 못했습니다.",
-      "connectedAt": "연결됨 — {date} 확인"
+      "connectedAt": "연결됨 — {date} 확인",
+      "syncTitle": "동기화",
+      "syncDesc": "CRM은 ssOtica 고객(전화번호, 최근 OS, 최근 판매, 처방전)의 로컬 색인을 유지하며 10분마다 자동으로 갱신합니다. 채팅의 \"ssOtica 고객\" / \"신규 고객\" 배지는 이 색인을 사용합니다.",
+      "syncStatus": "상태",
+      "syncLive": "최신 상태 (10분마다 갱신)",
+      "syncBackfill": "초기 로드 진행 중 — 단계: {phase}",
+      "phase_customers": "고객",
+      "phase_sales": "판매",
+      "phase_os": "서비스 주문",
+      "phase_live": "최신",
+      "syncCustomers": "색인된 고객",
+      "syncLastRun": "마지막 실행",
+      "syncError": "마지막 오류: {error}",
+      "syncNow": "지금 동기화",
+      "syncStarted": "동기화가 실행되었습니다.",
+      "syncFailed": "동기화에 실패했습니다."
     }
   },
   "SignupPage": {
@@ -2762,7 +2787,8 @@
       "unexpected": "ssOtica에서 예상치 못한 응답이 왔습니다.",
       "loadFailed": "ssOtica 설정을 불러오지 못했습니다.",
       "saveFailed": "ssOtica 설정을 저장하지 못했습니다.",
-      "deleteFailed": "ssOtica 설정을 제거하지 못했습니다."
+      "deleteFailed": "ssOtica 설정을 제거하지 못했습니다.",
+      "notConfigured": "먼저 ssOtica 연동을 설정하세요."
     }
   }
 }
