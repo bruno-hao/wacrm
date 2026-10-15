@@ -53,11 +53,16 @@ export function PipelineBoard({
       const bucket = map.get(deal.stage_id);
       if (bucket) bucket.push(deal);
     }
-    // Newest on top, oldest at the bottom — always, in every column.
+    // Newest on top, oldest at the bottom — in every column — by the date the
+    // card shows (expected close date); ties and deals without one fall back
+    // to the creation date.
+    const dayKey = (d: Deal) => d.expected_close_date ?? "";
     for (const bucket of map.values()) {
-      bucket.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      );
+      bucket.sort((a, b) => {
+        const byDay = dayKey(b).localeCompare(dayKey(a));
+        if (byDay !== 0) return byDay;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
     }
     return map;
   }, [sortedStages, deals]);
