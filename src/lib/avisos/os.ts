@@ -56,6 +56,11 @@ export function situationOf(status: string | null | undefined): Situation {
   }
 }
 
+/** Identity of a customer across O.S.: the ssOtica id, else the folded name. */
+function customerKey(o: NoticeOs): string {
+  return o.customerId || `n:${fold(o.customerName)}`
+}
+
 function dayOrNull(v: string | null | undefined): string | null {
   const d = String(v ?? '').slice(0, 10)
   return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null
@@ -163,13 +168,34 @@ export function expiredPrescriptions(list: NoticeOs[], win: { from: string; to: 
   const latest = new Map<string, NoticeOs>()
   for (const o of list) {
     if (!o.prescriptionExpiry || o.situation === 'cancelada' || o.situation === 'perda') continue
-    const key = o.customerId || `n:${fold(o.customerName)}`
+    const key = customerKey(o)
     const cur = latest.get(key)
     if (!cur || o.prescriptionExpiry > (cur.prescriptionExpiry ?? '')) latest.set(key, o)
   }
   return [...latest.values()]
     .filter((o) => o.prescriptionExpiry! >= win.from && o.prescriptionExpiry! <= win.to)
     .sort((a, b) => b.prescriptionExpiry!.localeCompare(a.prescriptionExpiry!) || Number(b.number) - Number(a.number))
+}
+
+/**
+ * The customer's most recent other O.S. (not cancelled / lost) dated on or
+ * after `since` — "had contact with the shop recently". Null when none.
+ */
+export function recentOsFor(list: NoticeOs[], target: NoticeOs, since: string): NoticeOs | null {
+  const key = customerKey(target)
+  let best: NoticeOs | null = null
+  for (const o of list) {
+    if (o.number === target.number || o.date < since) continue
+    if (o.situation === 'cancelada' || o.situation === 'perda') continue
+    if (customerKey(o) !== key) continue
+    if (!best || o.date > best.date) best = o
+  }
+  return best
+}
+
+/** `n` months before `day` (exported for the 2-month "recent O.S." window). */
+export function monthsBack(day: string, n: number): string {
+  return addMonths(day, -n)
 }
 
 export function paginate<T>(list: T[], page: number, size = 10) {

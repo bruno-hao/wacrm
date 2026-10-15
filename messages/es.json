@@ -2999,6 +2999,16 @@
     "period_last_3": "Tres meses anteriores",
     "period_last_6": "Seis meses anteriores",
     "noStandardMessages": "No hay mensajes estándar. Créelos en Configuración → Mensajes Estándar.",
-    "confirmBodyGeneric": "¿Enviar “{title}” a {count} cliente(s)? Los mensajes salen uno a uno, con una pausa aleatoria de 5 a 15 segundos. Quien ya recibió este mensaje para el mismo registro se omite."
+    "confirmBodyGeneric": "¿Enviar “{title}” a {count} cliente(s)? Los mensajes salen uno a uno, con una pausa aleatoria de 5 a 15 segundos. Quien ya recibió este mensaje para el mismo registro se omite.",
+    "colReady": "Gafas Listas",
+    "colRecentOs": "O.S. Reciente",
+    "colSince": "Cliente desde",
+    "cat_adaptacao": "Adaptación",
+    "cat_limpeza": "Limpieza",
+    "cat_plaqueta": "Plaqueta",
+    "cat_preventiva": "Preventiva",
+    "recentYes": "Sí ({number})",
+    "recentNo": "No",
+    "ageYears": "{age} años"
   }
 }

@@ -2999,6 +2999,16 @@
     "period_last_3": "Três meses anteriores",
     "period_last_6": "Seis meses anteriores",
     "noStandardMessages": "Nenhuma mensagem padrão cadastrada. Crie em Configurações → Mensagens Padrão.",
-    "confirmBodyGeneric": "Enviar “{title}” para {count} cliente(s)? As mensagens saem uma a uma, com intervalo aleatório de 5 a 15 segundos entre elas. Quem já recebeu esta mensagem para o mesmo registro é ignorado."
+    "confirmBodyGeneric": "Enviar “{title}” para {count} cliente(s)? As mensagens saem uma a uma, com intervalo aleatório de 5 a 15 segundos entre elas. Quem já recebeu esta mensagem para o mesmo registro é ignorado.",
+    "colReady": "Óculos Pronto",
+    "colRecentOs": "O.S. Recente",
+    "colSince": "Cliente desde",
+    "cat_adaptacao": "Adaptação",
+    "cat_limpeza": "Limpeza",
+    "cat_plaqueta": "Plaqueta",
+    "cat_preventiva": "Preventiva",
+    "recentYes": "Sim ({number})",
+    "recentNo": "Não",
+    "ageYears": "{age} anos"
   }
 }

@@ -42,12 +42,13 @@ export async function GET(request: Request) {
       last_os_date: string | null
       last_seller: string | null
       birth_date: string
+      registered_at: string | null
     }
     const all: Cust[] = []
     for (let from = 0; ; from += 1000) {
       const { data, error } = await db
         .from('ssotica_customers')
-        .select('ssotica_id, name, phones, last_os_number, last_os_date, last_seller, birth_date')
+        .select('ssotica_id, name, phones, last_os_number, last_os_date, last_seller, birth_date, registered_at')
         .eq('account_id', accountId)
         .not('birth_date', 'is', null)
         .order('ssotica_id')
@@ -100,6 +101,7 @@ export async function GET(request: Request) {
         return {
           ref,
           extra: c.birth_date,
+          since: c.registered_at,
           number: c.last_os_number ?? '',
           date: c.last_os_date ?? now,
           customer_name: c.name ?? '',

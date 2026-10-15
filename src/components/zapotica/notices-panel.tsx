@@ -52,6 +52,7 @@ type SoldKey = 'sold' | 'not_sold';
 type Period = 'this_month' | 'last_month' | 'last_3' | 'last_6';
 
 interface Notice {
+  standard_message_id?: string | null;
   status: NoticeStatus;
   updated_at: string;
   error?: string | null;
@@ -67,6 +68,10 @@ interface Row {
   has_phone: boolean;
   /** Prescription expiry (receitas) or birth date (aniversario), yyyy-mm-dd. */
   extra?: string | null;
+  /** receitas: the customer's newer O.S. number in the last 2 months, if any. */
+  recent_os?: string | null;
+  /** aniversario: customer since (yyyy-mm-dd). */
+  since?: string | null;
   notices: Notice[];
 }
 /** Something the user can send: a quick reply (Avisos) or a standard message. */
@@ -79,12 +84,17 @@ interface Choice {
 const SITUATIONS: Situation[] = ['nao_entregue', 'entregue', 'cancelada', 'perda'];
 const PERIODS: Period[] = ['this_month', 'last_month', 'last_3', 'last_6'];
 const POLL_MS = 3000;
+/** The four after-sales messages, one table column each. */
+const POST_KEYS = ['adaptacao', 'limpeza', 'plaqueta', 'preventiva'] as const;
+type PostKey = (typeof POST_KEYS)[number];
 
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 /** Today in the store's timezone (UTC-3), matching the server's default. */
 const today = () => isoDay(new Date(Date.now() - 3 * 3_600_000));
 const daysAgo = (n: number) => isoDay(new Date(Date.now() - 3 * 3_600_000 - n * 86_400_000));
 const fmtDate = (iso: string) => iso.split('-').reverse().join('/');
+/** Age the customer turns this year. */
+const ageOf = (birth: string) => Number(today().slice(0, 4)) - Number(birth.slice(0, 4));
 
 /** WhatsApp's "typing…" indicator: three bouncing dots. */
 function TypingDots({ label }: { label: string }) {
@@ -131,8 +141,6 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
 
   const isAvisos = module === 'avisos';
   const hasDates = module === 'avisos' || module === 'posvenda';
-  const extraLabel =
-    module === 'receitas' ? t('colExpiry') : module === 'aniversario' ? t('colBirthday') : null;
 
   // Filters — defaults: last 60 days, "Não entregue" + "Vendida".
   const [q, setQ] = useState('');
@@ -159,6 +167,8 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
   const [chosen, setChosen] = useState<Choice | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // Pós-Venda: the standard message behind each category column.
+  const [post, setPost] = useState<Partial<Record<PostKey, Choice>>>({});
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -167,6 +177,27 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
     }, 300);
     return () => clearTimeout(id);
   }, [q]);
+
+  useEffect(() => {
+    if (module !== 'posvenda') return;
+    void (async () => {
+      try {
+        const res = await fetch('/api/standard-messages?category=posvenda', { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
+        const next: Partial<Record<PostKey, Choice>> = {};
+        const list =
+          (data.messages as { id: string; key: string | null; title: string; content_text: string }[]) ?? [];
+        for (const m of list) {
+          if (m.key && (POST_KEYS as readonly string[]).includes(m.key)) {
+            next[m.key as PostKey] = { id: m.id, title: m.title, text: m.content_text };
+          }
+        }
+        setPost(next);
+      } catch {
+        /* the category buttons stay disabled */
+      }
+    })();
+  }, [module]);
 
   const seq = useRef(0);
   const load = useCallback(
@@ -286,6 +317,20 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
     }
   };
 
+  /** Pós-Venda: confirm one category's message for the selected rows. */
+  const openCategory = (key: PostKey) => {
+    const msg = post[key];
+    if (!msg) return;
+    setChosen(msg);
+    setConfirming(true);
+    setDialogOpen(true);
+  };
+
+  const categoryNotice = (row: Row, messageId: string): Notice | undefined =>
+    row.notices
+      .filter((n) => n.standard_message_id === messageId)
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
+
   const submit = async () => {
     if (!chosen) return;
     setSubmitting(true);
@@ -331,7 +376,7 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
     return t(`errors.${known.includes(error) ? error : 'unexpected'}` as never) as string;
   }, [error, t]);
 
-  const colCount = 6 + (extraLabel ? 1 : 0);
+  const colCount = { avisos: 7, posvenda: 9, receitas: 8, aniversario: 6 }[module];
 
   return (
     <div>
@@ -450,25 +495,62 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
           <TableHeader>
             <TableRow className="border-border">
               <TableHead>{t('colDate')}</TableHead>
-              <TableHead>{t('colOs')}</TableHead>
+              {module !== 'aniversario' && <TableHead>{t('colOs')}</TableHead>}
               <TableHead>{t('colName')}</TableHead>
               <TableHead className="hidden lg:table-cell">{t('colSeller')}</TableHead>
-              <TableHead className="hidden xl:table-cell">{t('colLab')}</TableHead>
-              {extraLabel && <TableHead className="whitespace-nowrap">{extraLabel}</TableHead>}
-              <TableHead>
-                <div className="flex items-center justify-end">
-                  <Button
-                    size="sm"
-                    disabled={!canSend || selectedCount === 0}
-                    title={canSend ? undefined : t('cannotSend')}
-                    onClick={() => void openDialog()}
-                  >
-                    <MessageSquare className="mr-1.5 size-3.5" />
-                    {t('sendMessage')}
-                    {selectedCount > 0 && ` (${selectedCount})`}
-                  </Button>
-                </div>
-              </TableHead>
+              {module !== 'aniversario' && (
+                <TableHead className="hidden xl:table-cell">{t('colLab')}</TableHead>
+              )}
+              {module === 'avisos' && (
+                <TableHead className="whitespace-nowrap text-center">{t('colReady')}</TableHead>
+              )}
+              {module === 'receitas' && (
+                <>
+                  <TableHead className="whitespace-nowrap">{t('colExpiry')}</TableHead>
+                  <TableHead className="whitespace-nowrap">{t('colRecentOs')}</TableHead>
+                </>
+              )}
+              {module === 'aniversario' && (
+                <>
+                  <TableHead className="whitespace-nowrap">{t('colSince')}</TableHead>
+                  <TableHead className="whitespace-nowrap">{t('colBirthday')}</TableHead>
+                </>
+              )}
+              {module === 'posvenda' ? (
+                POST_KEYS.map((k) => (
+                  <TableHead key={k} className="text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="whitespace-nowrap">{t(`cat_${k}` as never)}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!canSend || selectedCount === 0 || !post[k]}
+                        title={canSend ? undefined : t('cannotSend')}
+                        onClick={() => openCategory(k)}
+                      >
+                        <MessageSquare className="mr-1 size-3.5" />
+                        {t('send')}
+                        {selectedCount > 0 && ` (${selectedCount})`}
+                      </Button>
+                    </div>
+                  </TableHead>
+                ))
+              ) : (
+                <TableHead>
+                  <div className="flex items-center justify-end">
+                    <Button
+                      size="sm"
+                      disabled={!canSend || selectedCount === 0}
+                      title={canSend ? undefined : t('cannotSend')}
+                      onClick={() => void openDialog()}
+                    >
+                      <MessageSquare className="mr-1.5 size-3.5" />
+                      {t('sendMessage')}
+                      {selectedCount > 0 && ` (${selectedCount})`}
+                    </Button>
+                  </div>
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -514,18 +596,52 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
                   }`}
                 >
                   <TableCell className="whitespace-nowrap text-muted-foreground">{fmtDate(r.date)}</TableCell>
-                  <TableCell className="font-medium">{r.number || '—'}</TableCell>
+                  {module !== 'aniversario' && <TableCell className="font-medium">{r.number || '—'}</TableCell>}
                   <TableCell>{r.customer_name || '—'}</TableCell>
                   <TableCell className="hidden text-muted-foreground lg:table-cell">{r.seller || '—'}</TableCell>
-                  <TableCell className="hidden text-muted-foreground xl:table-cell">{r.lab || '—'}</TableCell>
-                  {extraLabel && (
-                    <TableCell className="whitespace-nowrap">{r.extra ? fmtDate(r.extra) : '—'}</TableCell>
+                  {module !== 'aniversario' && (
+                    <TableCell className="hidden text-muted-foreground xl:table-cell">
+                      {(module === 'posvenda' ? r.lab.split(/\s+/)[0] : r.lab) || '—'}
+                    </TableCell>
                   )}
-                  <TableCell className="text-right">
-                    <div className="flex min-h-6 items-center justify-end">
-                      <StatusIcon notice={latestNotice(r)} labels={labels} />
-                    </div>
-                  </TableCell>
+                  {module === 'avisos' && (
+                    <TableCell className="text-center">
+                      {r.notices.some((n) => n.status === 'sent') ? (
+                        <CheckCircle2 className="mx-auto size-4 text-green-500" aria-label={labels.sent} />
+                      ) : null}
+                    </TableCell>
+                  )}
+                  {module === 'receitas' && (
+                    <>
+                      <TableCell className="whitespace-nowrap">{r.extra ? fmtDate(r.extra) : '—'}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {r.recent_os ? t('recentYes', { number: r.recent_os }) : t('recentNo')}
+                      </TableCell>
+                    </>
+                  )}
+                  {module === 'aniversario' && (
+                    <>
+                      <TableCell className="whitespace-nowrap">{r.since ? fmtDate(r.since) : '—'}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {r.extra ? `${fmtDate(r.extra)} (${t('ageYears', { age: ageOf(r.extra) })})` : '—'}
+                      </TableCell>
+                    </>
+                  )}
+                  {module === 'posvenda' ? (
+                    POST_KEYS.map((k) => (
+                      <TableCell key={k} className="text-center">
+                        <div className="flex min-h-6 items-center justify-center">
+                          <StatusIcon notice={post[k] ? categoryNotice(r, post[k]!.id) : undefined} labels={labels} />
+                        </div>
+                      </TableCell>
+                    ))
+                  ) : (
+                    <TableCell className="text-right">
+                      <div className="flex min-h-6 items-center justify-end">
+                        <StatusIcon notice={latestNotice(r)} labels={labels} />
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}
@@ -632,7 +748,7 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline" disabled={submitting} onClick={() => setConfirming(false)}>
+                <Button variant="outline" disabled={submitting} onClick={() => (module === 'posvenda' ? setDialogOpen(false) : setConfirming(false))}>
                   {t('back')}
                 </Button>
                 <Button disabled={submitting} onClick={() => void submit()}>

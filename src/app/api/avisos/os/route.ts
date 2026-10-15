@@ -7,6 +7,8 @@ import {
   SITUATIONS,
   fetchOsRange,
   PRESCRIPTION_PERIODS,
+  monthsBack,
+  recentOsFor,
   expiredPrescriptions,
   expiryWindow,
   filterOs,
@@ -102,15 +104,15 @@ export async function GET(request: Request) {
     const { data: notices } = numbers.length
       ? await db
           .from('os_notices')
-          .select('os_number, quick_reply_id, status, updated_at, error')
+          .select('os_number, quick_reply_id, standard_message_id, status, updated_at, error')
           .eq('account_id', accountId)
           .eq('module', mod)
           .in('os_number', numbers)
       : { data: [] }
-    const byOs = new Map<string, { quick_reply_id: string; status: string; updated_at: string; error: string | null }[]>()
+    const byOs = new Map<string, { quick_reply_id: string; standard_message_id: string | null; status: string; updated_at: string; error: string | null }[]>()
     for (const n of notices ?? []) {
       const list = byOs.get(n.os_number as string) ?? []
-      list.push({ quick_reply_id: n.quick_reply_id as string, status: n.status as string, updated_at: n.updated_at as string, error: (n.error as string | null) ?? null })
+      list.push({ quick_reply_id: n.quick_reply_id as string, standard_message_id: (n.standard_message_id as string | null) ?? null, status: n.status as string, updated_at: n.updated_at as string, error: (n.error as string | null) ?? null })
       byOs.set(n.os_number as string, list)
     }
 
@@ -123,6 +125,7 @@ export async function GET(request: Request) {
       items: pageInfo.items.map((o) => ({
         ref: o.number,
         extra: o.prescriptionExpiry,
+        recent_os: mod === 'receitas' ? (recentOsFor(all, o, monthsBack(today(), 2))?.number ?? null) : undefined,
         number: o.number,
         date: o.date,
         customer_name: o.customerName,

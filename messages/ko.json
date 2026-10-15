@@ -2999,6 +2999,16 @@
     "period_last_3": "최근 3개월",
     "period_last_6": "최근 6개월",
     "noStandardMessages": "표준 메시지가 없습니다. 설정 → 표준 메시지에서 만드세요.",
-    "confirmBodyGeneric": "“{title}”을(를) 고객 {count}명에게 보낼까요? 메시지는 5~15초의 무작위 간격으로 하나씩 전송됩니다. 같은 항목에 이미 이 메시지를 받은 고객은 건너뜁니다."
+    "confirmBodyGeneric": "“{title}”을(를) 고객 {count}명에게 보낼까요? 메시지는 5~15초의 무작위 간격으로 하나씩 전송됩니다. 같은 항목에 이미 이 메시지를 받은 고객은 건너뜁니다.",
+    "colReady": "안경 준비 완료",
+    "colRecentOs": "최근 O.S.",
+    "colSince": "고객 등록일",
+    "cat_adaptacao": "적응",
+    "cat_limpeza": "세척",
+    "cat_plaqueta": "코받침",
+    "cat_preventiva": "예방 정비",
+    "recentYes": "예 ({number})",
+    "recentNo": "아니요",
+    "ageYears": "{age}세"
   }
 }

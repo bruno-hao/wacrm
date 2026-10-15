@@ -17,26 +17,32 @@ export interface StandardMessage {
   title: string
   content_text: string
   position: number
+  /** Stable id of the four after-sales messages (adaptacao, limpeza, plaqueta, preventiva). */
+  key: string | null
 }
 
-const DEFAULTS: { category: StandardCategory; title: string; text: string }[] = [
+const DEFAULTS: { category: StandardCategory; key?: string; title: string; text: string }[] = [
   {
     category: 'posvenda',
+    key: 'adaptacao',
     title: 'Adaptação de óculos e armação',
     text: 'Olá, {nome}! Aqui é da M Vision Ótica. Como está a adaptação dos seus óculos novos? Se sentir qualquer desconforto na armação ou nas lentes, é só nos chamar que ajustamos para você. (mensagem de exemplo)',
   },
   {
     category: 'posvenda',
+    key: 'limpeza',
     title: 'Limpeza',
     text: 'Olá, {nome}! Aqui é da M Vision Ótica. Que tal uma limpeza gratuita nos seus óculos? Passe na loja quando quiser e deixamos tudo como novo. (mensagem de exemplo)',
   },
   {
     category: 'posvenda',
+    key: 'plaqueta',
     title: 'Substituição de plaqueta / plaqueta nasal',
     text: 'Olá, {nome}! Aqui é da M Vision Ótica. Se as plaquetas nasais dos seus óculos estiverem machucando ou amareladas, podemos substituí-las rapidamente. Venha nos visitar! (mensagem de exemplo)',
   },
   {
     category: 'posvenda',
+    key: 'preventiva',
     title: 'Manutenção preventiva',
     text: 'Olá, {nome}! Aqui é da M Vision Ótica. Já faz um tempo desde a sua compra: que tal uma manutenção preventiva nos seus óculos? Aparafusamos, alinhamos e limpamos sem custo. (mensagem de exemplo)',
   },
@@ -61,7 +67,7 @@ export async function listStandardMessages(
   const fetchAll = async () => {
     const { data, error } = await db
       .from('standard_messages')
-      .select('id, category, title, content_text, position')
+      .select('id, category, title, content_text, position, key')
       .eq('account_id', accountId)
       .order('category')
       .order('position')
@@ -76,6 +82,7 @@ export async function listStandardMessages(
       DEFAULTS.map((d, i) => ({
         account_id: accountId,
         category: d.category,
+        key: d.key ?? null,
         title: d.title,
         content_text: d.text,
         position: i,

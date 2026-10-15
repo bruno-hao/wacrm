@@ -2999,6 +2999,16 @@
     "period_last_3": "Last three months",
     "period_last_6": "Last six months",
     "noStandardMessages": "No standard messages yet. Create them in Settings → Standard messages.",
-    "confirmBodyGeneric": "Send “{title}” to {count} customer(s)? Messages go out one by one, with a random 5–15 second pause between them. Anyone who already got this message for the same record is skipped."
+    "confirmBodyGeneric": "Send “{title}” to {count} customer(s)? Messages go out one by one, with a random 5–15 second pause between them. Anyone who already got this message for the same record is skipped.",
+    "colReady": "Glasses Ready",
+    "colRecentOs": "Recent O.S.",
+    "colSince": "Customer since",
+    "cat_adaptacao": "Adaptation",
+    "cat_limpeza": "Cleaning",
+    "cat_plaqueta": "Nose pad",
+    "cat_preventiva": "Preventive",
+    "recentYes": "Yes ({number})",
+    "recentNo": "No",
+    "ageYears": "{age} years"
   }
 }
