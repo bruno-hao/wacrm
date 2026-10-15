@@ -77,14 +77,14 @@ export async function GET(request: Request) {
     const { data: notices } = numbers.length
       ? await db
           .from('os_notices')
-          .select('os_number, quick_reply_id, status')
+          .select('os_number, quick_reply_id, status, updated_at, error')
           .eq('account_id', accountId)
           .in('os_number', numbers)
       : { data: [] }
-    const byOs = new Map<string, { quick_reply_id: string; status: string }[]>()
+    const byOs = new Map<string, { quick_reply_id: string; status: string; updated_at: string; error: string | null }[]>()
     for (const n of notices ?? []) {
       const list = byOs.get(n.os_number as string) ?? []
-      list.push({ quick_reply_id: n.quick_reply_id as string, status: n.status as string })
+      list.push({ quick_reply_id: n.quick_reply_id as string, status: n.status as string, updated_at: n.updated_at as string, error: (n.error as string | null) ?? null })
       byOs.set(n.os_number as string, list)
     }
 

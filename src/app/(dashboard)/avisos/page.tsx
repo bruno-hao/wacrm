@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import {
   CheckCircle2,
@@ -15,11 +16,13 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -40,14 +43,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { GatedButton } from '@/components/ui/gated-button';
 import { useCan } from '@/hooks/use-can';
 import type { QuickReply } from '@/types';
 
-type NoticeStatus = 'sending' | 'sent' | 'failed';
+type NoticeStatus = 'queued' | 'sending' | 'sent' | 'failed';
 type Situation = 'nao_entregue' | 'entregue' | 'cancelada' | 'perda';
 type SoldKey = 'sold' | 'not_sold';
 
+interface Notice {
+  quick_reply_id: string;
+  status: NoticeStatus;
+  updated_at: string;
+  error?: string | null;
+}
 interface Row {
   number: string;
   date: string;
@@ -55,10 +63,11 @@ interface Row {
   seller: string;
   lab: string;
   has_phone: boolean;
-  notices: { quick_reply_id: string; status: NoticeStatus }[];
+  notices: Notice[];
 }
 
 const SITUATIONS: Situation[] = ['nao_entregue', 'entregue', 'cancelada', 'perda'];
+const POLL_MS = 3000;
 
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 /** Today in the store's timezone (UTC-3), matching the server's default. */
@@ -66,17 +75,39 @@ const today = () => isoDay(new Date(Date.now() - 3 * 3_600_000));
 const daysAgo = (n: number) => isoDay(new Date(Date.now() - 3 * 3_600_000 - n * 86_400_000));
 const fmtDate = (iso: string) => iso.split('-').reverse().join('/');
 
-function StatusIcon({ status, label }: { status?: NoticeStatus; label: string }) {
-  if (status === 'sending') {
-    return <Loader2 className="size-4 animate-spin text-muted-foreground" aria-label={label} />;
+/** WhatsApp's "typing…" indicator: three bouncing dots. */
+function TypingDots({ label }: { label: string }) {
+  return (
+    <span
+      role="status"
+      aria-label={label}
+      title={label}
+      className="inline-flex items-center gap-0.5 rounded-full bg-muted px-2 py-1"
+    >
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="size-1.5 animate-bounce rounded-full bg-muted-foreground"
+          style={{ animationDelay: `${i * 0.15}s` }}
+        />
+      ))}
+    </span>
+  );
+}
+
+function StatusIcon({ notice, labels }: { notice?: Notice; labels: Record<NoticeStatus, string> }) {
+  if (!notice) return null;
+  if (notice.status === 'queued' || notice.status === 'sending') {
+    return <TypingDots label={labels[notice.status]} />;
   }
-  if (status === 'sent') {
-    return <CheckCircle2 className="size-4 text-green-500" aria-label={label} />;
+  if (notice.status === 'sent') {
+    return <CheckCircle2 className="size-4 text-green-500" aria-label={labels.sent} />;
   }
-  if (status === 'failed') {
-    return <XCircle className="size-4 text-red-500" aria-label={label} />;
-  }
-  return null;
+  return (
+    <span title={notice.error ? `${labels.failed}: ${notice.error}` : labels.failed}>
+      <XCircle className="size-4 text-red-500" aria-label={labels.failed} />
+    </span>
+  );
 }
 
 export default function AvisosPage() {
@@ -98,12 +129,15 @@ export default function AvisosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Delivery state per `${os}:${quickReply}` — survives reloads via the server.
-  const [notices, setNotices] = useState<Record<string, NoticeStatus>>({});
+  // Selected O.S. (number → date); survives paging and filter changes.
+  const [selected, setSelected] = useState<Record<string, string>>({});
 
-  const [dialogOs, setDialogOs] = useState<Row | null>(null);
+  // Send dialog: pick a quick reply, then confirm.
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [replies, setReplies] = useState<QuickReply[] | null>(null);
-  const [sendError, setSendError] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<QuickReply | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -114,55 +148,98 @@ export default function AvisosPage() {
   }, [q]);
 
   const seq = useRef(0);
-  const load = useCallback(async () => {
-    const mine = ++seq.current;
-    setLoading(true);
-    setError(null);
-    const params = new URLSearchParams({
-      from,
-      to,
-      q: debouncedQ,
-      situations: situations.join(','),
-      sold: sold.join(','),
-      page: String(page),
-    });
-    try {
-      const res = await fetch(`/api/avisos/os?${params}`, { cache: 'no-store' });
-      const data = await res.json().catch(() => ({}));
-      if (mine !== seq.current) return;
-      if (!res.ok) {
-        setError(data.error ?? 'unexpected');
-        setRows([]);
-        return;
+  const load = useCallback(
+    async (silent = false) => {
+      const mine = ++seq.current;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
       }
-      setRows(data.items as Row[]);
-      setPages(data.pages);
-      setTotal(data.total);
-      setNotices((prev) => {
-        const next = { ...prev };
-        for (const r of data.items as Row[]) {
-          for (const n of r.notices) {
-            const k = `${r.number}:${n.quick_reply_id}`;
-            // A request in flight in this tab wins over the stored state.
-            if (prev[k] !== 'sending') next[k] = n.status;
-          }
-        }
-        return next;
+      const params = new URLSearchParams({
+        from,
+        to,
+        q: debouncedQ,
+        situations: situations.join(','),
+        sold: sold.join(','),
+        page: String(page),
       });
-    } catch {
-      if (mine === seq.current) setError('unexpected');
-    } finally {
-      if (mine === seq.current) setLoading(false);
-    }
-  }, [from, to, debouncedQ, situations, sold, page]);
+      try {
+        const res = await fetch(`/api/avisos/os?${params}`, { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
+        if (mine !== seq.current) return;
+        if (!res.ok) {
+          if (!silent) {
+            setError(data.error ?? 'unexpected');
+            setRows([]);
+          }
+          return;
+        }
+        setRows(data.items as Row[]);
+        setPages(data.pages);
+        setTotal(data.total);
+        setError(null);
+      } catch {
+        if (mine === seq.current && !silent) setError('unexpected');
+      } finally {
+        if (mine === seq.current && !silent) setLoading(false);
+      }
+    },
+    [from, to, debouncedQ, situations, sold, page],
+  );
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const openDialog = async (row: Row) => {
-    setDialogOs(row);
-    setSendError(null);
+  // While notices are queued / being sent, follow their status.
+  const hasPending = rows.some((r) =>
+    r.notices.some((n) => n.status === 'queued' || n.status === 'sending'),
+  );
+  useEffect(() => {
+    if (!hasPending) return;
+    const id = setInterval(() => void load(true), POLL_MS);
+    return () => clearInterval(id);
+  }, [hasPending, load]);
+
+  /** The row's most recent notice drives the icon beside it. */
+  const latestNotice = (row: Row): Notice | undefined =>
+    [...row.notices].sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
+
+  const labels: Record<NoticeStatus, string> = {
+    queued: t('status_queued'),
+    sending: t('status_sending'),
+    sent: t('status_sent'),
+    failed: t('status_failed'),
+  };
+
+  // ---------------- selection ----------------
+  const eligible = rows.filter((r) => r.has_phone);
+  const allOnPage = eligible.length > 0 && eligible.every((r) => r.number in selected);
+  const someOnPage = eligible.some((r) => r.number in selected);
+  const selectedCount = Object.keys(selected).length;
+
+  const toggleRow = (r: Row) =>
+    setSelected((cur) => {
+      const next = { ...cur };
+      if (r.number in next) delete next[r.number];
+      else next[r.number] = r.date;
+      return next;
+    });
+  const togglePage = () =>
+    setSelected((cur) => {
+      const next = { ...cur };
+      for (const r of eligible) {
+        if (allOnPage) delete next[r.number];
+        else next[r.number] = r.date;
+      }
+      return next;
+    });
+
+  // ---------------- sending ----------------
+  const openDialog = async () => {
+    setChosen(null);
+    setConfirming(false);
+    setDialogOpen(true);
     if (replies === null) {
       const res = await fetch('/api/quick-replies', { cache: 'no-store' });
       const data = await res.json().catch(() => ({}));
@@ -170,42 +247,33 @@ export default function AvisosPage() {
     }
   };
 
-  const sendReply = async (row: Row, reply: QuickReply) => {
-    const key = `${row.number}:${reply.id}`;
-    setSendError(null);
-    setNotices((p) => ({ ...p, [key]: 'sending' }));
+  const submit = async () => {
+    if (!chosen) return;
+    setSubmitting(true);
     try {
-      const res = await fetch('/api/avisos/send', {
+      const res = await fetch('/api/avisos/send-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          os_number: row.number,
-          os_date: row.date,
-          quick_reply_id: reply.id,
+          quick_reply_id: chosen.id,
+          items: Object.entries(selected).map(([os_number, os_date]) => ({ os_number, os_date })),
         }),
       });
       const data = await res.json().catch(() => ({}));
-      const status: NoticeStatus =
-        data.status === 'sent' || data.status === 'sending' || data.status === 'failed'
-          ? data.status
-          : 'failed';
-      setNotices((p) => ({ ...p, [key]: status }));
-      if (status === 'failed') setSendError(data.error ?? 'send_failed');
+      if (!res.ok) {
+        const known = ['too_many', 'quick_reply_not_found', 'bad_request'];
+        toast.error(t(`batchErrors.${known.includes(data.error) ? data.error : 'generic'}` as never));
+        return;
+      }
+      toast.success(t('queuedToast', { queued: data.queued, skipped: data.skipped }));
+      setDialogOpen(false);
+      setSelected({});
+      await load(true);
     } catch {
-      setNotices((p) => ({ ...p, [key]: 'failed' }));
-      setSendError('send_failed');
+      toast.error(t('batchErrors.generic'));
+    } finally {
+      setSubmitting(false);
     }
-  };
-
-  /** Icon shown beside the row's button: sending > failed > sent. */
-  const rowStatus = (row: Row): NoticeStatus | undefined => {
-    const all = Object.entries(notices)
-      .filter(([k]) => k.startsWith(`${row.number}:`))
-      .map(([, v]) => v);
-    if (all.includes('sending')) return 'sending';
-    if (all.includes('failed') && !all.includes('sent')) return 'failed';
-    if (all.includes('sent')) return 'sent';
-    return undefined;
   };
 
   const toggleSituation = (s: Situation) => {
@@ -255,29 +323,32 @@ export default function AvisosPage() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56 border-border bg-popover">
             <DropdownMenuGroup>
-            <DropdownMenuLabel>{t('situationGroup')}</DropdownMenuLabel>
-            {SITUATIONS.map((s) => (
-              <DropdownMenuCheckboxItem
-                key={s}
-                checked={situations.includes(s)}
-                onCheckedChange={() => toggleSituation(s)}
-              >
-                {t(`sit_${s}` as never)}
-              </DropdownMenuCheckboxItem>
-            ))}
+              <DropdownMenuLabel>{t('situationGroup')}</DropdownMenuLabel>
+              {SITUATIONS.map((s) => (
+                <DropdownMenuCheckboxItem
+                  key={s}
+                  checked={situations.includes(s)}
+                  onCheckedChange={() => toggleSituation(s)}
+                >
+                  {t(`sit_${s}` as never)}
+                </DropdownMenuCheckboxItem>
+              ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-            <DropdownMenuLabel>{t('soldGroup')}</DropdownMenuLabel>
-            <DropdownMenuCheckboxItem checked={sold.includes('sold')} onCheckedChange={() => toggleSold('sold')}>
-              {t('sold_sold')}
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sold.includes('not_sold')}
-              onCheckedChange={() => toggleSold('not_sold')}
-            >
-              {t('sold_not_sold')}
-            </DropdownMenuCheckboxItem>
+              <DropdownMenuLabel>{t('soldGroup')}</DropdownMenuLabel>
+              <DropdownMenuCheckboxItem
+                checked={sold.includes('sold')}
+                onCheckedChange={() => toggleSold('sold')}
+              >
+                {t('sold_sold')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={sold.includes('not_sold')}
+                onCheckedChange={() => toggleSold('not_sold')}
+              >
+                {t('sold_not_sold')}
+              </DropdownMenuCheckboxItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -314,54 +385,76 @@ export default function AvisosPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border">
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allOnPage}
+                  indeterminate={!allOnPage && someOnPage}
+                  onCheckedChange={togglePage}
+                  disabled={eligible.length === 0}
+                  aria-label={t('selectPage')}
+                />
+              </TableHead>
               <TableHead>{t('colDate')}</TableHead>
               <TableHead>{t('colOs')}</TableHead>
               <TableHead>{t('colName')}</TableHead>
               <TableHead className="hidden md:table-cell">{t('colSeller')}</TableHead>
               <TableHead className="hidden lg:table-cell">{t('colLab')}</TableHead>
-              <TableHead className="text-right">{t('colAction')}</TableHead>
+              <TableHead>
+                <div className="flex items-center justify-end gap-3">
+                  <span>{t('colAction')}</span>
+                  <Button
+                    size="sm"
+                    disabled={!canSend || selectedCount === 0}
+                    title={canSend ? undefined : t('cannotSend')}
+                    onClick={() => void openDialog()}
+                  >
+                    <MessageSquare className="mr-1.5 size-3.5" />
+                    {t('sendMessage')}
+                    {selectedCount > 0 && ` (${selectedCount})`}
+                  </Button>
+                </div>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-12 text-center">
+                <TableCell colSpan={7} className="py-12 text-center">
                   <Loader2 className="mx-auto size-6 animate-spin text-primary" />
                 </TableCell>
               </TableRow>
             ) : errorText ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-12 text-center text-sm text-destructive">
+                <TableCell colSpan={7} className="py-12 text-center text-sm text-destructive">
                   {errorText}
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
                   {t('noResults')}
                 </TableCell>
               </TableRow>
             ) : (
               rows.map((r) => (
                 <TableRow key={r.number} className="border-border">
+                  <TableCell>
+                    <Checkbox
+                      checked={r.number in selected}
+                      onCheckedChange={() => toggleRow(r)}
+                      disabled={!r.has_phone}
+                      title={r.has_phone ? undefined : t('noPhone')}
+                      aria-label={t('selectRow', { number: r.number })}
+                    />
+                  </TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground">{fmtDate(r.date)}</TableCell>
                   <TableCell className="font-medium">{r.number}</TableCell>
                   <TableCell>{r.customer_name || '—'}</TableCell>
                   <TableCell className="hidden text-muted-foreground md:table-cell">{r.seller || '—'}</TableCell>
                   <TableCell className="hidden text-muted-foreground lg:table-cell">{r.lab || '—'}</TableCell>
                   <TableCell className="text-right">
-                    <div className="inline-flex items-center justify-end gap-2">
-                      <StatusIcon status={rowStatus(r)} label={t('statusIcon')} />
-                      <GatedButton
-                        variant="outline"
-                        size="sm"
-                        canAct={canSend && r.has_phone}
-                        gateReason={r.has_phone ? t('cannotSend') : t('noPhone')}
-                        onClick={() => void openDialog(r)}
-                      >
-                        <MessageSquare className="mr-1.5 size-3.5" />
-                        {t('sendMessage')}
-                      </GatedButton>
+                    <div className="flex min-h-6 items-center justify-end">
+                      <StatusIcon notice={latestNotice(r)} labels={labels} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -394,56 +487,72 @@ export default function AvisosPage() {
         </div>
       </div>
 
-      <Dialog open={!!dialogOs} onOpenChange={(open) => !open && setDialogOs(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('pickReply')}</DialogTitle>
-            <DialogDescription>
-              {dialogOs ? `${t('colOs')} ${dialogOs.number} · ${dialogOs.customer_name}` : ''}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[60vh] space-y-2 overflow-y-auto">
-            {replies === null ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="size-5 animate-spin text-primary" />
-              </div>
-            ) : replies.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{t('noQuickReplies')}</p>
-            ) : (
-              replies.map((reply) => {
-                const status = dialogOs ? notices[`${dialogOs.number}:${reply.id}`] : undefined;
-                return (
-                  <button
-                    key={reply.id}
-                    type="button"
-                    disabled={!dialogOs || status === 'sending' || status === 'sent'}
-                    onClick={() => dialogOs && void sendReply(dialogOs, reply)}
-                    className="flex w-full items-start gap-3 rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-medium text-foreground">{reply.title}</span>
-                      <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground">
-                        {reply.content_text ?? t('interactiveReply')}
+      {/* 20% wider than the previous popup (28rem → 34rem). */}
+      <Dialog open={dialogOpen} onOpenChange={(open) => !submitting && setDialogOpen(open)}>
+        <DialogContent className="sm:max-w-[34rem]">
+          {!confirming ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>{t('pickReply')}</DialogTitle>
+                <DialogDescription>{t('pickReplyHint', { count: selectedCount })}</DialogDescription>
+              </DialogHeader>
+              <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+                {replies === null ? (
+                  <div className="flex justify-center py-6">
+                    <Loader2 className="size-5 animate-spin text-primary" />
+                  </div>
+                ) : replies.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-muted-foreground">{t('noQuickReplies')}</p>
+                ) : (
+                  replies.map((reply) => (
+                    <button
+                      key={reply.id}
+                      type="button"
+                      onClick={() => setChosen(reply)}
+                      className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted ${
+                        chosen?.id === reply.id ? 'border-primary bg-primary/5' : 'border-border'
+                      }`}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium text-foreground">{reply.title}</span>
+                        <span className="mt-0.5 line-clamp-3 block text-xs text-muted-foreground">
+                          {reply.content_text ?? t('interactiveReply')}
+                        </span>
                       </span>
-                    </span>
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center">
-                      <StatusIcon status={status} label={t(`status_${status ?? 'sending'}` as never)} />
-                    </span>
-                  </button>
-                );
-              })
-            )}
-          </div>
-          {sendError && (
-            <p className="text-xs text-destructive">
-              {t(
-                `sendErrors.${
-                  ['already_sent','in_progress','os_not_found','no_phone','ssotica_unavailable','contact_failed','conversation_failed','quick_reply_not_found','bad_request'].includes(sendError)
-                    ? sendError
-                    : 'send_failed'
-                }` as never,
-              )}
-            </p>
+                      {chosen?.id === reply.id && (
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                      )}
+                    </button>
+                  ))
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  {t('cancel')}
+                </Button>
+                <Button disabled={!chosen} onClick={() => setConfirming(true)}>
+                  {t('send')}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>{t('confirmTitle')}</DialogTitle>
+                <DialogDescription>
+                  {t('confirmBody', { title: chosen?.title ?? '', count: selectedCount })}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" disabled={submitting} onClick={() => setConfirming(false)}>
+                  {t('back')}
+                </Button>
+                <Button disabled={submitting} onClick={() => void submit()}>
+                  {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  {t('confirm')}
+                </Button>
+              </DialogFooter>
+            </>
           )}
         </DialogContent>
       </Dialog>

@@ -2935,6 +2935,23 @@
       "quick_reply_not_found": "Resposta rápida não encontrada.",
       "send_failed": "Não foi possível enviar a mensagem.",
       "bad_request": "Pedido inválido."
+    },
+    "selectPage": "Selecionar todas desta página",
+    "selectRow": "Selecionar O.S. {number}",
+    "pickReplyHint": "{count} cliente(s) receberão a mensagem escolhida.",
+    "send": "Enviar",
+    "cancel": "Cancelar",
+    "back": "Voltar",
+    "confirm": "Confirmar envio",
+    "confirmTitle": "Confirmar envio?",
+    "confirmBody": "Enviar “{title}” para {count} cliente(s)? As mensagens saem uma a uma, com intervalo aleatório de 5 a 15 segundos entre elas. Quem já recebeu esta mensagem para a mesma O.S. é ignorado.",
+    "queuedToast": "{queued} mensagem(ns) na fila de envio ({skipped} ignorada(s) por já terem sido enviadas).",
+    "status_queued": "Na fila",
+    "batchErrors": {
+      "too_many": "Selecione no máximo 100 O.S. por vez.",
+      "quick_reply_not_found": "Resposta rápida não encontrada.",
+      "bad_request": "Pedido inválido.",
+      "generic": "Não foi possível colocar as mensagens na fila."
     }
   }
 }

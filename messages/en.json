@@ -2935,6 +2935,23 @@
       "quick_reply_not_found": "Quick reply not found.",
       "send_failed": "Could not send the message.",
       "bad_request": "Invalid request."
+    },
+    "selectPage": "Select all on this page",
+    "selectRow": "Select O.S. {number}",
+    "pickReplyHint": "{count} customer(s) will receive the chosen message.",
+    "send": "Send",
+    "cancel": "Cancel",
+    "back": "Back",
+    "confirm": "Confirm sending",
+    "confirmTitle": "Confirm sending?",
+    "confirmBody": "Send “{title}” to {count} customer(s)? Messages go out one by one, with a random 5 to 15 second pause between them. Anyone who already got this message for the same O.S. is skipped.",
+    "queuedToast": "{queued} message(s) queued ({skipped} skipped as already sent).",
+    "status_queued": "Queued",
+    "batchErrors": {
+      "too_many": "Select at most 100 O.S. at a time.",
+      "quick_reply_not_found": "Quick reply not found.",
+      "bad_request": "Invalid request.",
+      "generic": "Could not queue the messages."
     }
   }
 }

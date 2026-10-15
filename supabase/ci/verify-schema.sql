@@ -186,6 +186,14 @@ BEGIN
       'public.os_notices is missing — migration 058 did not apply';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'os_notices' AND column_name = 'queued_at'
+  ) THEN
+    RAISE EXCEPTION
+      'os_notices.queued_at is missing — migration 059 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;
