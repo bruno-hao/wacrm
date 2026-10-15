@@ -48,7 +48,7 @@ Next.js App Router (Next 16, React 19, Tailwind v4, shadcn + `@base-ui/react`) o
 UI language is one build-time locale, `NEXT_PUBLIC_APP_LOCALE` (`en|pt|es|ko`, default `en`), loaded from `messages/<locale>.json` through the `@app-messages` alias (`src/i18n`, next-intl). Server/lib code uses `getT("Namespace.key")` from `lib/i18n/translate`. New user-visible strings go in **all four** catalogues. Changing the locale needs a rebuild.
 
 ### Database
-`supabase/migrations/NNN_*.sql` (sequential, currently up to 050). CI (`migrations.yml`) only validates them on a throwaway Postgres (`supabase/ci/verify-schema.sql`); **it never applies them to a real project**. Apply new migrations manually (Supabase SQL editor or `supabase db push`).
+`supabase/migrations/NNN_*.sql` (sequential, currently up to 051). CI (`migrations.yml`) only validates them on a throwaway Postgres (`supabase/ci/verify-schema.sql`); **it never applies them to a real project**. Apply new migrations manually (Supabase SQL editor or `supabase db push`).
 
 ### Deploy
 `output: "standalone"`; `Dockerfile` is multi-stage. `NEXT_PUBLIC_*` values are inlined at build time (Docker build args / repo Variables), so changing them requires a rebuild. The `publish-image.yml` action (manual `workflow_dispatch`) builds and pushes `ghcr.io/<owner>/wacrm:latest`; the server then does `docker compose pull && docker compose up -d`. Server-only secrets are runtime env, never baked into the image. See `docs/docker.md`.

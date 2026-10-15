@@ -359,8 +359,11 @@
       "lastSale": "Última Venda",
       "lastSaleValue": "Valor Última Venda",
       "lastSaleShort": "Ultima Venda",
-      "valueBrl": "Valor R$",
-      "receita": "Receita"
+      "valueBrl": "VALOR R$",
+      "receita": "Receita",
+      "osNumber": "OS Nº",
+      "saleNumber": "VENDA Nº",
+      "receitaDate": "DATA RECEITA"
     }
   },
   "Contacts": {
@@ -2081,7 +2084,11 @@
       "syncError": "Último erro: {error}",
       "syncNow": "Sincronizar agora",
       "syncStarted": "Sincronização executada.",
-      "syncFailed": "Falha ao sincronizar."
+      "syncFailed": "Falha ao sincronizar.",
+      "linkTitle": "Links no ssOtica",
+      "linkDesc": "O ssOtica identifica a loja nos endereços por um código curto (ex.: em .../movimentacao/vendas/LzBQZm/listar o código é LzBQZm). Informe-o para que o número da venda e o valor, no painel do contato, abram a venda no ssOtica.",
+      "storeHash": "Código da loja nos links",
+      "linkSaved": "Código da loja salvo."
     }
   },
   "SignupPage": {
@@ -2788,7 +2795,8 @@
       "loadFailed": "Falha ao carregar a configuração do ssOtica.",
       "saveFailed": "Falha ao salvar a configuração do ssOtica.",
       "deleteFailed": "Falha ao remover a configuração do ssOtica.",
-      "notConfigured": "Configure a integração com o ssOtica primeiro."
+      "notConfigured": "Configure a integração com o ssOtica primeiro.",
+      "storeHashInvalid": "O código da loja deve ter de 3 a 32 letras ou números."
     }
   }
 }

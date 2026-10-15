@@ -32,7 +32,7 @@ export async function GET() {
     const { supabase, accountId } = await getCurrentAccount()
     const { data, error } = await supabase
       .from('ssotica_config')
-      .select('cnpj, verified_at, api_key')
+      .select('cnpj, verified_at, api_key, store_hash')
       .eq('account_id', accountId)
       .maybeSingle()
     if (error) {
@@ -56,6 +56,7 @@ export async function GET() {
       cnpj: data.cnpj,
       verified_at: data.verified_at,
       has_key: !!data.api_key,
+      store_hash: data.store_hash ?? null,
       sync: {
         phase: state?.phase ?? 'customers',
         last_run_at: state?.last_run_at ?? null,
@@ -161,6 +162,36 @@ export async function DELETE() {
     if (error) {
       console.error('[ssotica/config DELETE] error:', error)
       return NextResponse.json({ error: t('ssotica.deleteFailed') }, { status: 500 })
+    }
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    return toErrorResponse(err)
+  }
+}
+
+/**
+ * PATCH /api/ssotica/config  (admin+)
+ *
+ * Saves the store code used in ssOtica web links (see migration 051).
+ * Independent of the credentials, so it needs no connection test.
+ */
+export async function PATCH(request: Request) {
+  try {
+    const { supabase, accountId } = await requireRole('admin')
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object') return bad(t('common.invalidRequestBody'))
+
+    const raw = typeof body.store_hash === 'string' ? body.store_hash.trim() : ''
+    if (raw && !/^[A-Za-z0-9]{3,32}$/.test(raw)) return bad(t('ssotica.storeHashInvalid'))
+
+    const { data, error } = await supabase
+      .from('ssotica_config')
+      .update({ store_hash: raw || null })
+      .eq('account_id', accountId)
+      .select('account_id')
+    if (error || !data?.length) {
+      if (error) console.error('[ssotica/config PATCH] error:', error)
+      return NextResponse.json({ error: t('ssotica.saveFailed') }, { status: 500 })
     }
     return NextResponse.json({ success: true })
   } catch (err) {

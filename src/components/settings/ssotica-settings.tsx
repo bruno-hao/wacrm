@@ -60,6 +60,8 @@ export function SsoticaSettings() {
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [storeHash, setStoreHash] = useState('');
+  const [savingHash, setSavingHash] = useState(false);
   const [sync, setSync] = useState<{
     phase: string;
     last_run_at: string | null;
@@ -98,6 +100,7 @@ export function SsoticaSettings() {
         setCnpj(maskCnpj(data.cnpj ?? ''));
         setVerifiedAt(data.verified_at ?? null);
         setSync(data.sync ?? null);
+        setStoreHash(data.store_hash ?? '');
         setApiKey(data.has_key ? MASKED_KEY : '');
         setKeyEdited(false);
       }
@@ -190,6 +193,24 @@ export function SsoticaSettings() {
       toast.error(t('removeFailed'));
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const handleSaveHash = async () => {
+    setSavingHash(true);
+    try {
+      const res = await fetch('/api/ssotica/config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ store_hash: storeHash.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) toast.success(t('linkSaved'));
+      else toast.error(data.error ?? t('saveFailed'));
+    } catch {
+      toast.error(t('saveFailed'));
+    } finally {
+      setSavingHash(false);
     }
   };
 
@@ -335,6 +356,40 @@ export function SsoticaSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {configured && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="text-base">{t('linkTitle')}</CardTitle>
+            <CardDescription>{t('linkDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="ssotica-store-hash">{t('storeHash')}</Label>
+              <Input
+                id="ssotica-store-hash"
+                value={storeHash}
+                onChange={(e) => setStoreHash(e.target.value)}
+                placeholder="LzBQZm"
+                disabled={!canEdit || savingHash}
+                autoComplete="off"
+                className="max-w-xs"
+              />
+            </div>
+            {canEdit && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSaveHash}
+                disabled={savingHash}
+              >
+                {savingHash && <Loader2 className="mr-2 size-4 animate-spin" />}
+                {t('save')}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {configured && sync && (
         <Card className="mt-4">

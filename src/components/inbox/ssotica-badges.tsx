@@ -64,21 +64,40 @@ export function SsoticaDetailBadge({
   );
 }
 
-/** Contact-panel details: OS, Última Venda, Valor R$, Receita. */
+
+/** Contact-panel details, centred: label above value. */
 export function SsoticaDetailList({ customer }: { customer: Customer }) {
   const t = useTranslations('Inbox.ssotica');
-  const rows: [string, string][] = [
-    [t('os'), customer.os_number ?? '—'],
-    [t('lastSaleShort'), customer.sale_number ?? '—'],
-    [t('valueBrl'), formatBrl(customer.sale_value)],
-    [t('receita'), formatIsoDate(customer.receita_date)],
+  // Sale number and value link to the sale in ssOtica (when the store
+  // code is configured). The API gives no code for the OS page or the
+  // prescription image, so those two stay plain text.
+  const rows: { label: string; value: string; href: string | null }[] = [
+    { label: t('osNumber'), value: customer.os_number ?? '—', href: null },
+    { label: t('saleNumber'), value: customer.sale_number ?? '—', href: customer.sale_url },
+    { label: t('valueBrl'), value: formatBrl(customer.sale_value), href: customer.sale_url },
+    { label: t('receitaDate'), value: formatIsoDate(customer.os_date), href: null },
   ];
   return (
-    <dl className="mt-2 space-y-0.5 text-left text-xs">
-      {rows.map(([label, value]) => (
-        <div key={label} className="flex gap-1">
-          <dt className="text-muted-foreground">{label}:</dt>
-          <dd className="font-medium text-foreground">{value}</dd>
+    <dl className="mt-3 space-y-2 text-center">
+      {rows.map(({ label, value, href }) => (
+        <div key={label}>
+          <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            {label}
+          </dt>
+          <dd className="text-sm font-medium text-foreground">
+            {href && value !== '—' ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
+              >
+                {value}
+              </a>
+            ) : (
+              value
+            )}
+          </dd>
         </div>
       ))}
     </dl>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
 import { canonicalPhone } from '@/lib/ssotica/sync'
+import { saleUrl } from '@/lib/ssotica/links'
 
 /**
  * GET /api/ssotica/customer?phone=<digits>
@@ -47,6 +48,11 @@ export async function GET(request: Request) {
     const best = [...rows].sort((a, b) =>
       String(b.last_sale_date ?? '').localeCompare(String(a.last_sale_date ?? '')),
     )[0]
+    const { data: cfg } = await supabase
+      .from('ssotica_config')
+      .select('store_hash')
+      .eq('account_id', accountId)
+      .maybeSingle()
     return NextResponse.json({
       status: 'customer',
       name: best.name,
@@ -56,6 +62,7 @@ export async function GET(request: Request) {
       sale_number: best.last_sale_number,
       sale_date: best.last_sale_date,
       sale_value: best.last_sale_value,
+      sale_url: saleUrl(cfg?.store_hash, best.last_sale_number),
     })
   } catch (err) {
     return toErrorResponse(err)

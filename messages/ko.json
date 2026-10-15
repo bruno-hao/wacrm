@@ -360,7 +360,10 @@
       "lastSaleValue": "최근 판매 금액",
       "lastSaleShort": "최근 판매",
       "valueBrl": "금액 R$",
-      "receita": "처방전"
+      "receita": "처방전",
+      "osNumber": "OS 번호",
+      "saleNumber": "판매 번호",
+      "receitaDate": "처방전 날짜"
     }
   },
   "Contacts": {
@@ -2081,7 +2084,11 @@
       "syncError": "마지막 오류: {error}",
       "syncNow": "지금 동기화",
       "syncStarted": "동기화가 실행되었습니다.",
-      "syncFailed": "동기화에 실패했습니다."
+      "syncFailed": "동기화에 실패했습니다.",
+      "linkTitle": "ssOtica 링크",
+      "linkDesc": "ssOtica는 주소에서 짧은 코드로 매장을 식별합니다(예: .../movimentacao/vendas/LzBQZm/listar 에서 코드는 LzBQZm). 이를 입력하면 연락처 패널의 판매 번호와 금액이 ssOtica의 판매를 엽니다.",
+      "storeHash": "링크의 매장 코드",
+      "linkSaved": "매장 코드가 저장되었습니다."
     }
   },
   "SignupPage": {
@@ -2788,7 +2795,8 @@
       "loadFailed": "ssOtica 설정을 불러오지 못했습니다.",
       "saveFailed": "ssOtica 설정을 저장하지 못했습니다.",
       "deleteFailed": "ssOtica 설정을 제거하지 못했습니다.",
-      "notConfigured": "먼저 ssOtica 연동을 설정하세요."
+      "notConfigured": "먼저 ssOtica 연동을 설정하세요.",
+      "storeHashInvalid": "매장 코드는 3~32자의 영문 또는 숫자여야 합니다."
     }
   }
 }

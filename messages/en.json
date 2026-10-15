@@ -359,8 +359,11 @@
       "lastSale": "Last sale",
       "lastSaleValue": "Last sale value",
       "lastSaleShort": "Last sale",
-      "valueBrl": "Value R$",
-      "receita": "Prescription"
+      "valueBrl": "VALUE R$",
+      "receita": "Prescription",
+      "osNumber": "WO No.",
+      "saleNumber": "SALE No.",
+      "receitaDate": "PRESCRIPTION DATE"
     }
   },
   "Contacts": {
@@ -2081,7 +2084,11 @@
       "syncError": "Last error: {error}",
       "syncNow": "Sync now",
       "syncStarted": "Sync run completed.",
-      "syncFailed": "Sync failed."
+      "syncFailed": "Sync failed.",
+      "linkTitle": "Links to ssOtica",
+      "linkDesc": "ssOtica identifies the store in its URLs by a short code (e.g. in .../movimentacao/vendas/LzBQZm/listar the code is LzBQZm). Enter it so the sale number and value in the contact panel open the sale in ssOtica.",
+      "storeHash": "Store code in links",
+      "linkSaved": "Store code saved."
     }
   },
   "SignupPage": {
@@ -2788,7 +2795,8 @@
       "loadFailed": "Failed to load the ssOtica configuration.",
       "saveFailed": "Failed to save the ssOtica configuration.",
       "deleteFailed": "Failed to remove the ssOtica configuration.",
-      "notConfigured": "Set up the ssOtica integration first."
+      "notConfigured": "Set up the ssOtica integration first.",
+      "storeHashInvalid": "The store code must be 3 to 32 letters or digits."
     }
   }
 }

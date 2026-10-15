@@ -15,6 +15,8 @@ export type SsoticaLookup =
       sale_number: string | null;
       sale_date: string | null;
       sale_value: number | null;
+      /** Link to the sale in ssOtica; null until the store code is set. */
+      sale_url: string | null;
     };
 
 const TTL_MS = 60_000;
