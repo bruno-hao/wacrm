@@ -52,6 +52,7 @@ type SoldKey = 'sold' | 'not_sold';
 type Period = 'this_month' | 'last_month' | 'last_3' | 'last_6';
 
 interface Notice {
+  quick_reply_id?: string | null;
   standard_message_id?: string | null;
   status: NoticeStatus;
   updated_at: string;
@@ -169,6 +170,8 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
   const [submitting, setSubmitting] = useState(false);
   // Pós-Venda: the standard message behind each category column.
   const [post, setPost] = useState<Partial<Record<PostKey, Choice>>>({});
+  // Avisos: the "óculos pronto" quick reply behind the Óculos Pronto column.
+  const [ready, setReady] = useState<Choice | null>(null);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -177,6 +180,21 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
     }, 300);
     return () => clearTimeout(id);
   }, [q]);
+
+  useEffect(() => {
+    if (module !== 'avisos') return;
+    void (async () => {
+      try {
+        const res = await fetch('/api/quick-replies', { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
+        const list = (data.quick_replies as QuickReply[]) ?? [];
+        const hit = list.find((r) => /pronto/i.test(r.title));
+        setReady(hit ? { id: hit.id, title: hit.title, text: hit.content_text ?? null } : null);
+      } catch {
+        /* the button stays disabled */
+      }
+    })();
+  }, [module]);
 
   useEffect(() => {
     if (module !== 'posvenda') return;
@@ -326,9 +344,17 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
     setDialogOpen(true);
   };
 
+  /** Avisos: confirm the "óculos pronto" reply for the selected rows. */
+  const openReady = () => {
+    if (!ready) return;
+    setChosen(ready);
+    setConfirming(true);
+    setDialogOpen(true);
+  };
+
   const categoryNotice = (row: Row, messageId: string): Notice | undefined =>
     row.notices
-      .filter((n) => n.standard_message_id === messageId)
+      .filter((n) => n.standard_message_id === messageId || n.quick_reply_id === messageId)
       .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
 
   const submit = async () => {
@@ -376,7 +402,7 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
     return t(`errors.${known.includes(error) ? error : 'unexpected'}` as never) as string;
   }, [error, t]);
 
-  const colCount = { avisos: 7, posvenda: 9, receitas: 8, aniversario: 6 }[module];
+  const colCount = { avisos: 6, posvenda: 9, receitas: 8, aniversario: 6 }[module];
 
   return (
     <div>
@@ -502,7 +528,22 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
                 <TableHead className="hidden xl:table-cell">{t('colLab')}</TableHead>
               )}
               {module === 'avisos' && (
-                <TableHead className="whitespace-nowrap text-center">{t('colReady')}</TableHead>
+                <TableHead className="text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="whitespace-nowrap">{t('colReady')}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!canSend || selectedCount === 0 || !ready}
+                      title={canSend ? undefined : t('cannotSend')}
+                      onClick={openReady}
+                    >
+                      <MessageSquare className="mr-1 size-3.5" />
+                      {t('send')}
+                      {selectedCount > 0 && ` (${selectedCount})`}
+                    </Button>
+                  </div>
+                </TableHead>
               )}
               {module === 'receitas' && (
                 <>
@@ -535,7 +576,7 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
                     </div>
                   </TableHead>
                 ))
-              ) : (
+              ) : module === 'avisos' ? null : (
                 <TableHead>
                   <div className="flex items-center justify-end">
                     <Button
@@ -606,9 +647,9 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
                   )}
                   {module === 'avisos' && (
                     <TableCell className="text-center">
-                      {r.notices.some((n) => n.status === 'sent') ? (
-                        <CheckCircle2 className="mx-auto size-4 text-green-500" aria-label={labels.sent} />
-                      ) : null}
+                      <div className="flex min-h-6 items-center justify-center">
+                        <StatusIcon notice={ready ? categoryNotice(r, ready.id) : undefined} labels={labels} />
+                      </div>
                     </TableCell>
                   )}
                   {module === 'receitas' && (
@@ -635,7 +676,7 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
                         </div>
                       </TableCell>
                     ))
-                  ) : (
+                  ) : module === 'avisos' ? null : (
                     <TableCell className="text-right">
                       <div className="flex min-h-6 items-center justify-end">
                         <StatusIcon notice={latestNotice(r)} labels={labels} />
@@ -748,7 +789,7 @@ export function NoticesPanel({ module }: { module: NoticeModule }) {
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline" disabled={submitting} onClick={() => (module === 'posvenda' ? setDialogOpen(false) : setConfirming(false))}>
+                <Button variant="outline" disabled={submitting} onClick={() => (module === 'posvenda' || module === 'avisos' ? setDialogOpen(false) : setConfirming(false))}>
                   {t('back')}
                 </Button>
                 <Button disabled={submitting} onClick={() => void submit()}>
