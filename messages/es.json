@@ -364,7 +364,15 @@
       "osNumber": "OS Nº",
       "saleNumber": "VENTA Nº",
       "receitaDate": "FECHA RECETA",
-      "name": "NOMBRE"
+      "name": "NOMBRE",
+      "osSituation": "SITUACIÓN DE LA O.S.",
+      "osStage": "ETAPA DE LA O.S.",
+      "osDelivered": "Entregada",
+      "osNotDelivered": "No entregada",
+      "osCancelled": "Cancelada",
+      "osLost": "Pérdida",
+      "osSold": "Vendida",
+      "osNotSold": "No vendida"
     }
   },
   "Contacts": {

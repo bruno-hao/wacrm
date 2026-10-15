@@ -11,6 +11,10 @@ export type SsoticaLookup =
       name: string | null;
       os_number: string | null;
       os_date: string | null;
+      /** ssOtica status: ABERTO, FECHADO, VENDIDO, VELADO, ENTREGUE, CANCELADO, PERDA. */
+      os_status: string | null;
+      os_stage: string | null;
+      os_sold: boolean | null;
       receita_date: string | null;
       sale_number: string | null;
       sale_date: string | null;

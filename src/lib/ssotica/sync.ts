@@ -62,6 +62,9 @@ interface ApiOs {
   numero?: number | string | null
   data?: string | null
   possui_receita?: number | boolean | null
+  status?: string | null
+  etapa_atual?: string | null
+  id_venda_vinculada?: number | string | null
   cliente?: ApiCustomer | null
 }
 
@@ -130,6 +133,9 @@ interface Row {
   phones: string[]
   last_os_number: string | null
   last_os_date: string | null
+  last_os_status: string | null
+  last_os_etapa: string | null
+  last_os_sold: boolean | null
   last_receita_date: string | null
   last_sale_number: string | null
   last_sale_date: string | null
@@ -142,7 +148,7 @@ async function loadRows(db: SupabaseClient, accountId: string, ids: number[]) {
   const { data, error } = await db
     .from('ssotica_customers')
     .select(
-      'account_id, ssotica_id, name, phones, last_os_number, last_os_date, last_receita_date, last_sale_number, last_sale_date, last_sale_value',
+      'account_id, ssotica_id, name, phones, last_os_number, last_os_date, last_os_status, last_os_etapa, last_os_sold, last_receita_date, last_sale_number, last_sale_date, last_sale_value',
     )
     .eq('account_id', accountId)
     .in('ssotica_id', ids)
@@ -159,6 +165,9 @@ function blank(accountId: string, id: number): Row {
     phones: [],
     last_os_number: null,
     last_os_date: null,
+    last_os_status: null,
+    last_os_etapa: null,
+    last_os_sold: null,
     last_receita_date: null,
     last_sale_number: null,
     last_sale_date: null,
@@ -225,6 +234,12 @@ function applyOs(row: Row, o: ApiOs) {
   if (isNewer(row.last_os_date, row.last_os_number, date, number)) {
     row.last_os_date = date
     row.last_os_number = number
+    row.last_os_status = o.status ?? null
+    row.last_os_etapa = o.etapa_atual?.trim() || null
+    // Sold = linked to a sale (or already in the VENDIDO status).
+    row.last_os_sold =
+      o.status === 'VENDIDO' ||
+      (o.id_venda_vinculada != null && String(o.id_venda_vinculada).trim() !== '')
   }
   // "Receita": date of the most recent OS that carries a prescription.
   if (

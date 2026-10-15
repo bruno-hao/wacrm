@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const { data: rows, error } = await supabase
       .from('ssotica_customers')
       .select(
-        'name, last_os_number, last_os_date, last_receita_date, last_sale_number, last_sale_date, last_sale_value',
+        'name, last_os_number, last_os_date, last_os_status, last_os_etapa, last_os_sold, last_receita_date, last_sale_number, last_sale_date, last_sale_value',
       )
       .eq('account_id', accountId)
       .contains('phones', [phone])
@@ -58,6 +58,9 @@ export async function GET(request: Request) {
       name: best.name,
       os_number: best.last_os_number,
       os_date: best.last_os_date,
+      os_status: best.last_os_status,
+      os_stage: best.last_os_etapa,
+      os_sold: best.last_os_sold,
       receita_date: best.last_receita_date,
       sale_number: best.last_sale_number,
       sale_date: best.last_sale_date,

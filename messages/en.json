@@ -364,7 +364,15 @@
       "osNumber": "WO No.",
       "saleNumber": "SALE No.",
       "receitaDate": "PRESCRIPTION DATE",
-      "name": "NAME"
+      "name": "NAME",
+      "osSituation": "WO STATUS",
+      "osStage": "WO STAGE",
+      "osDelivered": "Delivered",
+      "osNotDelivered": "Not delivered",
+      "osCancelled": "Cancelled",
+      "osLost": "Lost",
+      "osSold": "Sold",
+      "osNotSold": "Not sold"
     }
   },
   "Contacts": {

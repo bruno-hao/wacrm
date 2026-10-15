@@ -361,10 +361,18 @@
       "lastSaleShort": "Ultima Venda",
       "valueBrl": "VALOR R$",
       "receita": "Receita",
-      "osNumber": "OS Nº",
+      "osNumber": "O.S. Nº",
       "saleNumber": "VENDA Nº",
       "receitaDate": "DATA RECEITA",
-      "name": "NOME"
+      "name": "NOME",
+      "osSituation": "SITUAÇÃO DA O.S.",
+      "osStage": "ETAPA DA O.S.",
+      "osDelivered": "Entregue",
+      "osNotDelivered": "Não Entregue",
+      "osCancelled": "Cancelada",
+      "osLost": "Perda",
+      "osSold": "Vendida",
+      "osNotSold": "Não Vendida"
     }
   },
   "Contacts": {

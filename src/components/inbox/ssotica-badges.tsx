@@ -65,6 +65,27 @@ export function SsoticaDetailBadge({
 }
 
 
+type Translator = ReturnType<typeof useTranslations>;
+
+/**
+ * "Situação da O.S.": delivery state (Não Entregue / Entregue / Cancelada /
+ * Perda) plus Vendida / Não Vendida, e.g. "Não Entregue / Vendida".
+ */
+export function osSituation(customer: Customer, t: Translator): string {
+  const status = customer.os_status;
+  if (!customer.os_number || !status) return '—';
+  const state =
+    status === 'ENTREGUE'
+      ? t('osDelivered')
+      : status === 'CANCELADO'
+        ? t('osCancelled')
+        : status === 'PERDA'
+          ? t('osLost')
+          : t('osNotDelivered');
+  if (status === 'CANCELADO' || status === 'PERDA') return state;
+  return `${state} / ${customer.os_sold ? t('osSold') : t('osNotSold')}`;
+}
+
 /** Contact-panel details, centred: label above value. */
 export function SsoticaDetailList({ customer }: { customer: Customer }) {
   const t = useTranslations('Inbox.ssotica');
@@ -74,6 +95,8 @@ export function SsoticaDetailList({ customer }: { customer: Customer }) {
   const rows: { label: string; value: string; href: string | null }[] = [
     { label: t('name'), value: customer.name ?? '—', href: null },
     { label: t('osNumber'), value: customer.os_number ?? '—', href: null },
+    { label: t('osSituation'), value: osSituation(customer, t), href: null },
+    { label: t('osStage'), value: customer.os_stage || '—', href: null },
     { label: t('saleNumber'), value: customer.sale_number ?? '—', href: customer.sale_url },
     { label: t('valueBrl'), value: formatBrl(customer.sale_value), href: customer.sale_url },
     { label: t('receitaDate'), value: formatIsoDate(customer.os_date), href: null },
