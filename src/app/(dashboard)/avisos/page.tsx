@@ -27,6 +27,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -253,6 +254,7 @@ export default function AvisosPage() {
             <ChevronDown className="size-3.5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56 border-border bg-popover">
+            <DropdownMenuGroup>
             <DropdownMenuLabel>{t('situationGroup')}</DropdownMenuLabel>
             {SITUATIONS.map((s) => (
               <DropdownMenuCheckboxItem
@@ -263,7 +265,9 @@ export default function AvisosPage() {
                 {t(`sit_${s}` as never)}
               </DropdownMenuCheckboxItem>
             ))}
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuGroup>
             <DropdownMenuLabel>{t('soldGroup')}</DropdownMenuLabel>
             <DropdownMenuCheckboxItem checked={sold.includes('sold')} onCheckedChange={() => toggleSold('sold')}>
               {t('sold_sold')}
@@ -274,6 +278,7 @@ export default function AvisosPage() {
             >
               {t('sold_not_sold')}
             </DropdownMenuCheckboxItem>
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
