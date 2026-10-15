@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
+import { AudioTranscription } from "./audio-transcription";
 import { MessageReactions } from "./message-reactions";
 import {
   MediaAudioBubble,
@@ -163,13 +164,9 @@ function MessageContent({
           ) : (
             <MediaUnavailable label={t("audio")} t={t} />
           )}
-          {/* Transcription of the voice note (AI assistant), under the
+          {/* "Transcrever áudio" shortcut / the transcription, under the
               player and above the timestamp. */}
-          {message.content_text && (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm italic">
-              {message.content_text}
-            </p>
-          )}
+          <AudioTranscription message={message} />
         </div>
       );
 

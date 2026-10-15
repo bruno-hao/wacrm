@@ -278,7 +278,10 @@
       "downloadFailed": "Couldn't download the attachment",
       "viewImage": "View image",
       "expandVideo": "Expand video",
-      "imageAlt": "Shared image"
+      "imageAlt": "Shared image",
+      "transcribeAudio": "transcribe audio",
+      "transcribing": "Transcribing audio…",
+      "transcribeRetry": "try transcribing again"
     },
     "mediaViewer": {
       "counter": "{index} of {total}",
@@ -340,7 +343,11 @@
       "deals": "Deals",
       "noTags": "No tags",
       "noDeals": "No deals",
-      "addNotePlaceholder": "Add a note..."
+      "addNotePlaceholder": "Add a note...",
+      "addTag": "Add tag",
+      "removeTag": "Remove tag",
+      "availableTags": "Available tags",
+      "noTagsAvailable": "No tags yet. Create them in Settings > Fields & tags."
     },
     "aiBanner": {
       "pausedTitle": "AI assistant is paused here",
@@ -2000,7 +2007,7 @@
       "baseUrlHint": "Base URL for the OpenAI-compatible API, for example https://api.groq.com/openai/v1. /chat/completions is added automatically unless you include that path yourself.",
       "missingBaseUrl": "Enter the Base URL for the OpenAI-compatible API.",
       "transcription": "Enable audio transcription assistant",
-      "transcriptionDesc": "Transcribes incoming voice notes to text. The text shows in the conversation and lets the AI, automations and flows respond to voice messages. Uses the same base URL and key as the provider above.",
+      "transcriptionDesc": "Enables the \"transcribe audio\" shortcut on audio messages in the chat. Transcription only runs when someone clicks it and the text is saved on the message. Uses the same base URL and key as the provider above.",
       "transcriptionModel": "Transcription model",
       "transcriptionModelHint": "Default: whisper-large-v3-turbo (Groq). On a direct OpenAI account, use whisper-1.",
       "transcriptionUnsupported": "Anthropic does not offer audio transcription. Use the OpenAI provider or an OpenAI-compatible API (e.g. Groq)."
@@ -2694,7 +2701,11 @@
         "savedIndexFailed": "Saved, but semantic indexing failed ({message}). Lexical search still works; use Reindex to retry.",
         "savedKeywordOnly": "Saved with keyword search only — your embeddings key could not be decrypted (check ENCRYPTION_KEY, then re-enter the key)."
       },
-      "transcriptionUnsupported": "Audio transcription requires the OpenAI provider or an OpenAI-compatible API."
+      "transcriptionUnsupported": "Audio transcription requires the OpenAI provider or an OpenAI-compatible API.",
+      "transcribeNotAudio": "This message is not an audio.",
+      "transcriptionDisabled": "Audio transcription is not enabled.",
+      "transcribeFetchFailed": "Could not download the audio.",
+      "transcribeFailed": "Could not transcribe the audio."
     },
     "automations": {
       "copyName": "{name} (Copy)",

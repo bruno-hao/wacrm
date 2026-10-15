@@ -235,11 +235,12 @@ function applyOs(row: Row, o: ApiOs) {
     row.last_os_date = date
     row.last_os_number = number
     row.last_os_status = o.status ?? null
-    row.last_os_etapa = o.etapa_atual?.trim() || null
     // Sold = linked to a sale (or already in the VENDIDO status).
     row.last_os_sold =
       o.status === 'VENDIDO' ||
       (o.id_venda_vinculada != null && String(o.id_venda_vinculada).trim() !== '')
+    // The stage is only kept for sold OS.
+    row.last_os_etapa = row.last_os_sold ? o.etapa_atual?.trim() || null : null
   }
   // "Receita": date of the most recent OS that carries a prescription.
   if (

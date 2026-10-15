@@ -278,7 +278,10 @@
       "downloadFailed": "No se pudo descargar el adjunto",
       "viewImage": "Ver imagen",
       "expandVideo": "Ampliar video",
-      "imageAlt": "Imagen compartida"
+      "imageAlt": "Imagen compartida",
+      "transcribeAudio": "transcribir audio",
+      "transcribing": "Transcribiendo audio…",
+      "transcribeRetry": "intentar transcribir de nuevo"
     },
     "mediaViewer": {
       "counter": "{index} de {total}",
@@ -340,7 +343,11 @@
       "deals": "Negocios",
       "noTags": "Sin etiquetas",
       "noDeals": "Sin negocios",
-      "addNotePlaceholder": "Agregar una nota..."
+      "addNotePlaceholder": "Agregar una nota...",
+      "addTag": "Añadir etiqueta",
+      "removeTag": "Quitar etiqueta",
+      "availableTags": "Etiquetas disponibles",
+      "noTagsAvailable": "Aún no hay etiquetas. Créalas en Configuración > Campos y etiquetas."
     },
     "aiBanner": {
       "pausedTitle": "El asistente de IA está en pausa aquí",
@@ -2000,7 +2007,7 @@
       "baseUrlHint": "URL base de la API compatible con OpenAI, por ejemplo https://api.groq.com/openai/v1. /chat/completions se añade automáticamente, salvo que incluyas esa ruta.",
       "missingBaseUrl": "Introduce la URL base de la API compatible con OpenAI.",
       "transcription": "Activar asistente de transcripción de audio",
-      "transcriptionDesc": "Transcribe los audios recibidos a texto. El texto aparece en la conversación y permite que la IA, las automatizaciones y los flujos respondan a mensajes de voz. Usa la misma URL base y clave del proveedor de arriba.",
+      "transcriptionDesc": "Activa el atajo \"transcribir audio\" en los mensajes de audio del chat. La transcripción solo se ejecuta cuando alguien hace clic y el texto queda guardado en el mensaje. Usa la misma URL base y clave del proveedor de arriba.",
       "transcriptionModel": "Modelo de transcripción",
       "transcriptionModelHint": "Predeterminado: whisper-large-v3-turbo (Groq). En una cuenta OpenAI directa, usa whisper-1.",
       "transcriptionUnsupported": "Anthropic no ofrece transcripción de audio. Usa el proveedor OpenAI o una API compatible con OpenAI (p. ej., Groq)."
@@ -2694,7 +2701,11 @@
         "savedIndexFailed": "Guardado, pero la indexación semántica falló ({message}). La búsqueda por palabras clave sigue funcionando; usa Reindexar para reintentar.",
         "savedKeywordOnly": "Guardado solo con búsqueda por palabras clave: no se pudo descifrar tu clave de embeddings (revisa ENCRYPTION_KEY y vuelve a ingresar la clave)."
       },
-      "transcriptionUnsupported": "La transcripción de audio requiere el proveedor OpenAI o una API compatible con OpenAI."
+      "transcriptionUnsupported": "La transcripción de audio requiere el proveedor OpenAI o una API compatible con OpenAI.",
+      "transcribeNotAudio": "Este mensaje no es un audio.",
+      "transcriptionDisabled": "La transcripción de audio no está activada.",
+      "transcribeFetchFailed": "No se pudo descargar el audio.",
+      "transcribeFailed": "No se pudo transcribir el audio."
     },
     "automations": {
       "copyName": "{name} (Copia)",

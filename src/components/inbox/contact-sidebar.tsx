@@ -15,9 +15,12 @@ import {
   DollarSign,
   StickyNote,
   Plus,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { addContactTag, deleteContactTag } from "@/lib/contacts/tag-api";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -47,6 +50,8 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
   const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [tagBusy, setTagBusy] = useState<string | null>(null);
   const ssotica = useSsoticaCustomer(contact?.phone);
 
   const fetchContactData = useCallback(async () => {
@@ -104,6 +109,31 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
     // React Compiler's inference agrees with the manual dep list —
     // fixes the `preserve-manual-memoization` lint error.
   }, [contact]);
+
+  const loadAllTags = useCallback(async () => {
+    const { data } = await createClient()
+      .from("tags")
+      .select("*")
+      .order("name", { ascending: true });
+    setAllTags((data as Tag[]) ?? []);
+  }, []);
+
+  const toggleTag = useCallback(
+    async (tag: Tag, applied: boolean) => {
+      if (!contact) return;
+      setTagBusy(tag.id);
+      try {
+        if (applied) await deleteContactTag(contact.id, tag.id);
+        else await addContactTag(contact.id, tag.id);
+        await fetchContactData();
+      } catch {
+        // Leave the list as it was; the next open re-reads the truth.
+      } finally {
+        setTagBusy(null);
+      }
+    },
+    [contact, fetchContactData],
+  );
 
   const handleAddNote = useCallback(async () => {
     if (!contact || !newNote.trim()) return;
@@ -246,6 +276,52 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
             <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <TagIcon className="h-3 w-3" />
               {tSidebar("tags")}
+              <Popover onOpenChange={(open) => open && void loadAllTags()}>
+                <PopoverTrigger
+                  aria-label={tSidebar("addTag")}
+                  title={tSidebar("addTag")}
+                  className="ml-auto flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64">
+                  <p className="px-1 text-xs font-medium text-muted-foreground">
+                    {tSidebar("availableTags")}
+                  </p>
+                  {allTags.length === 0 ? (
+                    <p className="px-1 text-xs text-muted-foreground">
+                      {tSidebar("noTagsAvailable")}
+                    </p>
+                  ) : (
+                    <div className="flex max-h-60 flex-wrap gap-1.5 overflow-y-auto">
+                      {allTags.map((tag) => {
+                        const applied = tags.some((x) => x.id === tag.id);
+                        return (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            disabled={tagBusy === tag.id}
+                            onClick={() => void toggleTag(tag, applied)}
+                            title={applied ? tSidebar("removeTag") : tSidebar("addTag")}
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-opacity",
+                              !applied && "opacity-70 hover:opacity-100",
+                              tagBusy === tag.id && "opacity-40",
+                            )}
+                            style={{
+                              backgroundColor: `${tag.color}20`,
+                              color: tag.color,
+                            }}
+                          >
+                            {tag.name}
+                            {applied && <X className="h-3 w-3" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
               {tags.length === 0 ? (
@@ -254,7 +330,7 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
                 tags.map((tag) => (
                   <span
                     key={tag.contact_tag_id}
-                    className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                    className="rounded-full px-2 py-0.5 text-xs font-medium"
                     style={{
                       backgroundColor: `${tag.color}20`,
                       color: tag.color,

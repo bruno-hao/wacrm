@@ -59,7 +59,13 @@ export async function GET(request: Request) {
       os_number: best.last_os_number,
       os_date: best.last_os_date,
       os_status: best.last_os_status,
-      os_stage: best.last_os_etapa,
+      // Stage is only processed once the OS is sold (and still alive).
+      os_stage:
+        best.last_os_sold &&
+        best.last_os_status !== 'CANCELADO' &&
+        best.last_os_status !== 'PERDA'
+          ? best.last_os_etapa
+          : null,
       os_sold: best.last_os_sold,
       receita_date: best.last_receita_date,
       sale_number: best.last_sale_number,

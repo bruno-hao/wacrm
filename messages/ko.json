@@ -278,7 +278,10 @@
       "downloadFailed": "첨부파일을 다운로드할 수 없습니다",
       "viewImage": "이미지 보기",
       "expandVideo": "동영상 확대",
-      "imageAlt": "공유된 이미지"
+      "imageAlt": "공유된 이미지",
+      "transcribeAudio": "음성 전사",
+      "transcribing": "음성을 전사하는 중…",
+      "transcribeRetry": "다시 전사 시도"
     },
     "mediaViewer": {
       "counter": "{total}개 중 {index}번째",
@@ -340,7 +343,11 @@
       "deals": "딜",
       "noTags": "태그 없음",
       "noDeals": "딜 없음",
-      "addNotePlaceholder": "메모 추가..."
+      "addNotePlaceholder": "메모 추가...",
+      "addTag": "태그 추가",
+      "removeTag": "태그 제거",
+      "availableTags": "사용 가능한 태그",
+      "noTagsAvailable": "아직 태그가 없습니다. 설정 > 필드 및 태그에서 만드세요."
     },
     "aiBanner": {
       "pausedTitle": "이 대화에서 AI 어시스턴트가 일시 중지됨",
@@ -2000,7 +2007,7 @@
       "baseUrlHint": "OpenAI 호환 API의 기본 URL입니다. 예: https://api.groq.com/openai/v1. /chat/completions 경로는 직접 입력하지 않는 경우 자동으로 추가됩니다.",
       "missingBaseUrl": "OpenAI 호환 API의 기본 URL을 입력하세요.",
       "transcription": "음성 전사 도우미 사용",
-      "transcriptionDesc": "수신한 음성 메시지를 텍스트로 전사합니다. 텍스트는 대화에 표시되며 AI, 자동화, 플로우가 음성 메시지에 응답할 수 있게 합니다. 위 제공업체와 동일한 기본 URL과 키를 사용합니다.",
+      "transcriptionDesc": "채팅의 음성 메시지에 \"음성 전사\" 바로가기를 활성화합니다. 전사는 누군가 클릭할 때만 실행되며 텍스트는 메시지에 저장됩니다. 위 제공업체와 동일한 기본 URL과 키를 사용합니다.",
       "transcriptionModel": "전사 모델",
       "transcriptionModelHint": "기본값: whisper-large-v3-turbo (Groq). OpenAI 직접 계정에서는 whisper-1을 사용하세요.",
       "transcriptionUnsupported": "Anthropic은 음성 전사를 제공하지 않습니다. OpenAI 제공업체 또는 OpenAI 호환 API(예: Groq)를 사용하세요."
@@ -2694,7 +2701,11 @@
         "savedIndexFailed": "저장되었지만 의미 기반 색인에 실패했습니다({message}). 키워드 검색은 계속 작동합니다. 재색인을 사용해 다시 시도하세요.",
         "savedKeywordOnly": "키워드 검색만으로 저장되었습니다 — 임베딩 키를 복호화할 수 없습니다(ENCRYPTION_KEY를 확인한 후 키를 다시 입력하세요)."
       },
-      "transcriptionUnsupported": "음성 전사에는 OpenAI 제공업체 또는 OpenAI 호환 API가 필요합니다."
+      "transcriptionUnsupported": "음성 전사에는 OpenAI 제공업체 또는 OpenAI 호환 API가 필요합니다.",
+      "transcribeNotAudio": "이 메시지는 음성이 아닙니다.",
+      "transcriptionDisabled": "음성 전사가 활성화되어 있지 않습니다.",
+      "transcribeFetchFailed": "음성을 다운로드할 수 없습니다.",
+      "transcribeFailed": "음성을 전사할 수 없습니다."
     },
     "automations": {
       "copyName": "{name} (복사본)",

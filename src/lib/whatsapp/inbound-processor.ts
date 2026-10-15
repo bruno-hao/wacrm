@@ -21,8 +21,6 @@ import { reopenClosedConversation } from '@/lib/conversations/reopen'
 import { resumeAwaitingReply, runAutomationsForTrigger } from '@/lib/automations/engine'
 import { dispatchInboundToFlows } from '@/lib/flows/engine'
 import { dispatchInboundToAiReply } from '@/lib/ai/auto-reply'
-import { loadAiConfig } from '@/lib/ai/config'
-import { transcribeAudio, transcriptionSupported } from '@/lib/ai/transcribe'
 import { dispatchWebhookEvent } from '@/lib/webhooks/deliver'
 import {
   handleTemplateWebhookChange,
@@ -623,21 +621,12 @@ async function processMessage(
   const isFromMe = message.from_me === true
 
   // Parse message content based on type
-  const parsed = await parseMessageContent(
-    message,
-    accessToken,
-    mirrorMedia || message.waha_media ? { accountId } : null
-  )
-  const { mediaUrl, mediaType, interactiveReplyId } = parsed
-  let contentText = parsed.contentText
-
-  // Voice notes: when the account turned on transcription, turn the audio
-  // into text BEFORE the row is written, so the inbox shows it and the
-  // flows / automations / AI reply below all see a text message. Best
-  // effort: any failure leaves the audio as it was (no text).
-  if (!isFromMe && message.type === 'audio' && mediaUrl && !contentText) {
-    contentText = await transcribeInboundAudio(accountId, mediaUrl, mediaType)
-  }
+  const { contentText, mediaUrl, mediaType, interactiveReplyId } =
+    await parseMessageContent(
+      message,
+      accessToken,
+      mirrorMedia || message.waha_media ? { accountId } : null
+    )
 
   // Resolve swipe-reply context if present. A missing parent is fine —
   // we just store NULL and the UI renders the message without a quote.
@@ -1006,39 +995,6 @@ async function storeMirroredOutbound(args: {
       updated_at: new Date().toISOString(),
     })
     .eq('id', conversationId)
-}
-
-/** Transcribe a mirrored inbound audio file; null when disabled / failed. */
-async function transcribeInboundAudio(
-  accountId: string,
-  mediaUrl: string,
-  mediaType: string | null
-): Promise<string | null> {
-  try {
-    const config = await loadAiConfig(supabaseAdmin(), accountId, {
-      requireActive: false,
-    })
-    if (!config?.transcriptionEnabled || !transcriptionSupported(config.provider)) {
-      return null
-    }
-    const res = await fetch(mediaUrl, {
-      redirect: 'manual',
-      signal: AbortSignal.timeout(30_000),
-    })
-    if (!res.ok) return null
-    const bytes = await res.arrayBuffer()
-    return await transcribeAudio({
-      config,
-      bytes,
-      mimeType: mediaType || res.headers.get('content-type'),
-    })
-  } catch (err) {
-    console.error(
-      '[transcribe] inbound audio failed:',
-      err instanceof Error ? err.message : err
-    )
-    return null
-  }
 }
 
 async function parseMessageContent(

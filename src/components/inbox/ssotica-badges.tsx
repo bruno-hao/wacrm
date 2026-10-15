@@ -46,24 +46,14 @@ export function SsoticaStatusBadge({
   return null;
 }
 
-/** Header detail badge: OS / Última Venda / Valor Última Venda. */
-export function SsoticaDetailBadge({
-  customer,
-  className,
-}: {
-  customer: Customer;
-  className?: string;
-}) {
-  const t = useTranslations('Inbox.ssotica');
+/** The stage only exists for an OS that was sold (not cancelled / lost). */
+export function showStage(customer: Customer): boolean {
   return (
-    <span className={cn(pill(BLUE), className)}>
-      {t('os')}: {customer.os_number ?? '—'} / {t('lastSale')}:{' '}
-      {customer.sale_number ?? '—'} / {t('lastSaleValue')}:{' '}
-      {formatBrl(customer.sale_value)}
-    </span>
+    customer.os_sold === true &&
+    customer.os_status !== 'CANCELADO' &&
+    customer.os_status !== 'PERDA'
   );
 }
-
 
 type Translator = ReturnType<typeof useTranslations>;
 
@@ -96,7 +86,9 @@ export function SsoticaDetailList({ customer }: { customer: Customer }) {
     { label: t('name'), value: customer.name ?? '—', href: null },
     { label: t('osNumber'), value: customer.os_number ?? '—', href: null },
     { label: t('osSituation'), value: osSituation(customer, t), href: null },
-    { label: t('osStage'), value: customer.os_stage || '—', href: null },
+    ...(showStage(customer)
+      ? [{ label: t('osStage'), value: customer.os_stage || '—', href: null }]
+      : []),
     { label: t('saleNumber'), value: customer.sale_number ?? '—', href: customer.sale_url },
     { label: t('valueBrl'), value: formatBrl(customer.sale_value), href: customer.sale_url },
     { label: t('receitaDate'), value: formatIsoDate(customer.os_date), href: null },
