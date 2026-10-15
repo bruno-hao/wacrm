@@ -29,6 +29,7 @@ export const SETTINGS_SECTIONS = [
   'security',
   'appearance',
   'whatsapp',
+  'instagram',
   'templates',
   'quick-replies',
   'fields',
@@ -36,7 +37,6 @@ export const SETTINGS_SECTIONS = [
   'members',
   'api',
   'ssotica',
-  'instagram',
 ] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
