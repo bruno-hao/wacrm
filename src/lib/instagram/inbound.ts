@@ -90,11 +90,26 @@ async function findOrCreateContact(
   return data as { id: string }
 }
 
+interface InitialState {
+  lastMessageText: string
+  lastMessageAt: string
+  unreadCount: number
+}
+
+/**
+ * A brand-new conversation is INSERTed already carrying its preview and
+ * unread count. The inbox hydrates a conversation as soon as the INSERT
+ * reaches it (realtime); if the preview were only written by a follow-up
+ * UPDATE a few milliseconds later, that hydration could read the row in
+ * between and the list would keep showing "no messages yet" until the next
+ * message.
+ */
 async function findOrCreateConversation(
   db: SupabaseClient,
   cfg: IgConfigRow,
   contactId: string,
-): Promise<{ id: string; status: string } | null> {
+  initial: InitialState,
+): Promise<{ conversation: { id: string; status: string }; created: boolean } | null> {
   const select = () =>
     db
       .from('conversations')
@@ -104,7 +119,7 @@ async function findOrCreateConversation(
       .order('created_at', { ascending: true })
       .limit(1)
   const { data: rows } = await select()
-  if (rows?.length) return rows[0] as { id: string; status: string }
+  if (rows?.length) return { conversation: rows[0] as { id: string; status: string }, created: false }
 
   const { data, error } = await db
     .from('conversations')
@@ -113,18 +128,21 @@ async function findOrCreateConversation(
       user_id: cfg.created_by,
       contact_id: contactId,
       channel: 'instagram',
+      last_message_text: initial.lastMessageText,
+      last_message_at: initial.lastMessageAt,
+      unread_count: initial.unreadCount,
     })
     .select('id, status')
     .single()
   if (error) {
     if (isUniqueViolation(error)) {
       const { data: raced } = await select()
-      if (raced?.length) return raced[0] as { id: string; status: string }
+      if (raced?.length) return { conversation: raced[0] as { id: string; status: string }, created: false }
     }
     console.error('[instagram] could not create conversation:', error.message)
     return null
   }
-  return data as { id: string; status: string }
+  return { conversation: data as { id: string; status: string }, created: true }
 }
 
 function previewOf(part: IgMessagePart): string {
@@ -139,10 +157,14 @@ async function handleMessage(
 ) {
   const contact = await findOrCreateContact(db, cfg, token, ev.peerId)
   if (!contact) return
-  const conversation = await findOrCreateConversation(db, cfg, contact.id)
-  if (!conversation) return
-
   const createdAt = new Date(ev.timestamp * 1000).toISOString()
+  const found = await findOrCreateConversation(db, cfg, contact.id, {
+    lastMessageText: previewOf(ev.parts[ev.parts.length - 1]),
+    lastMessageAt: createdAt,
+    unreadCount: ev.isEcho ? 0 : 1,
+  })
+  if (!found) return
+  const { conversation, created } = found
   let newest: IgMessagePart | null = null
   let insertedAny = false
 
@@ -191,6 +213,10 @@ async function handleMessage(
   }
 
   if (!insertedAny || !newest) return
+
+  // A conversation created by this very message already carries its
+  // preview and unread count (see findOrCreateConversation).
+  if (created) return
 
   if (ev.isEcho) {
     // We sent it (CRM, Instagram app or another tool): no unread bump.
