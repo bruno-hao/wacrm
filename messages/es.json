@@ -363,7 +363,8 @@
       "receita": "Receta",
       "osNumber": "OS Nº",
       "saleNumber": "VENTA Nº",
-      "receitaDate": "FECHA RECETA"
+      "receitaDate": "FECHA RECETA",
+      "name": "NOMBRE"
     }
   },
   "Contacts": {

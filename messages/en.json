@@ -363,7 +363,8 @@
       "receita": "Prescription",
       "osNumber": "WO No.",
       "saleNumber": "SALE No.",
-      "receitaDate": "PRESCRIPTION DATE"
+      "receitaDate": "PRESCRIPTION DATE",
+      "name": "NAME"
     }
   },
   "Contacts": {

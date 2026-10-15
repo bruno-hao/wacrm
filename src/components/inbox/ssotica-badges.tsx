@@ -72,6 +72,7 @@ export function SsoticaDetailList({ customer }: { customer: Customer }) {
   // code is configured). The API gives no code for the OS page or the
   // prescription image, so those two stay plain text.
   const rows: { label: string; value: string; href: string | null }[] = [
+    { label: t('name'), value: customer.name ?? '—', href: null },
     { label: t('osNumber'), value: customer.os_number ?? '—', href: null },
     { label: t('saleNumber'), value: customer.sale_number ?? '—', href: customer.sale_url },
     { label: t('valueBrl'), value: formatBrl(customer.sale_value), href: customer.sale_url },
