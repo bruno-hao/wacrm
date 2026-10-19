@@ -312,7 +312,8 @@
       "reactWith": "Reaccionar con {emoji}",
       "nothingToCopy": "Nada que copiar",
       "copied": "Copiado",
-      "copyFailed": "Error al copiar"
+      "copyFailed": "Error al copiar",
+      "select": "Seleccionar"
     },
     "replyQuote": {
       "photo": "[Foto]",
@@ -395,6 +396,23 @@
     "channel": {
       "instagram": "Instagram",
       "whatsapp": "WhatsApp"
+    },
+    "selection": {
+      "selectedCount": "{count} elementos seleccionados",
+      "clear": "Limpiar selección",
+      "markUnread": "Marcar como no leída",
+      "forward": "Reenviar",
+      "markedUnread": "Conversación marcada como no leída.",
+      "markUnreadFailed": "No se pudo marcar como no leída.",
+      "forwardTitle": "Reenviar mensajes a",
+      "search": "Buscar nombre o número",
+      "recent": "Conversaciones recientes",
+      "noContacts": "No se encontraron conversaciones.",
+      "unknown": "Desconocido",
+      "forwarded": "{sent} mensaje(s) reenviado(s).",
+      "skipped": "{count} mensaje(s) sin texto no se reenviaron.",
+      "onlyMedia": "Los mensajes seleccionados no tienen texto (aún no se pueden reenviar archivos).",
+      "forwardFailed": "No se pudieron reenviar los mensajes."
     }
   },
   "Contacts": {

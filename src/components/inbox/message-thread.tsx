@@ -27,6 +27,9 @@ import {
   RefreshCw,
   PanelRightOpen,
   PanelRightClose,
+  Forward,
+  Mail,
+  X,
 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInHours } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -42,6 +45,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageBubble } from "./message-bubble";
 import { MessageActions } from "./message-actions";
 import { MediaLightbox } from "./media-lightbox";
+import { ForwardDialog } from "./forward-dialog";
 import { collectMediaGallery } from "@/lib/media/gallery";
 import {
   MessageComposer,
@@ -171,12 +175,26 @@ export function MessageThread({
   const t = useTranslations("Inbox.messageThread");
   const tTimer = useTranslations("Inbox.sessionTimer");
   const tQuote = useTranslations("Inbox.replyQuote");
+  const tSel = useTranslations("Inbox.selection");
 
   const { user } = useAuth();
   const { getPresence, getRow, now } = usePresence();
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
+  // Selected customer messages (forward / mark as unread). Selection mode is
+  // simply "at least one selected".
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [forwardOpen, setForwardOpen] = useState(false);
+  const selectionMode = selected.size > 0;
+  const toggleSelect = useCallback((id: string) => {
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [reactions, setReactions] = useState<MessageReaction[]>([]);
   // Purely visual spin state for the manual-refresh button. The actual
@@ -445,7 +463,25 @@ export function MessageThread({
   // a quote pulled from conversation A shouldn't bleed into conversation B.
   useEffect(() => {
     setReplyTo(null);
+    setSelected(new Set());
+    setForwardOpen(false);
   }, [conversationId]);
+
+  // Mark the conversation unread and leave it (an open thread would mark
+  // itself read again straight away).
+  const markUnread = useCallback(async () => {
+    if (!conversationId) return;
+    const id = conversationId;
+    const count = Math.max(1, conversation?.unread_count ?? 0);
+    setSelected(new Set());
+    onBack?.();
+    const { error } = await createClient()
+      .from("conversations")
+      .update({ unread_count: count })
+      .eq("id", id);
+    if (error) toast.error(tSel("markUnreadFailed"));
+    else toast.success(tSel("markedUnread"));
+  }, [conversationId, conversation?.unread_count, onBack, tSel]);
 
   // Reset the server-side unread_count to 0 whenever an unread count
   // surfaces on the active conversation — covers both (a) opening a
@@ -1151,24 +1187,61 @@ export function MessageThread({
                       const next = own?.emoji === emoji ? "" : emoji;
                       void postReaction(msg.id, next);
                     };
+                    const inbound = msg.sender_type !== "agent" && msg.sender_type !== "bot";
+                    const isSelected = selected.has(msg.id);
                     return (
-                      <MessageActions
+                      <div
                         key={msg.id}
-                        message={msg}
-                        onReply={() => handleStartReply(msg)}
-                        onReact={(emoji) => {
-                          if (emoji) void postReaction(msg.id, emoji);
-                        }}
+                        // In selection mode a click anywhere on a customer message
+                        // toggles it (and never opens media / buttons inside).
+                        onClickCapture={
+                          selectionMode && inbound
+                            ? (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleSelect(msg.id);
+                              }
+                            : undefined
+                        }
+                        className={cn(
+                          "-mx-4 flex items-center gap-3 px-4 py-0.5 transition-colors",
+                          isSelected && "bg-primary/20",
+                          selectionMode && inbound && "cursor-pointer",
+                        )}
                       >
-                        <MessageBubble
-                          message={msg}
-                          reply={reply}
-                          reactions={msgReactions}
-                          currentUserId={user?.id}
-                          onToggleReaction={handlePillToggle}
-                          onOpenMedia={handleMediaChange}
-                        />
-                      </MessageActions>
+                        {selectionMode && inbound && (
+                          <span
+                            className={cn(
+                              "flex size-5 shrink-0 items-center justify-center rounded border",
+                              isSelected
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-muted-foreground",
+                            )}
+                          >
+                            {isSelected && <Check className="size-3.5" />}
+                          </span>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <MessageActions
+                            message={msg}
+                            onReply={() => handleStartReply(msg)}
+                            onReact={(emoji) => {
+                              if (emoji) void postReaction(msg.id, emoji);
+                            }}
+                            onSelect={inbound ? () => toggleSelect(msg.id) : undefined}
+                            hideToolbar={selectionMode}
+                          >
+                            <MessageBubble
+                              message={msg}
+                              reply={reply}
+                              reactions={msgReactions}
+                              currentUserId={user?.id}
+                              onToggleReaction={handlePillToggle}
+                              onOpenMedia={handleMediaChange}
+                            />
+                          </MessageActions>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
@@ -1194,7 +1267,44 @@ export function MessageThread({
         }}
       />
 
-      {/* Composer */}
+      {/* Composer — replaced by the selection bar while messages are selected. */}
+      {selectionMode ? (
+        <div className="flex items-center justify-between border-t border-border bg-card px-4 py-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setSelected(new Set())}
+              aria-label={tSel("clear")}
+              className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <X className="size-5" />
+            </button>
+            <span className="text-sm font-medium text-foreground">
+              {tSel("selectedCount", { count: selected.size })}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => void markUnread()}
+              title={tSel("markUnread")}
+              aria-label={tSel("markUnread")}
+              className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Mail className="size-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setForwardOpen(true)}
+              title={tSel("forward")}
+              aria-label={tSel("forward")}
+              className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Forward className="size-5" />
+            </button>
+          </div>
+        </div>
+      ) : (
       <MessageComposer
         conversationId={conversation.id}
         sessionExpired={sessionInfo.expired}
@@ -1205,6 +1315,14 @@ export function MessageThread({
         channel={conversation.channel}
         replyTo={replyTo}
         onClearReply={() => setReplyTo(null)}
+      />
+      )}
+
+      <ForwardDialog
+        open={forwardOpen}
+        onOpenChange={setForwardOpen}
+        messageIds={[...selected]}
+        onForwarded={() => setSelected(new Set())}
       />
 
       <TemplatePicker

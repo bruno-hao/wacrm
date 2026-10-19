@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { CornerUpLeft, Copy, SmilePlus } from "lucide-react";
+import { CornerUpLeft, Copy, SmilePlus, Square } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +20,10 @@ interface MessageActionsProps {
   message: Message;
   onReply: () => void;
   onReact: (emoji: string) => void;
+  /** Adds the "select" square (customer messages only). */
+  onSelect?: () => void;
+  /** While selecting messages the hover toolbar stays hidden. */
+  hideToolbar?: boolean;
   children: ReactNode;
 }
 
@@ -32,6 +36,8 @@ export function MessageActions({
   message,
   onReply,
   onReact,
+  onSelect,
+  hideToolbar,
   children,
 }: MessageActionsProps) {
   const t = useTranslations("Inbox.actions");
@@ -95,6 +101,7 @@ export function MessageActions({
        *  area. See issue #165. */}
       <div className="group/actions relative min-w-0 max-w-[75%]">
         {children}
+      {!hideToolbar && (
       <div
         data-touch-open={touchOpen || pickerOpen ? "true" : undefined}
         className={cn(
@@ -144,7 +151,21 @@ export function MessageActions({
         >
           <Copy className="h-3.5 w-3.5" />
         </button>
+        {onSelect && (
+          <button
+            type="button"
+            onClick={() => {
+              onSelect();
+              setTouchOpen(false);
+            }}
+            className="flex h-5 w-5 items-center justify-center rounded-full text-popover-foreground hover:bg-muted hover:text-foreground"
+            aria-label={t("select")}
+          >
+            <Square className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
+      )}
       </div>
     </div>
   );

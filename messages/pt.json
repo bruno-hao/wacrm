@@ -312,7 +312,8 @@
       "reactWith": "Reagir com {emoji}",
       "nothingToCopy": "Nada para copiar",
       "copied": "Copiado",
-      "copyFailed": "Falha ao copiar"
+      "copyFailed": "Falha ao copiar",
+      "select": "Selecionar"
     },
     "replyQuote": {
       "photo": "[Foto]",
@@ -395,6 +396,23 @@
     "channel": {
       "instagram": "Instagram",
       "whatsapp": "WhatsApp"
+    },
+    "selection": {
+      "selectedCount": "{count} itens selecionados",
+      "clear": "Limpar seleção",
+      "markUnread": "Marcar como não lida",
+      "forward": "Encaminhar",
+      "markedUnread": "Conversa marcada como não lida.",
+      "markUnreadFailed": "Não foi possível marcar como não lida.",
+      "forwardTitle": "Encaminhar mensagens para",
+      "search": "Pesquisar nome ou número",
+      "recent": "Conversas recentes",
+      "noContacts": "Nenhuma conversa encontrada.",
+      "unknown": "Desconhecido",
+      "forwarded": "{sent} mensagem(ns) encaminhada(s).",
+      "skipped": "{count} mensagem(ns) sem texto não foram encaminhadas.",
+      "onlyMedia": "As mensagens selecionadas não têm texto (mídia não pode ser encaminhada ainda).",
+      "forwardFailed": "Não foi possível encaminhar as mensagens."
     }
   },
   "Contacts": {
