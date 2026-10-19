@@ -63,6 +63,15 @@ export function ForwardDialog({
   const nameOf = (c: Conversation) =>
     c.contact?.name || displayContactHandle(c.contact ?? {}) || t("unknown");
 
+  const initialsOf = (c: Conversation) =>
+    nameOf(c)
+      .replace(/[^\p{L}\p{N} ]/gu, "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join("") || "?";
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!conversations) return [];
@@ -161,6 +170,18 @@ export function ForwardDialog({
                       )}
                     >
                       {on && <Check className="size-3.5" />}
+                    </span>
+                    <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-medium text-foreground">
+                      {c.contact?.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={c.contact.avatar_url}
+                          alt={nameOf(c)}
+                          className="size-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        initialsOf(c)
+                      )}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-foreground">
