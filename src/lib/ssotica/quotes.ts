@@ -300,7 +300,7 @@ const empty = (): QuoteSyncResult => ({
   ok: true, created: 0, updated: 0, won: 0, lost: 0, deleted: 0, noContact: 0, unchanged: 0,
 })
 
-async function getJar(
+export async function getJar(
   db: SupabaseClient,
   cfg: { account_id: string; web_login: string; web_password: string; web_session: string | null },
   force = false,

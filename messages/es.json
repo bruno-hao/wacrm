@@ -42,7 +42,8 @@
     "menuProfile": "Perfil",
     "menuSettings": "Configuración",
     "menuSignOut": "Cerrar sesión",
-    "announcements": "ZapÓtica"
+    "announcements": "ZapÓtica",
+    "quotes": "Presupuestos"
   },
   "Header": {
     "dashboard": "Panel",
@@ -60,7 +61,8 @@
     "menuProfile": "Perfil",
     "menuSettings": "Configuración",
     "menuSignOut": "Cerrar sesión",
-    "announcements": "ZapÓtica"
+    "announcements": "ZapÓtica",
+    "quotes": "Presupuestos"
   },
   "ModeToggle": {
     "switchMode": "Cambiar al modo {mode}"
@@ -3028,5 +3030,23 @@
     "recentYes": "Sí ({number})",
     "recentNo": "No",
     "ageYears": "{age} años"
+  },
+  "Quotes": {
+    "title": "Preparar Presupuesto para Envío",
+    "subtitle": "Seleccione un presupuesto existente de ssÓtica para prepararlo para el envío.",
+    "listLabel": "Presupuestos activos en ssOtica",
+    "loading": "Cargando presupuestos…",
+    "empty": "No hay presupuestos activos en ssOtica.",
+    "modelLabel": "Modelo de Presupuesto (Opciones de Lentes)",
+    "modelPlaceholder": "Seleccione…",
+    "modelOne": "Un fabricante",
+    "modelTwoPlus": "Dos o más fabricantes",
+    "errors": {
+      "not_configured": "Configure el acceso web de ssOtica en Configuración → ssOtica.",
+      "login_failed": "ssOtica rechazó el acceso. Revise usuario y contraseña en Configuración → ssOtica.",
+      "captcha": "ssOtica pidió una verificación (captcha). Inténtelo más tarde.",
+      "network": "No se pudo contactar con ssOtica. Inténtelo de nuevo.",
+      "unexpected": "No se pudieron cargar los presupuestos."
+    }
   }
 }

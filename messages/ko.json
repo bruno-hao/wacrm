@@ -42,7 +42,8 @@
     "menuProfile": "프로필",
     "menuSettings": "설정",
     "menuSignOut": "로그아웃",
-    "announcements": "ZapÓtica"
+    "announcements": "ZapÓtica",
+    "quotes": "견적"
   },
   "Header": {
     "dashboard": "대시보드",
@@ -60,7 +61,8 @@
     "menuProfile": "프로필",
     "menuSettings": "설정",
     "menuSignOut": "로그아웃",
-    "announcements": "ZapÓtica"
+    "announcements": "ZapÓtica",
+    "quotes": "견적"
   },
   "ModeToggle": {
     "switchMode": "{mode} 모드로 전환"
@@ -3028,5 +3030,23 @@
     "recentYes": "예 ({number})",
     "recentNo": "아니요",
     "ageYears": "{age}세"
+  },
+  "Quotes": {
+    "title": "발송용 견적 준비",
+    "subtitle": "발송을 준비할 ssÓtica의 기존 견적을 선택하세요.",
+    "listLabel": "ssOtica의 유효 견적",
+    "loading": "견적을 불러오는 중…",
+    "empty": "ssOtica에 유효한 견적이 없습니다.",
+    "modelLabel": "견적 모델(렌즈 옵션)",
+    "modelPlaceholder": "선택…",
+    "modelOne": "제조사 1곳",
+    "modelTwoPlus": "제조사 2곳 이상",
+    "errors": {
+      "not_configured": "설정 → ssOtica에서 웹 로그인을 설정하세요.",
+      "login_failed": "ssOtica가 로그인을 거부했습니다. 설정 → ssOtica에서 사용자와 비밀번호를 확인하세요.",
+      "captcha": "ssOtica가 인증(캡차)을 요구했습니다. 나중에 다시 시도하세요.",
+      "network": "ssOtica에 연결할 수 없습니다. 다시 시도하세요.",
+      "unexpected": "견적을 불러올 수 없습니다."
+    }
   }
 }

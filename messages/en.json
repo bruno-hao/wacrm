@@ -42,7 +42,8 @@
     "menuProfile": "Profile",
     "menuSettings": "Settings",
     "menuSignOut": "Sign out",
-    "announcements": "ZapÓtica"
+    "announcements": "ZapÓtica",
+    "quotes": "Quotes"
   },
   "Header": {
     "dashboard": "Dashboard",
@@ -60,7 +61,8 @@
     "menuProfile": "Profile",
     "menuSettings": "Settings",
     "menuSignOut": "Sign out",
-    "announcements": "ZapÓtica"
+    "announcements": "ZapÓtica",
+    "quotes": "Quotes"
   },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"
@@ -3028,5 +3030,23 @@
     "recentYes": "Yes ({number})",
     "recentNo": "No",
     "ageYears": "{age} years"
+  },
+  "Quotes": {
+    "title": "Prepare Quote for Sending",
+    "subtitle": "Select an existing ssÓtica quote to prepare for sending.",
+    "listLabel": "Active quotes in ssOtica",
+    "loading": "Loading quotes…",
+    "empty": "No active quotes in ssOtica.",
+    "modelLabel": "Quote Model (Lens Options)",
+    "modelPlaceholder": "Select…",
+    "modelOne": "One manufacturer",
+    "modelTwoPlus": "Two or more manufacturers",
+    "errors": {
+      "not_configured": "Set up the ssOtica web login in Settings → ssOtica.",
+      "login_failed": "ssOtica rejected the login. Check the user and password in Settings → ssOtica.",
+      "captcha": "ssOtica asked for a verification (captcha). Try again later.",
+      "network": "Could not reach ssOtica. Try again.",
+      "unexpected": "Could not load the quotes."
+    }
   }
 }

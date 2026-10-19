@@ -178,6 +178,7 @@ export async function fetchQuotes(
   from: Date,
   to: Date,
   maxPages = 300,
+  situations: string[] = ['ATIVO', 'CONVERTIDO', 'CANCELADO', 'EXPIRADO'],
 ): Promise<GraphqlQuote[]> {
   const out: GraphqlQuote[] = []
   for (let page = 1; page <= maxPages; page++) {
@@ -200,7 +201,7 @@ export async function fetchQuotes(
           per_page: 100,
           periodo_inicio: ddmmyyyy(from),
           periodo_fim: ddmmyyyy(to),
-          situacao: ['ATIVO', 'CONVERTIDO', 'CANCELADO', 'EXPIRADO'],
+          situacao: situations,
         },
       }),
     })
