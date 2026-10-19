@@ -15,8 +15,6 @@ interface ActiveQuote {
   seller: string;
 }
 
-type LensModel = '' | 'one' | 'two_plus';
-
 const money = (v: number) =>
   v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const fmtDate = (iso: string | null) => (iso ? iso.split('-').reverse().join('/') : '—');
@@ -26,7 +24,6 @@ export default function OrcamentosPage() {
   const [items, setItems] = useState<ActiveQuote[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [quoteId, setQuoteId] = useState('');
-  const [model, setModel] = useState<LensModel>('');
 
   useEffect(() => {
     let cancelled = false;
@@ -68,7 +65,7 @@ export default function OrcamentosPage() {
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <div className="mt-6">
         <div>
           <label htmlFor="quote-list" className="mb-1.5 block text-sm font-medium text-foreground">
             {t('listLabel')}
@@ -107,22 +104,6 @@ export default function OrcamentosPage() {
               ))}
             </select>
           )}
-        </div>
-
-        <div>
-          <label htmlFor="lens-model" className="mb-1.5 block text-sm font-medium text-foreground">
-            {t('modelLabel')}
-          </label>
-          <select
-            id="lens-model"
-            value={model}
-            onChange={(e) => setModel(e.target.value as LensModel)}
-            className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
-          >
-            <option value="">{t('modelPlaceholder')}</option>
-            <option value="one">{t('modelOne')}</option>
-            <option value="two_plus">{t('modelTwoPlus')}</option>
-          </select>
         </div>
       </div>
     </div>
