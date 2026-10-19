@@ -13,6 +13,7 @@ export interface ActiveQuote {
   customerName: string
   total: number
   date: string | null // yyyy-mm-dd
+  seller: string
 }
 
 const RANGE_FROM = new Date(2001, 0, 1)
@@ -60,6 +61,7 @@ async function load(db: SupabaseClient, accountId: string): Promise<ActiveQuote[
       customerName: (g.cliente_nome ?? '').trim(),
       total: q.total,
       date: q.createdAt,
+      seller: q.seller ?? '',
     }))
     .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '') || Number(b.number) - Number(a.number))
 }

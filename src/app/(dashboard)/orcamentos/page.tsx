@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { firstName, formatQuoteNumber, titleCaseName } from '@/lib/orcamentos/format';
+
 interface ActiveQuote {
   id: string;
   number: string;
   customerName: string;
   total: number;
   date: string | null;
+  seller: string;
 }
 
 type LensModel = '' | 'one' | 'two_plus';
@@ -93,7 +96,13 @@ export default function OrcamentosPage() {
               <option value="">{t('quotePlaceholder')}</option>
               {items.map((q) => (
                 <option key={q.id} value={q.id}>
-                  {`${q.number} - ${q.customerName || '—'} - ${money(q.total)} - ${fmtDate(q.date)}`}
+                  {[
+                    formatQuoteNumber(q.number),
+                    q.customerName ? titleCaseName(q.customerName) : '—',
+                    money(q.total),
+                    fmtDate(q.date),
+                    firstName(q.seller) || '—',
+                  ].join(' - ')}
                 </option>
               ))}
             </select>
