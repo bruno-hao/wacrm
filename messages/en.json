@@ -3047,6 +3047,7 @@
       "captcha": "ssOtica asked for a verification (captcha). Try again later.",
       "network": "Could not reach ssOtica. Try again.",
       "unexpected": "Could not load the quotes."
-    }
+    },
+    "quotePlaceholder": "Select a quote…"
   }
 }

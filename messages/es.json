@@ -3047,6 +3047,7 @@
       "captcha": "ssOtica pidió una verificación (captcha). Inténtelo más tarde.",
       "network": "No se pudo contactar con ssOtica. Inténtelo de nuevo.",
       "unexpected": "No se pudieron cargar los presupuestos."
-    }
+    },
+    "quotePlaceholder": "Seleccione un presupuesto…"
   }
 }

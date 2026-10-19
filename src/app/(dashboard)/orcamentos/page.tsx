@@ -86,13 +86,13 @@ export default function OrcamentosPage() {
           ) : (
             <select
               id="quote-list"
-              size={12}
               value={quoteId}
               onChange={(e) => setQuoteId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card p-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
             >
+              <option value="">{t('quotePlaceholder')}</option>
               {items.map((q) => (
-                <option key={q.id} value={q.id} className="rounded px-2 py-1.5">
+                <option key={q.id} value={q.id}>
                   {`${q.number} - ${q.customerName || '—'} - ${money(q.total)} - ${fmtDate(q.date)}`}
                 </option>
               ))}
