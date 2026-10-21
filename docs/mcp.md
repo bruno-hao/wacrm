@@ -1,25 +1,25 @@
-# MCP server
+# Servidor MCP
 
-wacrm ships a [Model Context Protocol](https://modelcontextprotocol.io)
-server so you can drive your CRM from AI assistants — Claude Desktop,
-Claude Code, Cursor, and any other MCP client — in natural language:
+O wacrm inclui um servidor [Model Context Protocol](https://modelcontextprotocol.io)
+para que você controle seu CRM por assistentes de IA — Claude Desktop,
+Claude Code, Cursor e qualquer outro cliente MCP — em linguagem natural:
 
-> "How many conversations are still open today?"
-> "Show the last five messages with +1 415 555 0123."
-> "Send the `order_update` template to that contact."
+> "Quantas conversas ainda estão abertas hoje?"
+> "Mostre as últimas cinco mensagens com +1 415 555 0123."
+> "Envie o template `order_update` para esse contato."
 
-It lives in [`mcp-server/`](../mcp-server) and is published to npm as
-[`wacrm-mcp`](https://www.npmjs.com/package/wacrm-mcp). Under the hood
-it's a thin wrapper over the [public API](./public-api.md), so every
-request is authenticated and scoped by your instance exactly like any
-other API call.
+Ele fica em [`mcp-server/`](../mcp-server) e é publicado no npm como
+[`wacrm-mcp`](https://www.npmjs.com/package/wacrm-mcp). Por baixo dos
+panos, é um wrapper fino sobre a [API pública](./public-api.md), de modo
+que toda requisição é autenticada e limitada pela sua instância exatamente
+como qualquer outra chamada de API.
 
-## Quick start
+## Início rápido
 
-1. Create an API key in the dashboard: **Settings → API keys**. Grant
-   only the scopes your assistant needs (a read-only assistant only
-   needs the `*:read` scopes).
-2. Add the server to your MCP client config:
+1. Crie uma chave de API no dashboard: **Configurações → Chaves de API**.
+   Conceda apenas os escopos de que o seu assistente precisa (um assistente
+   somente leitura só precisa dos escopos `*:read`).
+2. Adicione o servidor à configuração do seu cliente MCP:
 
    ```jsonc
    {
@@ -36,23 +36,23 @@ other API call.
    }
    ```
 
-That's **read-only** — the safe default. To let the assistant change
-data or send messages, add `"WACRM_ENABLE_WRITES": "true"` (and
-`"WACRM_ENABLE_BROADCASTS": "true"` for mass sends) to `env`.
+Isso é **somente leitura** — o padrão seguro. Para permitir que o assistente
+altere dados ou envie mensagens, adicione `"WACRM_ENABLE_WRITES": "true"`
+(e `"WACRM_ENABLE_BROADCASTS": "true"` para envios em massa) em `env`.
 
-## What it exposes
+## O que ele expõe
 
-- **Reads (always on):** `whoami`, contacts (list/get), conversations
-  (list/get), messages (list), broadcast status.
-- **Writes (opt-in):** send a message, create/update a contact.
-- **Broadcasts (opt-in):** launch a template broadcast — requires an
-  explicit `confirm` and is marked destructive.
+- **Leituras (sempre ativas):** `whoami`, contatos (listar/obter), conversas
+  (listar/obter), mensagens (listar), status de disparos.
+- **Escritas (sob adesão):** enviar uma mensagem, criar/atualizar um contato.
+- **Disparos em massa (sob adesão):** iniciar um disparo de template —
+  exige um `confirm` explícito e é marcado como destrutivo.
 
-## Safety
+## Segurança
 
-Because sending WhatsApp messages is a real side effect, the server is
-**read-only until you opt in**, layered on top of the API key's own
-scopes. Give an assistant a read-only key and read-only config and it
-physically cannot send anything. See the
-[server README](../mcp-server/README.md) for the full tool list and
-safety model.
+Como enviar mensagens de WhatsApp é um efeito colateral real, o servidor é
+**somente leitura até você aderir**, em camada acima dos próprios escopos da
+chave de API. Dê ao assistente uma chave somente leitura e uma configuração
+somente leitura, e ele fisicamente não consegue enviar nada. Veja o
+[README do servidor](../mcp-server/README.md) para a lista completa de
+ferramentas e o modelo de segurança.

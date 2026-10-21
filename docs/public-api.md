@@ -1,105 +1,106 @@
-# Public API (`/api/v1`)
+# API pública (`/api/v1`)
 
-The public API lets you drive your wacrm instance from your own
-scripts and automations — send messages, manage contacts, launch
-broadcasts — without going through the dashboard UI.
+A API pública permite controlar a sua instância do wacrm a partir dos seus
+próprios scripts e automações — enviar mensagens, gerenciar contatos,
+iniciar disparos em massa — sem passar pela interface do dashboard.
 
-> **Status:** stable. Authentication, scopes, rate limiting, the
-> messages / contacts / conversations / broadcasts endpoints, and
-> outbound event [webhooks](#webhooks) all ship now.
+> **Status:** estável. Autenticação, escopos, limite de taxa, os endpoints
+> de mensagens / contatos / conversas / disparos e os [webhooks](#webhooks)
+> de eventos de saída já estão disponíveis.
 
-## Authentication
+## Autenticação
 
-Every request authenticates with an **API key**, sent as a bearer
+Toda requisição se autentica com uma **chave de API**, enviada como bearer
 token:
 
 ```
 Authorization: Bearer wacrm_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Keys are **account-scoped**: a key acts on exactly one account, the
-one it was created in. There is no cross-account access.
+As chaves têm **escopo de conta**: uma chave atua em exatamente uma conta,
+aquela em que foi criada. Não há acesso entre contas.
 
-### Creating a key
+### Criando uma chave
 
-In the dashboard: **Settings → API keys → New API key**. Only
-**admins and owners** can create keys.
+No dashboard: **Configurações → Chaves de API → Nova chave de API**.
+Somente **admins e owners** podem criar chaves.
 
-1. Give the key a name (after the integration that will use it).
-2. Grant the **scopes** it needs — nothing more (see below).
-3. Copy the key. **The full key is shown exactly once.** wacrm
-   stores only a SHA-256 hash, so it can never be shown again. If you
-   lose it, revoke it and create a new one.
+1. Dê um nome à chave (o da integração que vai usá-la).
+2. Conceda os **escopos** de que ela precisa — nada além disso (veja abaixo).
+3. Copie a chave. **A chave completa é exibida exatamente uma vez.** O
+   wacrm armazena apenas um hash SHA-256, então ela nunca poderá ser
+   mostrada de novo. Se você a perder, revogue-a e crie uma nova.
 
-### Revoking a key
+### Revogando uma chave
 
-**Settings → API keys → Revoke.** Revocation is effective on the
-key's next request. Revoked keys stay in the list as an audit trail.
+**Configurações → Chaves de API → Revogar.** A revogação vale a partir da
+próxima requisição da chave. As chaves revogadas continuam na lista como
+trilha de auditoria.
 
-## Scopes
+## Escopos
 
-A key can do only what its scopes allow — independent of who created
-it. Grant the minimum.
+Uma chave só pode fazer o que seus escopos permitem — independentemente de
+quem a criou. Conceda o mínimo.
 
-| Scope                | Allows                                   |
-| -------------------- | ---------------------------------------- |
-| `messages:send`      | Send WhatsApp messages                   |
-| `messages:read`      | Read messages and delivery status        |
-| `contacts:read`      | List and read contacts                   |
-| `contacts:write`     | Create and update contacts               |
-| `conversations:read` | List and read conversations              |
-| `broadcasts:send`    | Launch broadcast campaigns               |
-| `webhooks:manage`    | Register and manage outbound webhooks    |
+| Escopo               | Permite                                         |
+| -------------------- | ----------------------------------------------- |
+| `messages:send`      | Enviar mensagens de WhatsApp                    |
+| `messages:read`      | Ler mensagens e status de entrega               |
+| `contacts:read`      | Listar e ler contatos                           |
+| `contacts:write`     | Criar e atualizar contatos                      |
+| `conversations:read` | Listar e ler conversas                          |
+| `broadcasts:send`    | Iniciar campanhas de disparo em massa           |
+| `webhooks:manage`    | Registrar e gerenciar webhooks de saída         |
 
-A key with **no scopes** still authenticates and can call
-`GET /api/v1/me` — useful for verifying a key works.
+Uma chave **sem escopos** ainda se autentica e pode chamar
+`GET /api/v1/me` — útil para verificar se uma chave funciona.
 
-## Response envelope
+## Envelope de resposta
 
-Every response uses one of two shapes:
+Toda resposta usa um de dois formatos:
 
 ```jsonc
-// success
+// sucesso
 { "data": { /* ... */ } }
 
-// failure
+// falha
 { "error": { "code": "forbidden", "message": "This API key is missing the 'messages:send' scope" } }
 ```
 
-Branch on `error.code` (stable); `error.message` is for humans and
-may be reworded.
+Faça a ramificação por `error.code` (estável); `error.message` é para
+humanos e pode ser reescrita.
 
-| Status | `code`         | Meaning                                          |
-| ------ | -------------- | ------------------------------------------------ |
-| 401    | `unauthorized` | Missing / malformed / unknown / revoked / expired key |
-| 403    | `forbidden`    | Valid key, but missing the required scope        |
-| 429    | `rate_limited` | Per-key rate limit exceeded                      |
-| 400    | `bad_request`  | Malformed input                                  |
-| 404    | `not_found`    | No such resource                                 |
-| 500    | `internal`     | Server error                                     |
+| Status | `code`         | Significado                                                        |
+| ------ | -------------- | ------------------------------------------------------------------ |
+| 401    | `unauthorized` | Chave ausente / malformada / desconhecida / revogada / expirada    |
+| 403    | `forbidden`    | Chave válida, mas sem o escopo necessário                          |
+| 429    | `rate_limited` | Limite de taxa por chave excedido                                  |
+| 400    | `bad_request`  | Entrada malformada                                                 |
+| 404    | `not_found`    | Recurso inexistente                                                |
+| 500    | `internal`     | Erro do servidor                                                   |
 
-## Rate limits
+## Limites de taxa
 
-Requests are limited **per key**: **120 requests per minute**. On a
-`429`, these headers tell you when to retry:
+As requisições são limitadas **por chave**: **120 requisições por minuto**.
+Em um `429`, estes headers informam quando tentar de novo:
 
-- `Retry-After` — seconds until the window resets
+- `Retry-After` — segundos até a janela reiniciar
 - `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
-> The limiter is in-memory and **per process**. A single-instance
-> deploy (the common case for a self-hosted fork) is fine as-is. If
-> you scale to multiple instances, swap the limiter for a shared
-> store (Redis/Upstash) — see the note at the top of
-> `src/lib/rate-limit.ts`. The limit is otherwise unenforced across
-> instances.
+> O limitador fica em memória e é **por processo**. Uma implantação com
+> instância única (o caso comum de um fork self-hosted) funciona como está.
+> Se você escalar para várias instâncias, troque o limitador por um
+> armazenamento compartilhado (Redis/Upstash) — veja a nota no topo de
+> `src/lib/rate-limit.ts`. Caso contrário, o limite não é aplicado entre
+> instâncias.
 
 ## Endpoints
 
 ### `GET /api/v1/me`
 
-Returns the account a key is bound to and the scopes it carries.
-Requires only a valid key (no scope). Use it to verify a key works
-and to discover its scopes.
+Retorna a conta à qual a chave está vinculada e os escopos que ela possui.
+Exige apenas uma chave válida (nenhum escopo). Use-o para verificar se uma
+chave funciona e para descobrir seus escopos.
 
 ```bash
 curl https://your-crm.example.com/api/v1/me \
@@ -117,28 +118,28 @@ curl https://your-crm.example.com/api/v1/me \
 
 ### `POST /api/v1/messages`
 
-Send a WhatsApp message to a phone number. Scope: `messages:send`. You
-pass an **E.164 number**, not an internal id — the endpoint
-finds-or-creates the contact + conversation, then sends.
+Envia uma mensagem de WhatsApp para um número de telefone. Escopo:
+`messages:send`. Você informa um **número E.164**, não um id interno — o
+endpoint localiza ou cria o contato + a conversa e então envia.
 
-`to` must start with `+` followed by the country code (`+14155550123`;
-spaces, dashes and parentheses between the digits are fine). A number
-without the `+` is rejected with `400 bad_request` even when it happens
-to be the right digits: the API can't tell `14155550123` (US, with
-country code) from `4155551212` (a US national number that Meta would
-deliver to +41, Switzerland), so it doesn't guess.
+`to` deve começar com `+` seguido do código do país (`+14155550123`;
+espaços, hífens e parênteses entre os dígitos são aceitos). Um número sem o
+`+` é rejeitado com `400 bad_request` mesmo quando os dígitos estão certos:
+a API não consegue distinguir `14155550123` (EUA, com código do país) de
+`4155551212` (um número nacional dos EUA que a Meta entregaria ao +41,
+Suíça), então não adivinha.
 
 ```bash
 curl -X POST https://your-crm.example.com/api/v1/messages \
   -H "Authorization: Bearer wacrm_live_xxx" \
   -H "Content-Type: application/json" \
-  -d '{ "to": "+14155550123", "type": "text", "text": "Hi 👋" }'
+  -d '{ "to": "+14155550123", "type": "text", "text": "Olá 👋" }'
 ```
 
-`type` is `text` (default), `template`, or a media kind (`image` /
-`video` / `document` / `audio`). Media needs `media_url` (and optional
-`filename`); `text` doubles as the caption. `template` needs a
-`template` object:
+`type` é `text` (padrão), `template` ou um tipo de mídia (`image` /
+`video` / `document` / `audio`). Mídia exige `media_url` (e `filename`
+opcional); `text` serve também como legenda. `template` exige um objeto
+`template`:
 
 ```jsonc
 {
@@ -147,13 +148,13 @@ curl -X POST https://your-crm.example.com/api/v1/messages \
   "template": {
     "name": "order_update",
     "language": "en_US",
-    "params": ["A123"]        // positional body vars, or a structured object
+    "params": ["A123"]        // variáveis posicionais do corpo, ou um objeto estruturado
   },
-  "reply_to_message_id": "<uuid>"   // optional; must be in the same conversation
+  "reply_to_message_id": "<uuid>"   // opcional; deve estar na mesma conversa
 }
 ```
 
-Response (201):
+Resposta (201):
 
 ```json
 {
@@ -167,15 +168,15 @@ Response (201):
 }
 ```
 
-Domain error codes beyond the table above: `whatsapp_not_configured`
-(400), `meta_error` (502 — the request reached Meta and it rejected the
-send), `template_malformed` (500).
+Códigos de erro de domínio além dos da tabela acima:
+`whatsapp_not_configured` (400), `meta_error` (502 — a requisição chegou à
+Meta e ela rejeitou o envio), `template_malformed` (500).
 
 ### `GET /api/v1/contacts`
 
-List contacts, newest first. Scope: `contacts:read`. Paginated (see
-[Pagination](#pagination)). Optional filters: `?search=` (matches name
-or phone) and `?tag=<tagId>`.
+Lista contatos, do mais novo para o mais antigo. Escopo: `contacts:read`.
+Paginado (veja [Paginação](#paginação)). Filtros opcionais: `?search=`
+(compara com nome ou telefone) e `?tag=<tagId>`.
 
 ```json
 {
@@ -193,53 +194,55 @@ or phone) and `?tag=<tagId>`.
 
 ### `POST /api/v1/contacts`
 
-Create a contact. Scope: `contacts:write`. `phone` (E.164, leading `+`
-and country code required — same rule as `POST /api/v1/messages`) is
-required; `name`, `email`, `company`, and `tags` (an array of tag names,
-created if missing) are optional. **Find-or-create by phone:** an existing
-match returns `200` with the existing contact; a new contact returns
-`201`. The response body is the serialized contact (same shape as the
-list rows above).
+Cria um contato. Escopo: `contacts:write`. `phone` (E.164, `+` inicial e
+código do país obrigatórios — mesma regra do `POST /api/v1/messages`) é
+obrigatório; `name`, `email`, `company` e `tags` (um array de nomes de tag,
+criadas se não existirem) são opcionais. **Localizar ou criar por
+telefone:** uma correspondência existente retorna `200` com o contato
+existente; um contato novo retorna `201`. O corpo da resposta é o contato
+serializado (mesmo formato das linhas da listagem acima).
 
 ### `GET` / `PATCH /api/v1/contacts/{id}`
 
-Read or update one contact. Scopes: `contacts:read` / `contacts:write`.
-`PATCH` updates only the fields you send (`name`, `email`, `company`);
-pass `tags` (an array of tag names) to replace the contact's tags. A
-contact in another account returns `404`.
+Lê ou atualiza um contato. Escopos: `contacts:read` / `contacts:write`.
+O `PATCH` atualiza apenas os campos enviados (`name`, `email`, `company`);
+passe `tags` (um array de nomes de tag) para substituir as tags do contato.
+Um contato de outra conta retorna `404`.
 
 ### `GET /api/v1/conversations`
 
-List conversations, newest first. Scope: `conversations:read`.
-Paginated. Optional filters: `?status=` (`open` / `pending` / `closed`)
-and `?contact_id=`. Each conversation embeds its contact + tags.
+Lista conversas, da mais nova para a mais antiga. Escopo:
+`conversations:read`. Paginado. Filtros opcionais: `?status=` (`open` /
+`pending` / `closed`) e `?contact_id=`. Cada conversa traz embutidos o seu
+contato + tags.
 
 ### `GET /api/v1/conversations/{id}`
 
-Read one conversation. Scope: `conversations:read`. `404` if it belongs
-to another account.
+Lê uma conversa. Escopo: `conversations:read`. `404` se ela pertencer a
+outra conta.
 
 ### `GET /api/v1/conversations/{id}/messages`
 
-List a conversation's messages, newest first. Scope: `messages:read`.
-Paginated. Each message includes its `direction` (`inbound` /
-`outbound`), `status` (delivery state), `whatsapp_message_id`, and
-`content_*`. The conversation is verified to belong to your account
-first (`404` otherwise).
+Lista as mensagens de uma conversa, da mais nova para a mais antiga.
+Escopo: `messages:read`. Paginado. Cada mensagem inclui `direction`
+(`inbound` / `outbound`), `status` (estado de entrega),
+`whatsapp_message_id` e `content_*`. Primeiro se verifica que a conversa
+pertence à sua conta (`404` caso contrário).
 
 ### `POST /api/v1/broadcasts`
 
-Launch a template broadcast to a list of recipients. Scope:
-`broadcasts:send`. The broadcast + its recipient rows are persisted
-immediately and the sends fan out in the background, so the call
-returns fast — poll `GET /api/v1/broadcasts/{id}` for progress.
+Inicia um disparo de template para uma lista de destinatários. Escopo:
+`broadcasts:send`. O disparo e suas linhas de destinatários são persistidos
+imediatamente e os envios se distribuem em segundo plano, então a chamada
+retorna rápido — consulte `GET /api/v1/broadcasts/{id}` para acompanhar o
+progresso.
 
 ```bash
 curl -X POST https://your-crm.example.com/api/v1/broadcasts \
   -H "Authorization: Bearer wacrm_live_xxx" \
   -H "Content-Type: application/json" \
   -d '{
-        "name": "July promo",
+        "name": "Promoção de julho",
         "template_name": "promo_july",
         "template_language": "en_US",
         "recipients": [
@@ -249,10 +252,10 @@ curl -X POST https://your-crm.example.com/api/v1/broadcasts \
       }'
 ```
 
-Recipients are capped at **1000 per request** — split larger sends.
-Invalid phone numbers — including any without a leading `+` and country
-code — are dropped and counted as `rejected`; if none are valid the
-request fails with `400 bad_request`. Response (202):
+Os destinatários são limitados a **1000 por requisição** — divida envios
+maiores. Números de telefone inválidos — incluindo qualquer um sem `+`
+inicial e código do país — são descartados e contados como `rejected`; se
+nenhum for válido, a requisição falha com `400 bad_request`. Resposta (202):
 
 ```json
 {
@@ -268,51 +271,52 @@ request fails with `400 bad_request`. Response (202):
 
 ### `GET /api/v1/broadcasts/{id}`
 
-Broadcast status + counts. Scope: `broadcasts:send`. `status` moves
-`sending` → `sent`; `delivered_count` / `read_count` keep climbing as
-Meta delivery webhooks arrive. `404` for another account's broadcast.
+Status do disparo + contagens. Escopo: `broadcasts:send`. O `status` passa
+de `sending` → `sent`; `delivered_count` / `read_count` continuam subindo à
+medida que chegam os webhooks de entrega da Meta. `404` para o disparo de
+outra conta.
 
-## Pagination
+## Paginação
 
-Every list endpoint pages the same way. Request a page size with
-`?limit=` (default 50, max 100) and read the next page with the opaque
-`meta.next_cursor` from the previous response:
+Todo endpoint de listagem pagina do mesmo jeito. Peça um tamanho de página
+com `?limit=` (padrão 50, máximo 100) e leia a próxima página com o
+`meta.next_cursor` opaco da resposta anterior:
 
 ```
 GET /api/v1/contacts?limit=50
 → { "data": [ … ], "meta": { "next_cursor": "eyJ…" } }
 
 GET /api/v1/contacts?limit=50&cursor=eyJ…
-→ { "data": [ … ], "meta": { "next_cursor": null } }   // last page
+→ { "data": [ … ], "meta": { "next_cursor": null } }   // última página
 ```
 
-Cursors are keyset-based (stable under concurrent inserts). Pass the
-cursor back verbatim — don't parse it. `next_cursor: null` means the
-last page.
+Os cursores são baseados em keyset (estáveis diante de inserções
+concorrentes). Devolva o cursor exatamente como veio — não o interprete.
+`next_cursor: null` significa a última página.
 
 ## Webhooks
 
-Rather than polling, register an endpoint and wacrm will POST to it when
-things happen in your account. **Migration required:** apply
+Em vez de fazer polling, registre um endpoint e o wacrm fará um POST nele
+quando coisas acontecerem na sua conta. **Migration necessária:** aplique
 `supabase/migrations/028_webhook_endpoints.sql`.
 
-### Events
+### Eventos
 
-| Event                    | Fires when                                        |
-| ------------------------ | ------------------------------------------------- |
-| `message.received`       | An inbound message arrives from a contact         |
-| `message.status_updated` | A message you sent changed delivery status        |
-| `conversation.created`   | A new conversation is opened for a contact        |
+| Evento                   | Dispara quando                                         |
+| ------------------------ | ------------------------------------------------------ |
+| `message.received`       | Uma mensagem de entrada chega de um contato            |
+| `message.status_updated` | Uma mensagem que você enviou mudou de status de entrega |
+| `conversation.created`   | Uma nova conversa é aberta para um contato             |
 
-### Managing endpoints
+### Gerenciando endpoints
 
-All under scope `webhooks:manage`.
+Tudo sob o escopo `webhooks:manage`.
 
-- `POST /api/v1/webhooks` — register `{ "url": "https://…", "events": ["message.received"] }`. `url` must be `https://`. **The response includes `secret` exactly once** — store it to verify signatures; wacrm keeps only an encrypted copy.
-- `GET /api/v1/webhooks` — list your endpoints (never returns the secret).
-- `GET /api/v1/webhooks/{id}` — read one.
-- `PATCH /api/v1/webhooks/{id}` — update `url`, `events`, or `is_active` (re-enabling clears the failure counter).
-- `DELETE /api/v1/webhooks/{id}` — remove one.
+- `POST /api/v1/webhooks` — registra `{ "url": "https://…", "events": ["message.received"] }`. A `url` deve ser `https://`. **A resposta inclui `secret` exatamente uma vez** — guarde-o para verificar assinaturas; o wacrm mantém apenas uma cópia criptografada.
+- `GET /api/v1/webhooks` — lista seus endpoints (nunca retorna o segredo).
+- `GET /api/v1/webhooks/{id}` — lê um.
+- `PATCH /api/v1/webhooks/{id}` — atualiza `url`, `events` ou `is_active` (reativar zera o contador de falhas).
+- `DELETE /api/v1/webhooks/{id}` — remove um.
 
 ```bash
 curl -X POST https://your-crm.example.com/api/v1/webhooks \
@@ -322,10 +326,10 @@ curl -X POST https://your-crm.example.com/api/v1/webhooks \
 # → 201 { "data": { "id": "…", "url": "…", "events": [...], "secret": "whsec_…" } }
 ```
 
-### Delivery payload
+### Payload de entrega
 
-Every delivery is a POST with this envelope; `id` is a unique per-
-delivery uuid you can dedupe on, and `data` varies by `event`:
+Toda entrega é um POST com este envelope; `id` é um uuid único por entrega
+que você pode usar para deduplicar, e `data` varia conforme o `event`:
 
 ```json
 {
@@ -333,29 +337,29 @@ delivery uuid you can dedupe on, and `data` varies by `event`:
   "event": "message.received",
   "occurred_at": "2026-07-01T12:00:00.000Z",
   "account_id": "…",
-  "data": { /* per-event, see below */ }
+  "data": { /* por evento, veja abaixo */ }
 }
 ```
 
-`data` by event:
+`data` por evento:
 
 ```jsonc
 // message.received
-{ "conversation_id": "…", "contact_id": "…", "whatsapp_message_id": "wamid.…", "content_type": "text", "text": "Hi 👋" }
+{ "conversation_id": "…", "contact_id": "…", "whatsapp_message_id": "wamid.…", "content_type": "text", "text": "Olá 👋" }
 // conversation.created
 { "conversation_id": "…", "contact_id": "…" }
 // message.status_updated
 { "whatsapp_message_id": "wamid.…", "conversation_id": "…", "status": "delivered" }
 ```
 
-Headers: `X-Wacrm-Event`, `X-Wacrm-Webhook-Id`, and `X-Wacrm-Signature`.
+Headers: `X-Wacrm-Event`, `X-Wacrm-Webhook-Id` e `X-Wacrm-Signature`.
 
-### Verifying the signature
+### Verificando a assinatura
 
-`X-Wacrm-Signature: t=<unix_seconds>,v1=<hex>` where `v1 =
-HMAC-SHA256(secret, "${t}.${rawBody}")`. Recompute it over the **raw
-request body** and compare in constant time; reject if `t` is more than
-a few minutes old (replay protection).
+`X-Wacrm-Signature: t=<unix_seconds>,v1=<hex>` onde `v1 =
+HMAC-SHA256(secret, "${t}.${rawBody}")`. Recalcule-a sobre o **corpo bruto
+da requisição** e compare em tempo constante; rejeite se `t` tiver mais de
+alguns minutos (proteção contra replay).
 
 ```js
 const [, t, v1] = header.match(/t=(\d+),v1=([0-9a-f]+)/);
@@ -364,29 +368,31 @@ const expected = crypto.createHmac('sha256', secret)
 const ok = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
 ```
 
-### Delivery semantics
+### Semântica de entrega
 
-Delivery is **best-effort**: a single attempt per event with a short
-timeout, and **redirects are not followed**. `message.status_updated`
-covers messages wacrm stores (inbox + API sends), not broadcast-only
-sends, and — because providers re-send and re-order status callbacks —
-the same status may arrive more than once or out of order; **dedupe on
-`id` and don't assume ordering**. Each consecutive failure increments
-`failure_count`; after enough consecutive failures the endpoint is
-auto-disabled (`is_active: false`) — re-enable it with `PATCH` (which
-resets the counter). Durable retry-with-backoff (a delivery queue) is a
-future enhancement; today, treat missed deliveries as possible and
-reconcile with the read endpoints when it matters.
+A entrega é de **melhor esforço**: uma única tentativa por evento com um
+timeout curto, e **redirecionamentos não são seguidos**.
+`message.status_updated` cobre as mensagens que o wacrm armazena (inbox +
+envios pela API), não os envios exclusivos de disparos em massa, e — como
+os provedores reenviam e reordenam callbacks de status — o mesmo status
+pode chegar mais de uma vez ou fora de ordem; **deduplique por `id` e não
+presuma ordenação**. Cada falha consecutiva incrementa `failure_count`;
+após falhas consecutivas suficientes o endpoint é desativado
+automaticamente (`is_active: false`) — reative-o com `PATCH` (que zera o
+contador). Retentativa durável com backoff (uma fila de entrega) é uma
+melhoria futura; hoje, considere que entregas perdidas são possíveis e
+reconcilie com os endpoints de leitura quando isso importar.
 
-**Target restrictions (SSRF).** The `url` must be `https://` and must
-resolve to a public address — requests to `localhost`, private/RFC1918
-ranges, link-local (incl. cloud metadata `169.254.169.254`), and similar
-internal targets are refused at delivery time.
+**Restrições de destino (SSRF).** A `url` deve ser `https://` e resolver
+para um endereço público — requisições para `localhost`, faixas
+privadas/RFC1918, link-local (incluindo o metadata de nuvem
+`169.254.169.254`) e destinos internos semelhantes são recusadas no momento
+da entrega.
 
 ## Roadmap
 
-The public API now covers messaging, contacts, conversations,
-broadcasts, and outbound webhooks — the full scope of
-[#245](https://github.com/ArnasDon/wacrm/issues/245). Future ideas
-(deals/pipelines, templates, flows, a delivery queue for webhooks) are
-not yet scheduled.
+A API pública agora cobre mensagens, contatos, conversas, disparos em massa
+e webhooks de saída — o escopo completo da
+[#245](https://github.com/ArnasDon/wacrm/issues/245). Ideias futuras
+(negócios/funis, templates, fluxos, uma fila de entrega para webhooks) ainda
+não estão agendadas.

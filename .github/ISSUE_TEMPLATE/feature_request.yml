@@ -1,68 +1,68 @@
-name: Feature request
-description: Propose a new feature or a meaningful enhancement.
+name: Solicitação de funcionalidade
+description: Proponha uma nova funcionalidade ou uma melhoria relevante.
 title: "[feat] "
 labels: ["enhancement", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the idea — but read this first.
+        Obrigado pela ideia — mas leia isto primeiro.
 
-        This is a **template**, not a collaborative product. The
-        upstream scope is intentionally narrow, so most feature
-        requests end up as *"build this in your fork"* rather than
-        landing here. That's the point of a template.
+        Isto é um **template**, não um produto colaborativo. O escopo do
+        upstream é intencionalmente estreito, então a maioria dos pedidos de
+        funcionalidade acaba como *"construa isto no seu fork"* em vez de
+        entrar aqui. Esse é o objetivo de um template.
 
-        When an upstream feature request *is* useful:
+        Quando um pedido de funcionalidade ao upstream *é* útil:
 
-        - It fixes a correctness problem in the template.
-        - It makes the template cleaner for the next forker (reducing
-          friction, removing footguns).
-        - It's in scope for "a generic WhatsApp CRM template" rather
-          than a bet on your specific workflow.
+        - Ele corrige um problema de correção no template.
+        - Ele deixa o template mais limpo para o próximo usuário que fizer
+          fork (reduzindo atrito, removendo armadilhas).
+        - Ele está no escopo de "um template genérico de CRM para WhatsApp",
+          e não numa aposta no seu fluxo de trabalho específico.
 
-        If the feature is really for your own deployment, fork and
-        build it there — see
+        Se a funcionalidade é realmente para a sua própria implantação, faça
+        o fork e construa lá — veja o
         [CONTRIBUTING.md](https://github.com/ArnasDon/wacrm/blob/main/CONTRIBUTING.md).
 
   - type: textarea
     id: problem
     attributes:
-      label: What's the problem?
-      description: What are you trying to do today that the template makes harder than it should?
+      label: Qual é o problema?
+      description: O que você está tentando fazer hoje que o template torna mais difícil do que deveria?
       placeholder: |
-        When a broadcast ends I have no way to see which recipients
-        didn't reply so I can follow up manually.
+        Quando um disparo termina, não tenho como ver quais destinatários
+        não responderam para fazer o acompanhamento manualmente.
     validations:
       required: true
 
   - type: textarea
     id: proposal
     attributes:
-      label: What would you like to see?
-      description: Describe the feature from the user's perspective, not the implementation.
+      label: O que você gostaria de ver?
+      description: Descreva a funcionalidade do ponto de vista do usuário, não da implementação.
       placeholder: |
-        On the broadcast detail page, a "No reply" filter that lists
-        recipients who received but didn't reply within 24 hours.
+        Na página de detalhes do disparo, um filtro "Sem resposta" que lista
+        os destinatários que receberam mas não responderam em 24 horas.
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives you considered
-      description: Things that kinda work today, workarounds, related features in other tools.
+      label: Alternativas que você considerou
+      description: Coisas que mais ou menos funcionam hoje, soluções alternativas, funcionalidades parecidas em outras ferramentas.
     validations:
       required: false
 
   - type: dropdown
     id: scope
     attributes:
-      label: Scope
-      description: Your guess — we'll re-scope if needed.
+      label: Escopo
+      description: Seu palpite — reajustaremos se necessário.
       options:
-        - Small (a couple of hours)
-        - Medium (a couple of days)
-        - Large (a couple of weeks, probably breaks into multiple PRs)
+        - Pequeno (algumas horas)
+        - Médio (alguns dias)
+        - Grande (algumas semanas, provavelmente se divide em vários PRs)
     validations:
       required: false

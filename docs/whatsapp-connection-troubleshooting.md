@@ -1,198 +1,201 @@
-# WhatsApp connection troubleshooting
+# Solução de problemas na conexão do WhatsApp
 
-Settings → WhatsApp connection talks to the Meta Graph API in a fixed
-order when you click **Save Configuration**. When one of those calls
-fails, wacrm now tells you *which* call failed, *which field* to check,
-and gives you the Meta error code and trace id to quote to Meta support
-(issue #505). This page lists the common causes and the exact text
-wacrm shows for each.
+Configurações → Conexão do WhatsApp conversa com a Graph API da Meta em
+uma ordem fixa quando você clica em **Salvar configuração**. Quando uma
+dessas chamadas falha, o wacrm agora diz *qual* chamada falhou, *qual
+campo* conferir, e fornece o código de erro da Meta e o trace id para citar
+ao suporte da Meta (issue #505). Esta página lista as causas comuns e o
+texto exato que o wacrm mostra para cada uma.
 
-## What Save Configuration does
+## O que o Salvar configuração faz
 
-| Step (shown in the error details) | Meta call | Proves |
+| Etapa (mostrada nos detalhes do erro) | Chamada à Meta | Comprova |
 | --- | --- | --- |
-| *(before any Meta call)* | — | Phone Number ID and WABA ID are digit strings |
-| `verify_number` | `GET /{phone_number_id}` | the token can read the number |
-| `waba_phone_numbers` | `GET /{waba_id}/phone_numbers` | the number really lives under that WABA |
-| `register` | `POST /{phone_number_id}/register` (only when a PIN is entered) | the number is registered with the Cloud API for inbound webhooks |
-| `subscribe_waba` | `POST /{waba_id}/subscribed_apps` | the WABA is subscribed to your Meta App, so webhooks are delivered |
+| *(antes de qualquer chamada à Meta)* | — | Phone Number ID e WABA ID são strings de dígitos |
+| `verify_number` | `GET /{phone_number_id}` | o token consegue ler o número |
+| `waba_phone_numbers` | `GET /{waba_id}/phone_numbers` | o número realmente pertence àquele WABA |
+| `register` | `POST /{phone_number_id}/register` (somente quando um PIN é informado) | o número está registrado na Cloud API para receber webhooks |
+| `subscribe_waba` | `POST /{waba_id}/subscribed_apps` | o WABA está inscrito no seu App da Meta, para que os webhooks sejam entregues |
 
-The first four failures stop the save; nothing is written until the
-cause is fixed. A `register` failure still saves the credentials (so
-you can retry with only the PIN) and shows the reason in the
-*Registration status* banner.
+As quatro primeiras falhas interrompem o salvamento; nada é gravado até que
+a causa seja corrigida. Uma falha em `register` ainda salva as credenciais
+(para que você tente de novo apenas com o PIN) e mostra o motivo no banner
+de *Status do registro*.
 
-**Test API Connection** re-runs `verify_number` with the stored token
-and, when a WABA ID is on file, reads `GET /{waba_id}/subscribed_apps`
-and reports whether the WABA is subscribed to an app. Valid
-credentials plus an unsubscribed WABA is exactly the "connected but no
-messages arrive" state.
+**Testar conexão da API** reexecuta o `verify_number` com o token
+armazenado e, quando há um WABA ID registrado, lê
+`GET /{waba_id}/subscribed_apps` e informa se o WABA está inscrito em um
+app. Credenciais válidas com um WABA não inscrito é exatamente o estado
+"conectado, mas nenhuma mensagem chega".
 
-## Reading the error details
+## Lendo os detalhes do erro
 
-Under the actionable message, small muted text shows:
+Sob a mensagem acionável, um texto pequeno e discreto mostra:
 
 ```
-Step: verify_number · Meta error code: 190/463 · Trace ID: AbCdEf...
-Meta said: Error validating access token: Session has expired ...
+Etapa: verify_number · Código de erro da Meta: 190/463 · Trace ID: AbCdEf...
+A Meta disse: Error validating access token: Session has expired ...
 ```
 
-* **Step** — the row in the table above.
-* **Meta error code** — `code/subcode` from Meta's envelope. The
-  [Cloud API error code reference](https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes)
-  documents every value.
-* **Trace ID** — Meta's `fbtrace_id`. Meta support can look up the
-  request with it; quote it together with the code.
+* **Etapa** — a linha da tabela acima.
+* **Código de erro da Meta** — `code/subcode` do envelope da Meta. A
+  [referência de códigos de erro da Cloud API](https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes)
+  documenta todos os valores.
+* **Trace ID** — o `fbtrace_id` da Meta. O suporte da Meta consegue
+  localizar a requisição com ele; informe-o junto com o código.
 
-The HTTP status also tells you who has to act: **400** means the fix
-is on the settings form (token, ids, PIN); **502** means Meta has to
-change something (rate limit, restriction, outage).
+O status HTTP também indica quem precisa agir: **400** significa que a
+correção está no formulário de configurações (token, ids, PIN); **502**
+significa que a Meta precisa mudar algo (limite de taxa, restrição,
+indisponibilidade).
 
-## Common causes and what wacrm shows
+## Causas comuns e o que o wacrm mostra
 
-### Phone Number ID is not an id
+### Phone Number ID não é um id
 
-*Cause:* the phone number (`+1 555 ...`) or a display name was pasted
-instead of the numeric id.
+*Causa:* o número de telefone (`+1 555 ...`) ou um nome de exibição foi
+colado no lugar do id numérico.
 
-> Phone Number ID must contain only digits — it is the numeric id shown
-> under Meta → WhatsApp → API Setup, not the phone number itself.
+> O Phone Number ID deve conter apenas dígitos — é o id numérico exibido em
+> Meta → WhatsApp → API Setup, e não o número de telefone em si.
 
-The same check runs for the WABA ID:
+A mesma verificação roda para o WABA ID:
 
-> WhatsApp Business Account ID must contain only digits — copy it from
-> Meta → WhatsApp → API Setup.
+> O ID da conta do WhatsApp Business deve conter apenas dígitos — copie-o
+> de Meta → WhatsApp → API Setup.
 
-### Access token expired or invalid (code 190)
+### Token de acesso expirado ou inválido (código 190)
 
-*Cause:* the 24-hour temporary token from the API Setup page was used,
-or a System User token was revoked / reset.
+*Causa:* foi usado o token temporário de 24 horas da página API Setup, ou
+um token de System User foi revogado / redefinido.
 
-> The access token has expired. Temporary tokens from the API Setup
-> page expire after 24 hours. Generate a permanent token in Meta
-> Business Settings → System Users → Generate token, with the
-> whatsapp_business_management and whatsapp_business_messaging
-> permissions, and paste it into Permanent Access Token.
+> O token de acesso expirou. Os tokens temporários da página API Setup
+> expiram após 24 horas. Gere um token permanente em Meta Business
+> Settings → System Users → Generate token, com as permissões
+> whatsapp_business_management e whatsapp_business_messaging, e cole-o em
+> Token de acesso permanente.
 
-(The first sentence varies with the subcode: "has been invalidated" for
-460/467, "Meta rejected the access token as invalid" otherwise.)
+(A primeira frase varia conforme o subcódigo: "foi invalidado" para
+460/467, "A Meta rejeitou o token de acesso como inválido" nos demais.)
 
-### Token lacks permissions (code 10, 200–299)
+### Token sem permissões (código 10, 200–299)
 
-*Cause:* the System User token was generated without
-`whatsapp_business_management` / `whatsapp_business_messaging`, or the
-System User was never assigned to the WABA.
+*Causa:* o token do System User foi gerado sem
+`whatsapp_business_management` / `whatsapp_business_messaging`, ou o System
+User nunca foi atribuído ao WABA.
 
-> The access token is not allowed to perform this action (subscribing
-> the WhatsApp Business Account to the app). Its System User needs the
-> whatsapp_business_management and whatsapp_business_messaging
-> permissions AND must be assigned to this WhatsApp Business Account
-> (Business Settings → System Users → Add assets → WhatsApp accounts).
-> Then generate a new token.
+> O token de acesso não tem permissão para executar esta ação (inscrever a
+> conta do WhatsApp Business no app). O System User dele precisa das
+> permissões whatsapp_business_management e whatsapp_business_messaging E
+> deve estar atribuído a esta conta do WhatsApp Business (Business Settings
+> → System Users → Add assets → WhatsApp accounts). Depois gere um novo
+> token.
 
-Code 131005 (access denied) gets a similar message naming the id that
-was refused.
+O código 131005 (acesso negado) recebe uma mensagem parecida, citando o id
+que foi recusado.
 
-### Wrong Phone Number ID or WABA ID (code 100 "Unsupported get request", code 33)
+### Phone Number ID ou WABA ID errado (código 100 "Unsupported get request", código 33)
 
-*Cause:* the id is mistyped, or it belongs to a different Business
-portfolio than the one the token was generated in.
+*Causa:* o id foi digitado errado, ou pertence a um portfólio empresarial
+(Business) diferente daquele em que o token foi gerado.
 
-> Meta cannot find Phone Number ID 1234567890, or the business that
-> owns the access token does not own it. Copy the Phone Number ID
-> exactly from Meta → WhatsApp → API Setup and check the token was
-> generated inside the same Business portfolio.
+> A Meta não encontra o Phone Number ID 1234567890, ou a empresa dona do
+> token de acesso não é dona dele. Copie o Phone Number ID exatamente de
+> Meta → WhatsApp → API Setup e confira se o token foi gerado dentro do
+> mesmo portfólio empresarial.
 
-When the failing step is WABA-scoped the message names the
-*WhatsApp Business Account ID* instead.
+Quando a etapa que falhou é do escopo do WABA, a mensagem cita o *ID da
+conta do WhatsApp Business*.
 
-### Phone number is under a different WABA
+### Número pertence a outro WABA
 
-*Cause:* both ids are valid, but the WABA you typed does not own the
-number. Before #505 this saved fine and subscribed the wrong WABA — the
-webhook simply never fired.
+*Causa:* ambos os ids são válidos, mas o WABA digitado não é dono do
+número. Antes da #505 isso salvava normalmente e inscrevia o WABA errado —
+o webhook simplesmente nunca disparava.
 
-> Phone Number ID 111 does not belong to WhatsApp Business Account 999.
-> Meta lists these numbers under it: +1 555-0100 (222), +1 555-0200
-> (333). Check both values in Meta → WhatsApp → API Setup: the WABA ID
-> shown there must be the one that lists this phone number.
+> O Phone Number ID 111 não pertence à conta do WhatsApp Business 999. A
+> Meta lista estes números nela: +1 555-0100 (222), +1 555-0200 (333).
+> Confira os dois valores em Meta → WhatsApp → API Setup: o WABA ID exibido
+> lá deve ser o que lista este número de telefone.
 
-### Number not registered with the Cloud API (code 133010)
+### Número não registrado na Cloud API (código 133010)
 
-> This phone number is not registered with the WhatsApp Cloud API yet.
-> Enter the two-step verification PIN below and save again so wacrm can
-> register it (POST /register).
+> Este número de telefone ainda não está registrado na WhatsApp Cloud API.
+> Informe abaixo o PIN da verificação em duas etapas e salve novamente para
+> que o wacrm possa registrá-lo (POST /register).
 
-### Wrong two-step PIN (codes 133005, 136025)
+### PIN de duas etapas incorreto (códigos 133005, 136025)
 
-> The two-step verification PIN is wrong. Use the 6-digit PIN set in
-> WhatsApp Manager → Phone numbers → Two-step verification (or reset it
-> there), then save again.
+> O PIN da verificação em duas etapas está incorreto. Use o PIN de 6
+> dígitos definido em WhatsApp Manager → Phone numbers → Two-step
+> verification (ou redefina-o lá) e salve novamente.
 
-Too many wrong guesses (133008 / 133009) lock attempts for a while:
+Muitas tentativas erradas (133008 / 133009) bloqueiam novas tentativas por
+um tempo:
 
-> Meta has temporarily locked PIN attempts for this number after too
-> many wrong guesses. Wait a while before saving again with the correct
-> PIN.
+> A Meta bloqueou temporariamente as tentativas de PIN para este número
+> após muitos palpites errados. Aguarde um pouco antes de salvar novamente
+> com o PIN correto.
 
-### Account restricted by Meta (code 131031, 368)
+### Conta restrita pela Meta (código 131031, 368)
 
-Nothing in wacrm fixes this — it is a Meta policy or verification
-state.
+Nada no wacrm resolve isso — é um estado de política ou de verificação da
+Meta.
 
-> Meta has restricted or locked this WhatsApp Business Account, so
-> nothing in wacrm can connect it. Open Meta Business Manager → Account
-> quality (or WhatsApp Manager → Overview) to see the restriction and
-> appeal it.
+> A Meta restringiu ou bloqueou esta conta do WhatsApp Business, então
+> nada no wacrm consegue conectá-la. Abra o Meta Business Manager →
+> Qualidade da conta (ou WhatsApp Manager → Visão geral) para ver a
+> restrição e contestá-la.
 
-### Rate limited (codes 4, 17, 32, 613, 80007, 130429, …)
+### Limite de taxa (códigos 4, 17, 32, 613, 80007, 130429, …)
 
-> Meta is rate-limiting this app or WhatsApp Business Account right
-> now. Nothing needs changing — wait a few minutes and try again.
+> A Meta está limitando a taxa deste app ou desta conta do WhatsApp
+> Business neste momento. Nada precisa ser alterado — aguarde alguns
+> minutos e tente de novo.
 
-### Temporary Meta-side failure (codes 1, 2, 131000, 133004, 133016)
+### Falha temporária do lado da Meta (códigos 1, 2, 131000, 133004, 133016)
 
-> Meta returned a temporary error while reading the phone number (code
-> 131000). Retry in a minute; if it keeps happening, check
-> metastatus.com and quote the trace id to Meta support.
+> A Meta retornou um erro temporário ao ler o número de telefone (código
+> 131000). Tente novamente em um minuto; se continuar acontecendo, confira
+> metastatus.com e informe o trace id ao suporte da Meta.
 
-### Anything else
+### Qualquer outro caso
 
-Unknown codes keep Meta's own words plus the trace id:
+Códigos desconhecidos mantêm as palavras da própria Meta mais o trace id:
 
-> Meta returned an error while registering the phone number (code
-> 12345/6): <Meta's message>. Trace id AbCdEf.
+> A Meta retornou um erro ao registrar o número de telefone (código
+> 12345/6): <mensagem da Meta>. Trace id AbCdEf.
 
-If the server cannot reach `graph.facebook.com` at all:
+Se o servidor não conseguir alcançar `graph.facebook.com`:
 
-> Could not reach the Meta Graph API while reading the phone number:
-> fetch failed. Check that this server has outbound internet access to
-> graph.facebook.com and try again.
+> Não foi possível alcançar a Graph API da Meta ao ler o número de
+> telefone: fetch failed. Verifique se este servidor tem acesso de saída
+> à internet para graph.facebook.com e tente novamente.
 
-## Credentials valid, but no messages arrive
+## Credenciais válidas, mas nenhuma mensagem chega
 
-1. Click **Test API Connection**. If it says *"The WhatsApp Business
-   Account is not subscribed to this app"*, re-enter the token and save
-   again — the save subscribes the WABA.
-2. Check the *Registration status* banner. *Not registered* means
-   `/register` never succeeded for this number; enter the two-step PIN
-   and save.
-3. Click **Verify with Meta** for a per-check breakdown
+1. Clique em **Testar conexão da API**. Se disser *"A conta do WhatsApp
+   Business não está inscrita neste app"*, informe o token novamente e
+   salve de novo — o salvamento inscreve o WABA.
+2. Confira o banner de *Status do registro*. *Não registrado* significa que
+   o `/register` nunca teve sucesso para este número; informe o PIN de duas
+   etapas e salve.
+3. Clique em **Verificar com a Meta** para um detalhamento por verificação
    (`phone_metadata_ok`, `waba_subscribed_to_app`,
    `locally_marked_registered`).
-4. Confirm the webhook itself: in the Meta App → WhatsApp →
-   Configuration, the callback URL must be `https://<your host>/api/whatsapp/webhook`,
-   the verify token must match the one saved here, and the `messages`
-   field must be subscribed. `META_APP_SECRET` in the server
-   environment must be *that* app's secret, or every delivery is
-   rejected with a 401 before wacrm looks at it.
+4. Confirme o próprio webhook: no App da Meta → WhatsApp → Configuration, a
+   URL de callback deve ser `https://<seu host>/api/whatsapp/webhook`, o
+   verify token deve ser igual ao salvo aqui e o campo `messages` deve
+   estar inscrito. O `META_APP_SECRET` no ambiente do servidor deve ser o
+   segredo *daquele* app, senão toda entrega é rejeitada com um 401 antes
+   de o wacrm olhá-la.
 
-## Where the mapping lives
+## Onde fica o mapeamento
 
-* `src/lib/whatsapp/meta-error-explain.ts` — code → explanation, field,
-  and 400/502 side. Pure and unit-tested; add new codes there.
-* `src/lib/whatsapp/waba-pairing.ts` — id format check and the
-  phone-under-WABA check.
-* `src/app/api/whatsapp/config/route.ts` — the connect flow. Every
-  Meta failure returns `{ error, meta: { code, subcode, fbtrace_id,
-  step, field, message } }`.
+* `src/lib/whatsapp/meta-error-explain.ts` — código → explicação, campo e
+  lado 400/502. Puro e testado por unidade; adicione novos códigos lá.
+* `src/lib/whatsapp/waba-pairing.ts` — verificação do formato do id e a
+  verificação número-sob-WABA.
+* `src/app/api/whatsapp/config/route.ts` — o fluxo de conexão. Toda falha
+  da Meta retorna `{ error, meta: { code, subcode, fbtrace_id, step, field,
+  message } }`.

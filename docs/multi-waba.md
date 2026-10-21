@@ -1,119 +1,124 @@
-# Several WhatsApp Business Accounts on one wacrm deployment
+# Várias contas do WhatsApp Business em uma mesma implantação do wacrm
 
-Issue #500 asked how one deployment can serve accounts whose numbers
-belong to different WhatsApp Business Accounts (WABAs), given that
-`META_APP_SECRET` and `META_APP_ID` are deployment-wide environment
-variables. Short answer: WABAs are already per account; only the Meta
-*App* is deployment-wide, and since #500 the webhook accepts several
-app secrets. This page walks through the three setups.
+A issue #500 perguntou como uma implantação pode atender contas cujos
+números pertencem a diferentes WhatsApp Business Accounts (WABAs), dado que
+`META_APP_SECRET` e `META_APP_ID` são variáveis de ambiente válidas para
+toda a implantação. Resposta curta: os WABAs já são por conta; apenas o
+*App* da Meta é da implantação inteira, e desde a #500 o webhook aceita
+vários segredos de app. Esta página percorre as três configurações.
 
-## What is per account and what is per deployment
+## O que é por conta e o que é por implantação
 
-| Value | Lives in | Scope |
+| Valor | Fica em | Escopo |
 | --- | --- | --- |
-| Phone Number ID, WABA ID, access token, verify token, two-step PIN | `whatsapp_config` (one row per wacrm account, token encrypted) | per account |
-| Webhook callback URL | your Meta App → WhatsApp → Configuration | per Meta App |
-| `META_APP_SECRET` | server environment | per deployment — **may list several** |
-| `META_APP_ID` | server environment | per deployment — single value |
+| Phone Number ID, WABA ID, token de acesso, verify token, PIN de duas etapas | `whatsapp_config` (uma linha por conta do wacrm, token criptografado) | por conta |
+| URL de callback do webhook | seu App da Meta → WhatsApp → Configuration | por App da Meta |
+| `META_APP_SECRET` | ambiente do servidor | por implantação — **pode listar vários** |
+| `META_APP_ID` | ambiente do servidor | por implantação — valor único |
 
-Meta signs every webhook delivery with the secret of the App the WABA
-is subscribed to. wacrm checks that signature against
-`META_APP_SECRET` before it looks at the body, then routes the payload
-to the account whose row holds the `phone_number_id` in the delivery.
+A Meta assina cada entrega de webhook com o segredo do App ao qual o WABA
+está inscrito. O wacrm confere essa assinatura contra `META_APP_SECRET`
+antes de olhar o corpo e então encaminha o payload para a conta cuja linha
+contém o `phone_number_id` da entrega.
 
-## Setup A — many accounts, one Meta App, many WABAs (works out of the box)
+## Configuração A — várias contas, um App da Meta, vários WABAs (funciona de fábrica)
 
-This is the normal case for an agency or a company with several
-brands. Nothing to configure beyond a single-tenant install.
+Este é o caso normal de uma agência ou de uma empresa com várias marcas.
+Nada a configurar além de uma instalação single-tenant.
 
-1. Create one Meta App and add the WhatsApp product. Under
-   **WhatsApp → Configuration** set the callback URL to
-   `https://<your host>/api/whatsapp/webhook` and subscribe to the
-   `messages` field. Set `META_APP_SECRET` to this app's secret.
-2. For each WABA, make sure the Business portfolio that owns it has
-   access to the app (Business Settings → Accounts → WhatsApp accounts →
-   Assigned assets, or add the WABA through the app's WhatsApp product).
-3. Each wacrm account opens Settings → WhatsApp connection and enters
-   its own Phone Number ID, WABA ID, a System User access token that
-   can manage *that* WABA, a verify token, and (for production numbers)
-   the two-step PIN.
+1. Crie um App da Meta e adicione o produto WhatsApp. Em
+   **WhatsApp → Configuration**, defina a URL de callback como
+   `https://<seu host>/api/whatsapp/webhook` e inscreva-se no campo
+   `messages`. Defina `META_APP_SECRET` com o segredo deste app.
+2. Para cada WABA, garanta que o portfólio empresarial (Business) que o
+   possui tenha acesso ao app (Business Settings → Accounts → WhatsApp
+   accounts → Assigned assets, ou adicione o WABA pelo produto WhatsApp do
+   app).
+3. Cada conta do wacrm abre Configurações → Conexão do WhatsApp e informa o
+   seu próprio Phone Number ID, WABA ID, um token de acesso de System User
+   capaz de gerenciar *aquele* WABA, um verify token e (para números de
+   produção) o PIN de duas etapas.
 
-On save, wacrm verifies the number with the token, registers it
-(`POST /{phone_number_id}/register`, PIN required) and subscribes the
-WABA to the app (`POST /{waba_id}/subscribed_apps`).
-From then on Meta delivers every WABA's events to the one callback URL
-and wacrm fans them out by `phone_number_id`.
+Ao salvar, o wacrm verifica o número com o token, registra-o
+(`POST /{phone_number_id}/register`, PIN obrigatório) e inscreve o WABA no
+app (`POST /{waba_id}/subscribed_apps`). A partir daí a Meta entrega os
+eventos de todos os WABAs na única URL de callback e o wacrm os distribui
+por `phone_number_id`.
 
-Constraints:
+Restrições:
 
-* One phone number can be connected to one wacrm account only — the
-  route refuses a `phone_number_id` already claimed by another account.
-* The **verify token** typed into the Meta App's webhook settings must
-  equal the verify token saved by at least one wacrm account; the
-  handshake (`GET /api/whatsapp/webhook`) accepts any account's token.
-  Using the same string in every account keeps this simple.
+* Um número de telefone só pode ser conectado a uma conta do wacrm — a
+  rota recusa um `phone_number_id` já reivindicado por outra conta.
+* O **verify token** digitado nas configurações de webhook do App da Meta
+  deve ser igual ao verify token salvo por pelo menos uma conta do wacrm; o
+  handshake (`GET /api/whatsapp/webhook`) aceita o token de qualquer conta.
+  Usar a mesma string em todas as contas simplifica as coisas.
 
-## Setup B — WABAs under different Meta Apps
+## Configuração B — WABAs sob diferentes Apps da Meta
 
-Sometimes the WABAs cannot share an app: two clients each own their own
-Meta App and portfolio, or an existing app cannot be granted access to
-another business's WABA. Each app signs webhooks with its own secret,
-so wacrm needs all of them.
+Às vezes os WABAs não podem compartilhar um app: dois clientes têm cada um
+o seu App e portfólio na Meta, ou um app existente não pode receber acesso
+ao WABA de outra empresa. Cada app assina os webhooks com o próprio segredo,
+então o wacrm precisa de todos eles.
 
-1. In **every** Meta App, set the same callback URL
-   (`https://<your host>/api/whatsapp/webhook`) and subscribe to
-   `messages`. Use a verify token that at least one wacrm account has
-   saved (see the note above).
-2. Set `META_APP_SECRET` to the comma-separated list of all those apps'
-   secrets:
+1. Em **todo** App da Meta, defina a mesma URL de callback
+   (`https://<seu host>/api/whatsapp/webhook`) e inscreva-se em `messages`.
+   Use um verify token que pelo menos uma conta do wacrm tenha salvo (veja
+   a observação acima).
+2. Defina `META_APP_SECRET` como a lista separada por vírgulas dos segredos
+   de todos esses apps:
 
    ```
-   META_APP_SECRET=secret-of-app-one,secret-of-app-two
+   META_APP_SECRET=segredo-do-app-um,segredo-do-app-dois
    ```
 
-   Whitespace around commas is ignored, empty slots are dropped. A
-   delivery is accepted when its `X-Hub-Signature-256` matches **any**
-   listed secret; each comparison is constant-time. An empty or
-   comma-only value still fails closed — every request is rejected.
-3. Each wacrm account connects its number exactly as in setup A, using a
-   token generated inside the Business portfolio that owns its app.
-   The save subscribes the WABA to *that* app (the one the token
-   belongs to).
+   Espaços ao redor das vírgulas são ignorados e posições vazias são
+   descartadas. Uma entrega é aceita quando o seu `X-Hub-Signature-256`
+   confere com **qualquer** segredo listado; cada comparação é em tempo
+   constante. Um valor vazio ou só com vírgulas continua falhando de forma
+   fechada — toda requisição é rejeitada.
+3. Cada conta do wacrm conecta o seu número exatamente como na
+   configuração A, usando um token gerado dentro do portfólio empresarial
+   que possui o seu app. Ao salvar, o WABA é inscrito *naquele* app (aquele
+   a que o token pertence).
 
-Rotating a secret: add the new one to the list, redeploy, then rotate
-in Meta, then remove the old one. Deliveries keep verifying throughout.
+Rotacionando um segredo: adicione o novo à lista, faça o redeploy, então
+rotacione na Meta e depois remova o antigo. As entregas continuam sendo
+verificadas durante todo o processo.
 
-## Setup C — what is not supported: a per-account Meta App ID
+## Configuração C — o que não é suportado: um App ID da Meta por conta
 
-`META_APP_ID` is used for exactly one thing: Meta's Resumable Upload
-when a message template has an **image header** (the header sample must
-be an app-scoped upload handle, not a URL). It is a single value.
+O `META_APP_ID` é usado para exatamente uma coisa: o Resumable Upload da
+Meta quando um template de mensagem tem **cabeçalho de imagem** (o exemplo
+do cabeçalho precisa ser um handle de upload com escopo de app, não uma
+URL). É um valor único.
 
-With setup B, every account's image-header template upload therefore
-goes through the one app named in `META_APP_ID`, authenticated with
-that account's own token. If the account's token was generated under a
-different app's portfolio, Meta rejects the upload and the template
-submit returns that error. Text-only templates, sending, receiving and
-everything else are unaffected.
+Com a configuração B, portanto, o upload de template com cabeçalho de
+imagem de cada conta passa pelo único app indicado em `META_APP_ID`,
+autenticado com o token da própria conta. Se o token da conta foi gerado
+sob o portfólio de outro app, a Meta rejeita o upload e o envio do template
+retorna esse erro. Templates somente de texto, envio, recebimento e todo o
+resto não são afetados.
 
-Workarounds until a per-account app id exists:
+Alternativas enquanto não existe um app id por conta:
 
-* Put the WABAs that need image-header templates under the app named
-  in `META_APP_ID`; or
-* Create image-header templates directly in WhatsApp Manager — once
-  approved, wacrm lists and sends them like any other template.
+* Coloque os WABAs que precisam de templates com cabeçalho de imagem sob o
+  app indicado em `META_APP_ID`; ou
+* Crie os templates com cabeçalho de imagem diretamente no WhatsApp Manager
+  — uma vez aprovados, o wacrm os lista e envia como qualquer outro
+  template.
 
-A per-account `app_id` column on `whatsapp_config` would lift this; it
-is not planned for the near term because the only consumer is the
-template header upload.
+Uma coluna `app_id` por conta em `whatsapp_config` resolveria isso; não está
+planejada a curto prazo porque o único consumidor é o upload do cabeçalho
+de template.
 
-## Checking a multi-WABA deployment
+## Verificando uma implantação multi-WABA
 
-* Settings → WhatsApp connection → **Verify with Meta** runs, per
-  account, the per-check diagnostic (`phone_metadata_ok`,
+* Configurações → Conexão do WhatsApp → **Verificar com a Meta** executa,
+  por conta, o diagnóstico verificação a verificação (`phone_metadata_ok`,
   `waba_subscribed_to_app`, `locally_marked_registered`).
-  `waba_subscribed_to_app` false means the save never managed to
-  subscribe the WABA to its app — re-enter the token and save again.
-* A webhook delivery that is rejected with 401 means no configured
-  secret produced its signature — the WABA is subscribed to an app
-  whose secret is missing from `META_APP_SECRET`.
+  `waba_subscribed_to_app` falso significa que o salvamento não conseguiu
+  inscrever o WABA no seu app — informe o token novamente e salve de novo.
+* Uma entrega de webhook rejeitada com 401 significa que nenhum segredo
+  configurado produziu a sua assinatura — o WABA está inscrito em um app
+  cujo segredo não consta em `META_APP_SECRET`.

@@ -1,76 +1,75 @@
-name: Bug report
-description: Something in the template isn't working the way the docs say it should.
+name: Relato de bug
+description: Algo no template não está funcionando como a documentação diz que deveria.
 title: "[bug] "
 labels: ["bug", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting! The more specific you can be, the faster we
-        can land a fix.
+        Obrigado por reportar! Quanto mais específico você for, mais rápido
+        conseguimos entregar uma correção.
 
-        **Not a bug in the code?** If this is a security issue, close this
-        form and follow [SECURITY.md](https://github.com/ArnasDon/wacrm/blob/main/.github/SECURITY.md)
-        instead.
+        **Não é um bug no código?** Se for um problema de segurança, feche
+        este formulário e siga o [SECURITY.md](https://github.com/ArnasDon/wacrm/blob/main/.github/SECURITY.md).
 
   - type: textarea
     id: summary
     attributes:
-      label: What happened?
-      description: One or two sentences describing the symptom.
-      placeholder: Clicking a conversation leaves the thread stuck on "No messages yet".
+      label: O que aconteceu?
+      description: Uma ou duas frases descrevendo o sintoma.
+      placeholder: Ao clicar em uma conversa, a thread fica travada em "Nenhuma mensagem ainda".
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: Steps to reproduce
-      description: The minimum steps we need to trigger the bug on our side.
+      label: Passos para reproduzir
+      description: Os passos mínimos de que precisamos para provocar o bug do nosso lado.
       placeholder: |
-        1. Sign in, go to /inbox.
-        2. Click any conversation that has past messages.
-        3. Thread pane shows "No messages yet" until hard refresh.
+        1. Faça login e vá para /inbox.
+        2. Clique em qualquer conversa que tenha mensagens antigas.
+        3. O painel da thread mostra "Nenhuma mensagem ainda" até um refresh forçado.
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: What did you expect?
-      placeholder: Messages load the first time, every time.
+      label: O que você esperava?
+      placeholder: As mensagens carregam na primeira vez, sempre.
     validations:
       required: true
 
   - type: input
     id: version
     attributes:
-      label: Commit / version
+      label: Commit / versão
       description: |
-        The commit SHA or release you're on. `git rev-parse --short HEAD`
-        in the fork works.
-      placeholder: "e.g. d6a4677 or v0.2.0"
+        O SHA do commit ou o release em que você está. `git rev-parse --short HEAD`
+        no fork resolve.
+      placeholder: "ex.: d6a4677 ou v0.2.0"
     validations:
       required: false
 
   - type: dropdown
     id: runtime
     attributes:
-      label: Where is it running?
+      label: Onde está rodando?
       options:
-        - Local dev (npm run dev)
+        - Desenvolvimento local (npm run dev)
         - Hostinger Managed Node.js
         - Hostinger VPS
         - Vercel
-        - Other Node host
+        - Outro host Node
     validations:
       required: false
 
   - type: textarea
     id: logs
     attributes:
-      label: Logs / screenshots
-      description: Server logs, browser console errors, network tab — anything that looks suspicious. Scrub tokens before pasting.
+      label: Logs / capturas de tela
+      description: Logs do servidor, erros do console do navegador, aba de rede — qualquer coisa que pareça suspeita. Remova tokens antes de colar.
       render: text
     validations:
       required: false

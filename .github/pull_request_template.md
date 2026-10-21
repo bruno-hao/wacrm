@@ -1,42 +1,43 @@
 <!--
-Heads up: this is a template, not a collaborative product. Most
-changes belong in your fork. See CONTRIBUTING.md for which kinds of
-upstream PRs tend to land (security, correctness, docs) vs. which
-belong in a fork (new features, stack swaps, opinionated refactors).
-If you haven't opened an issue yet for a non-trivial change, consider
-doing that first to check alignment.
+Atenção: isto é um template, não um produto colaborativo. A maioria das
+mudanças pertence ao seu fork. Veja o CONTRIBUTING.md para saber que tipos
+de PR ao upstream costumam ser aceitos (segurança, correção, documentação)
+e quais pertencem a um fork (novas funcionalidades, troca de stack,
+refatorações opinativas). Se você ainda não abriu uma issue para uma
+mudança não trivial, considere fazer isso primeiro para verificar o
+alinhamento.
 
-Keep this short and specific. The commit message is where the "why"
-lives; this is where the reviewer gets the "what" and "how to try it".
+Seja breve e específico. A mensagem de commit é onde mora o "porquê"; aqui
+o revisor encontra o "o quê" e o "como testar".
 -->
 
-## Summary
+## Resumo
 
-<!-- One or two sentences. What does this PR do? -->
+<!-- Uma ou duas frases. O que este PR faz? -->
 
-## What changed
+## O que mudou
 
-<!-- Bullet list of the actual changes. Link file paths when useful. -->
+<!-- Lista com as mudanças reais. Linke caminhos de arquivos quando útil. -->
 
-## Test plan
+## Plano de testes
 
 <!--
-How did you verify this works? How should the reviewer verify it?
-Tick the boxes as you go.
+Como você verificou que isto funciona? Como o revisor deve verificar?
+Marque as caixas conforme avança.
 -->
 
-- [ ] `npm run typecheck` clean.
-- [ ] `npm run lint` — no new errors beyond the pre-existing backlog.
-- [ ] `npm run build` succeeds.
-- [ ] Feature / fix manually exercised in the browser (or the reason it can't be).
+- [ ] `npm run typecheck` sem erros.
+- [ ] `npm run lint` — sem novos erros além do backlog pré-existente.
+- [ ] `npm run build` com sucesso.
+- [ ] Funcionalidade / correção exercitada manualmente no navegador (ou o motivo de não ter sido possível).
 
-## Related
+## Relacionado
 
-<!-- Link the issue this closes, or "Part of #N" for multi-PR work. -->
+<!-- Linke a issue que este PR fecha, ou "Parte de #N" para trabalho em vários PRs. -->
 
 <!--
-Heads up:
-- Security issues: do not disclose here; see .github/SECURITY.md.
-- New deps: please justify briefly in the commit message or PR body.
-- Runtime behaviour changes affecting forkers: update docs/*.
+Atenção:
+- Problemas de segurança: não os divulgue aqui; veja .github/SECURITY.md.
+- Novas dependências: justifique brevemente na mensagem de commit ou no corpo do PR.
+- Mudanças de comportamento em runtime que afetam quem faz fork: atualize docs/*.
 -->
