@@ -1,0 +1,4 @@
+Coloque aqui as logomarcas dos fabricantes (png, svg, jpg ou webp), com o nome em minúsculas:
+  segment.png   essilor.png   hoya.png   kodak.png   espace.png
+Elas aparecem no orçamento, na linha do "Fabricante da lente", no lado direito.
+Fundo transparente e altura de pelo menos 120 px dão o melhor resultado.

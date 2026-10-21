@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Simulações de orçamento com dados reais de clientes
+docs/orcamento/simulacao/

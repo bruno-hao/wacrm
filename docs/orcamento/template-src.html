@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orçamento Técnico — M Vision Ótica</title>
+<style>
+  /* Paleta oficial M Vision */
+  :root {
+    --green: #3B5245;      /* verde oliva institucional: títulos, cabeçalhos, divisores, garantias */
+    --orange: #FF6633;     /* laranja vibrante: recomendada, valores finais, economia, atenção */
+    --bg: #F8F9FA;         /* fundo suave dos cartões */
+    --text: #555555;       /* textos de apoio */
+    --ink: #2A2F2C;        /* texto principal (derivado do verde, alto contraste) */
+    --line: #E3E7E4;
+    --orange-soft: #FFF1EB;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: #E9ECEA; color: var(--text);
+    font-family: "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; line-height: 1.45;
+  }
+  /* Uma única folha A4 */
+  .page {
+    width: 210mm; height: 297mm; margin: 0 auto; background: #fff; overflow: hidden;
+    padding: 8mm 12mm 6mm; display: flex; flex-direction: column;
+  }
+
+  /* ---------- Cabeçalho: logomarca no canto superior esquerdo ---------- */
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 10px; border-bottom: 3px solid var(--green); }
+  .logo { display: block; width: 215px; height: auto; }
+  .titlebox { text-align: right; }
+  h1 { margin: 0; font-size: 24px; line-height: 1.1; color: var(--green); font-weight: 800; letter-spacing: -.01em; }
+  .validity { margin-top: 6px; font-size: 11px; color: var(--text); }
+  .validity b { display: inline-block; padding: 3px 12px; border: 2px solid var(--orange); border-radius: 999px; color: var(--orange); font-size: 9.6px; letter-spacing: .06em; text-transform: uppercase; }
+
+  /* ---------- Dados do cliente ---------- */
+  .info { margin-top: 12px; display: grid; grid-template-columns: 1.6fr .8fr .9fr 1.1fr; gap: 14px; padding: 9px 20px; background: var(--bg); border-radius: 12px; border: 1px solid var(--line); }
+  .label { font-size: 9.2px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--green); }
+  .info .value { margin-top: 2px; font-size: 14.4px; font-weight: 700; color: var(--ink); }
+
+  /* ---------- Opções: uma abaixo da outra, dados à esquerda e valores à direita ---------- */
+  .options { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; min-height: 0; }
+  .card { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 290px; grid-template-rows: auto 1fr; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; overflow: hidden; }
+  .card.rec { border-color: var(--orange); box-shadow: 0 0 0 1.5px var(--orange), 0 6px 18px rgba(255,102,51,.15); }
+  .card-head { grid-column: 1 / -1; padding: 8px 16px 9px; background: var(--green); color: #fff; }
+  .card-head .top { display: flex; justify-content: space-between; align-items: center; min-height: 18px; }
+  .card-head small { font-size: 9.6px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.78); }
+  .card-head h2 { margin: 1px 0 0; font-size: 16px; line-height: 1.15; font-weight: 700; }
+  .tag { flex: none; padding: 2px 10px; border-radius: 999px; background: rgba(255,255,255,.16); font-size: 8.8px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .rec .tag { background: var(--orange); color: #fff; }
+  .card-body { padding: 10px 16px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 6px; }
+  .field .value { margin-top: 1px; font-size: 12.4px; font-weight: 600; color: var(--ink); }
+  .field .value.soft { font-weight: 400; color: var(--text); }
+  .checks { list-style: none; margin: 3px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+  .makerrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .logos { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+  .maker-logo { height: 30px; width: auto; max-width: 130px; object-fit: contain; flex: none; }
+  .maker-logo.on-dark { background: var(--green); padding: 5px 12px; border-radius: 8px; box-sizing: content-box; max-width: 120px; }
+  .checks li small { display: block; font-size: 9.6px; font-weight: 400; color: var(--text); line-height: 1.3; }
+  .checks li { display: flex; align-items: flex-start; gap: 8px; font-size: 12.4px; font-weight: 600; color: var(--ink); }
+  .checks li::before { content: "\2713"; flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--green); color: #fff; font-size: 9px; font-weight: 800; line-height: 16px; text-align: center; }
+  .rec .checks li::before { background: var(--orange); }
+  .chip { margin-top: 3px; padding: 5px 9px; border-radius: 8px; background: var(--bg); border-left: 4px solid var(--green); font-size: 11.6px; font-weight: 600; color: var(--green); }
+  .chip.hot { background: var(--orange-soft); border-left-color: var(--orange); color: #B83D12; margin-top: 3px; }
+
+  .prices { padding: 10px 18px 12px; background: var(--bg); border-left: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; }
+  .rec .prices { background: var(--orange-soft); border-left-color: rgba(255,102,51,.3); }
+  .row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 11.6px; color: var(--text); }
+  .row b { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .row.disc, .row.disc b { color: var(--orange); font-weight: 700; }
+  .total { margin-top: 6px; padding-top: 7px; border-top: 2px dashed rgba(59,82,69,.35); }
+  .total .head-row { display: flex; justify-content: space-between; align-items: center; min-height: 20px; }
+  .total .label { font-size: 9.6px; white-space: nowrap; }
+  .total .amount { display: block; font-size: 27px; line-height: 1.05; font-weight: 800; color: var(--orange); letter-spacing: -.01em; white-space: nowrap; }
+  .save { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--orange); color: #fff; font-size: 10.4px; font-weight: 700; }
+
+  /* ---------- Garantias ---------- */
+  .section-title { margin: 12px 0 8px; display: flex; align-items: center; gap: 12px; font-size: 10.8px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--green); }
+  .section-title::after { content: ""; flex: 1; height: 2px; background: var(--green); opacity: .25; }
+  .guarantees { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .g { padding: 8px 11px 9px; border-radius: 10px; background: var(--green); border-top: 4px solid var(--orange); color: #fff; }
+  .g h3 { margin: 0 0 4px; font-size: 11.6px; line-height: 1.2; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
+  .g p { margin: 0; font-size: 10px; line-height: 1.35; color: rgba(255,255,255,.9); }
+  .g p.obs { margin-top: 4px; font-size: 9.2px; font-style: italic; color: rgba(255,255,255,.8); }
+
+  /* ---------- Contato ---------- */
+  .contact { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 8px 18px; background: var(--bg); border: 1px solid var(--line); border-left: 6px solid var(--green); border-radius: 10px; }
+  .contact h4 { margin: 0 0 3px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--green); }
+  .contact p { margin: 0; font-size: 10.8px; color: var(--text); }
+  .contact strong { color: var(--ink); }
+  .contact .hl { color: var(--orange); font-weight: 700; }
+
+  .foot { margin-top: 8px; display: flex; justify-content: space-between; gap: 12px; font-size: 10px; color: var(--text); }
+
+  /* ---------- Celular: tudo ampliado, uma coluna, altura livre ---------- */
+  @media screen and (max-width: 760px) {
+    body { background: #fff; }
+    .page { width: 100%; height: auto; overflow: visible; padding: 14px 12px 12px; zoom: 1.2; }
+    .head { flex-direction: column; align-items: flex-start; }
+    .titlebox { text-align: left; }
+    .logo { width: 200px; }
+    .info { grid-template-columns: 1fr 1fr; }
+    .card { display: flex; flex-direction: column; flex: none; }
+    .card-body { gap: 10px; }
+    .prices { border-left: 0; border-top: 1px solid var(--line); }
+    .guarantees { grid-template-columns: 1fr 1fr; }
+    .contact { grid-template-columns: 1fr; }
+    .foot { flex-direction: column; margin-top: 14px; }
+  }
+
+  /* ---------- Impressão / PDF ---------- */
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <header class="head">
+    <img class="logo" src="data:image/png;base64,__LOGO__" alt="M Vision — Ótica Especializada">
+    <div class="titlebox">
+      <h1>Orçamento Técnico</h1>
+      <div class="validity"><b>Validade: 30 dias</b></div>
+    </div>
+  </header>
+
+  <section class="info" aria-label="Dados do orçamento">
+    <div><div class="label">Cliente</div><div class="value">Juliana Teixeira</div></div>
+    <div><div class="label">Orçamento Nº</div><div class="value">0150</div></div>
+    <div><div class="label">Data de emissão</div><div class="value">16/10/2026</div></div>
+    <div><div class="label">Consultor(a)</div><div class="value">Adriene Guia</div></div>
+  </section>
+
+  <section class="options" aria-label="Opções de lentes">
+
+    <article class="card">
+      <div class="card-head"><div class="top"><small>Opção 1</small></div><h2>Skylux Essencial</h2></div>
+      <div class="card-body">
+        <div class="makerrow"><div class="field"><div class="label">Fabricante da lente</div><div class="value">Segment</div></div></div>
+        <div class="field"><div class="label">Tipo de lente &amp; material</div><div class="value">Visão Simples | Resina (Índice 1.49)</div></div>
+        <div class="field"><div class="label">Tratamentos inclusos</div>
+          <ul class="checks"><li>Prisma</li><li>Antirreflexo Skylux</li></ul>
+          <div class="chip">7 camadas de proteção superior</div></div>
+        <div class="field"><div class="label">Indicação principal</div><div class="value soft">Correção óptica padrão de alta nitidez com acabamento antirreflexo.</div></div>
+      </div>
+      <div class="prices">
+        <div class="row"><span>Valor das lentes</span><b>R$ 849,00</b></div>
+        <div class="row"><span>Desconto na lente</span><b>—</b></div>
+        <div class="row"><span>Valor da armação</span><b>R$ 300,00</b></div>
+        <div class="row disc"><span>Desconto na armação</span><b>− R$ 150,00</b></div>
+        <div class="total"><div class="head-row"><span class="label">Investimento</span></div><span class="amount">R$ 999,00</span></div>
+      </div>
+    </article>
+
+    <article class="card rec">
+      <div class="card-head"><div class="top"><small>Opção 2</small><span class="tag">Recomendada</span></div><h2>Proteção Digital Plus</h2></div>
+      <div class="card-body">
+        <div class="makerrow"><div class="field"><div class="label">Fabricante da lente</div><div class="value">Segment</div></div></div>
+        <div class="field"><div class="label">Tipo de lente &amp; material</div><div class="value">Visão Simples | Resina (Índice 1.49)</div></div>
+        <div class="field"><div class="label">Tratamentos inclusos</div>
+          <ul class="checks"><li>Prisma</li><li>Filtro FCVD1</li><li>Skylux AR</li></ul>
+          <div class="chip">7 camadas AR + bloqueio de luz azul</div></div>
+        <div class="field"><div class="label">Diferencial &amp; benefício</div><div class="chip hot">Conforto visual contra telas e iluminação LED</div></div>
+      </div>
+      <div class="prices">
+        <div class="row"><span>Valor das lentes</span><b>R$ 2.292,00</b></div>
+        <div class="row disc"><span>Desconto na lente</span><b>− R$ 816,00</b></div>
+        <div class="row"><span>Valor da armação</span><b>R$ 300,00</b></div>
+        <div class="row disc"><span>Desconto na armação</span><b>− R$ 150,00</b></div>
+        <div class="total"><div class="head-row"><span class="label">Investimento</span><span class="save">Economia total R$ 966,00</span></div><span class="amount">R$ 1.626,00</span></div>
+      </div>
+    </article>
+
+  </section>
+
+  <h2 class="section-title">Garantias &amp; vantagens exclusivas M Vision</h2>
+  <section class="guarantees">
+    <div class="g"><h3>Garantia antirreflexo</h3><p>Cobertura total de 1 ano de garantia no tratamento antirreflexo da lente.</p></div>
+    <div class="g"><h3>Garantia armação</h3><p>Garantia de fábrica contra defeitos de armação.</p><p class="obs">*Obs: Não é válida quando constatado MAU USO.</p></div>
+    <div class="g"><h3>90 dias adaptação</h3><p>Segurança total em caso de eventual mudança médica de receita.</p></div>
+    <div class="g"><h3>Desconto 50%</h3><p>Válido na aquisição da 1ª armação de catálogo (não é válido para grife).</p></div>
+  </section>
+
+  <section class="contact" aria-label="Contato">
+    <div>
+      <h4>Atendimento especializado</h4>
+      <p>Telefone / WhatsApp: <span class="hl">(71) 3039-1640</span></p>
+      <p>Instagram: <span class="hl">@otica.mvision</span></p>
+      <p>E-mail: otica.mvision@gmail.com</p>
+    </div>
+    <div>
+      <h4>Endereço da unidade</h4>
+      <p><strong>Rua Adelaide Fernandes da Costa, 700, Loja 1</strong></p>
+      <p>Bairro Costa Azul — Salvador/BA</p>
+    </div>
+  </section>
+
+  <footer class="foot"><span>M Vision Ótica Especializada — Excelência em saúde visual</span><span>Orçamento válido por 30 dias</span></footer>
+
+</main>
+</body>
+</html>
