@@ -45,3 +45,6 @@ next-env.d.ts
 
 # Simulações de orçamento com dados reais de clientes
 docs/orcamento/simulacao/
+
+# arquivo de continuidade com segredos de producao
+WACRM-MVISION.md
