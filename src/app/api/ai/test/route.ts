@@ -5,6 +5,7 @@ import { decrypt } from '@/lib/whatsapp/encryption'
 import { validateAiCredentials } from '@/lib/ai/validate'
 import { AiError, type AiProvider } from '@/lib/ai/types'
 import { normalizeOpenAiCompatibleBaseUrl } from '@/lib/ai/providers/openai-compatible'
+import { DEFAULT_AI_AUTO_REPLY_SCHEDULE } from '@/lib/ai/schedule'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('Api')
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
         isActive: true,
         autoReplyEnabled: false,
         autoReplyMaxPerConversation: 3,
+        autoReplySchedule: DEFAULT_AI_AUTO_REPLY_SCHEDULE,
         handoffAgentId: null,
         embeddingsApiKey: null,
         transcriptionEnabled: false,

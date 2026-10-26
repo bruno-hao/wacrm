@@ -2769,6 +2769,7 @@
       "baseUrlRequired": "base_url is required for openai_compatible",
       "baseUrlInvalid": "base_url must be a valid http(s) URL",
       "modelRequired": "model is required",
+      "scheduleInvalid": "The automatic reply schedule is invalid.",
       "handoffNotMember": "handoff_agent_id must be a member of this account",
       "storedKeyReenter": "Stored API key could not be decrypted — re-enter your key.",
       "apiKeyRequired": "api_key is required",

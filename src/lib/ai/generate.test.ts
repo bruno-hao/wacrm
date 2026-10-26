@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { generateReply, parseGeneration } from './generate'
 import { AiError, type AiConfig } from './types'
+import { DEFAULT_AI_AUTO_REPLY_SCHEDULE } from './schedule'
 
 function config(overrides: Partial<AiConfig> = {}): AiConfig {
   return {
@@ -12,6 +13,7 @@ function config(overrides: Partial<AiConfig> = {}): AiConfig {
     isActive: true,
     autoReplyEnabled: false,
     autoReplyMaxPerConversation: 3,
+    autoReplySchedule: DEFAULT_AI_AUTO_REPLY_SCHEDULE,
     handoffAgentId: null,
     embeddingsApiKey: null,
     transcriptionEnabled: false,

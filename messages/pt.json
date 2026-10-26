@@ -2769,6 +2769,7 @@
       "baseUrlRequired": "base_url é obrigatório para openai_compatible",
       "baseUrlInvalid": "base_url deve ser uma URL http(s) válida",
       "modelRequired": "O modelo é obrigatório",
+      "scheduleInvalid": "A agenda de respostas automáticas é inválida.",
       "handoffNotMember": "O agente de transferência (handoff_agent_id) deve ser membro desta conta",
       "storedKeyReenter": "Não foi possível descriptografar a chave de API salva — informe sua chave novamente.",
       "apiKeyRequired": "A chave de API é obrigatória",

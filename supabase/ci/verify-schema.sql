@@ -140,6 +140,13 @@ BEGIN
     RAISE EXCEPTION
       'ai_configs.transcription_enabled is missing — migration 049 did not apply';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ai_configs' AND column_name = 'auto_reply_schedule'
+  ) THEN
+    RAISE EXCEPTION
+      'ai_configs.auto_reply_schedule is missing — migration 062 did not apply';
+  END IF;
   IF to_regclass('public.ssotica_config') IS NULL THEN
     RAISE EXCEPTION
       'public.ssotica_config is missing — migration 049 did not apply';

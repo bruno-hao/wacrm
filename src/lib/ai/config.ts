@@ -1,6 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { decrypt } from '@/lib/whatsapp/encryption'
 import type { AiConfig } from './types'
+import {
+  DEFAULT_AI_AUTO_REPLY_SCHEDULE,
+  FAIL_CLOSED_AI_AUTO_REPLY_SCHEDULE,
+  parseAiAutoReplySchedule,
+} from './schedule'
 
 interface AiConfigRow {
   provider: 'openai' | 'anthropic' | 'openai_compatible'
@@ -11,6 +16,7 @@ interface AiConfigRow {
   is_active: boolean
   auto_reply_enabled: boolean
   auto_reply_max_per_conversation: number
+  auto_reply_schedule: unknown
   handoff_agent_id: string | null
   embeddings_api_key: string | null
   transcription_enabled: boolean
@@ -18,7 +24,7 @@ interface AiConfigRow {
 }
 
 const CONFIG_COLUMNS =
-  'provider, model, base_url, api_key, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, handoff_agent_id, embeddings_api_key, transcription_enabled, transcription_model'
+  'provider, model, base_url, api_key, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, embeddings_api_key, transcription_enabled, transcription_model'
 
 /**
  * Load and decrypt the account's AI config for *use* (draft or
@@ -72,6 +78,19 @@ export async function loadAiConfig(
     }
   }
 
+  let autoReplySchedule = DEFAULT_AI_AUTO_REPLY_SCHEDULE
+  if (row.auto_reply_schedule != null) {
+    try {
+      autoReplySchedule = parseAiAutoReplySchedule(row.auto_reply_schedule)
+    } catch (err) {
+      console.error(
+        `[ai config] auto-reply schedule for account ${accountId} is invalid; automatic replies will stay silent.`,
+        err,
+      )
+      autoReplySchedule = FAIL_CLOSED_AI_AUTO_REPLY_SCHEDULE
+    }
+  }
+
   return {
     provider: row.provider,
     model: row.model,
@@ -81,6 +100,7 @@ export async function loadAiConfig(
     isActive: row.is_active,
     autoReplyEnabled: row.auto_reply_enabled,
     autoReplyMaxPerConversation: row.auto_reply_max_per_conversation,
+    autoReplySchedule,
     handoffAgentId: row.handoff_agent_id,
     embeddingsApiKey,
     transcriptionEnabled: row.transcription_enabled === true,

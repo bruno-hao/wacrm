@@ -10,6 +10,8 @@ import { validateAiCredentials } from '@/lib/ai/validate'
 import { embedTexts } from '@/lib/ai/embeddings'
 import { AiError, type AiProvider } from '@/lib/ai/types'
 import { normalizeOpenAiCompatibleBaseUrl } from '@/lib/ai/providers/openai-compatible'
+import { readAutoReplyScheduleUpdate } from '@/lib/ai/config-payload'
+import { DEFAULT_AI_AUTO_REPLY_SCHEDULE } from '@/lib/ai/schedule'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('Api')
@@ -34,7 +36,7 @@ export async function GET() {
       // `api_key` is selected only to derive `has_key` — it is stripped
       // out below and never returned to the client.
       .select(
-        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model',
+        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model',
       )
       .eq('account_id', accountId)
       .maybeSingle()
@@ -97,6 +99,12 @@ export async function POST(request: Request) {
         : null
     const isActive = body.is_active === true
     const autoReplyEnabled = body.auto_reply_enabled === true
+    let scheduleUpdate: ReturnType<typeof readAutoReplyScheduleUpdate>
+    try {
+      scheduleUpdate = readAutoReplyScheduleUpdate(body as Record<string, unknown>)
+    } catch {
+      return bad(t('ai.scheduleInvalid'))
+    }
 
     let maxPer = Number(body.auto_reply_max_per_conversation)
     if (!Number.isFinite(maxPer)) maxPer = 3
@@ -201,6 +209,10 @@ export async function POST(request: Request) {
           isActive,
           autoReplyEnabled,
           autoReplyMaxPerConversation: maxPer,
+          autoReplySchedule:
+            scheduleUpdate.provided
+              ? scheduleUpdate.value
+              : DEFAULT_AI_AUTO_REPLY_SCHEDULE,
           handoffAgentId: null,
           embeddingsApiKey: null,
           transcriptionEnabled: false,
@@ -248,6 +260,9 @@ export async function POST(request: Request) {
     // Only touch the handoff target when the form actually sent the field,
     // so a partial save (e.g. flipping a toggle) doesn't wipe it.
     if (handoffProvided) shared.handoff_agent_id = handoffAgentId
+    if (scheduleUpdate.provided) {
+      shared.auto_reply_schedule = scheduleUpdate.value
+    }
     if (transcriptionProvided) {
       shared.transcription_enabled = transcriptionEnabled
       shared.transcription_model = transcriptionModel

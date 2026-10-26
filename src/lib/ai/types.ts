@@ -8,6 +8,26 @@
 
 export type AiProvider = 'openai' | 'anthropic' | 'openai_compatible'
 
+export type AiWeekday =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday'
+
+export interface AiTimeRange {
+  start: string
+  end: string
+}
+
+export interface AiAutoReplySchedule {
+  enabled: boolean
+  timezone: 'America/Sao_Paulo'
+  days: Record<AiWeekday, AiTimeRange[]>
+}
+
 /**
  * Account AI setup, decrypted and ready to use. Produced by
  * `loadAiConfig` — `apiKey` is the plaintext BYO provider key
@@ -23,6 +43,7 @@ export interface AiConfig {
   isActive: boolean
   autoReplyEnabled: boolean
   autoReplyMaxPerConversation: number
+  autoReplySchedule: AiAutoReplySchedule
   /** Where auto-reply hands a conversation off when the model bails: an
    *  agent's `auth.users.id`, or null to leave it unassigned (drop into
    *  the shared queue). */

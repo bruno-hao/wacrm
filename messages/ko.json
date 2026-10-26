@@ -2769,6 +2769,7 @@
       "baseUrlRequired": "openai_compatible에는 base_url이 필수입니다",
       "baseUrlInvalid": "base_url은 올바른 http(s) URL이어야 합니다",
       "modelRequired": "모델은 필수입니다",
+      "scheduleInvalid": "자동 응답 일정이 올바르지 않습니다.",
       "handoffNotMember": "인계 담당자(handoff_agent_id)는 이 계정의 팀원이어야 합니다",
       "storedKeyReenter": "저장된 API 키를 복호화할 수 없습니다 — 키를 다시 입력하세요.",
       "apiKeyRequired": "API 키는 필수입니다",

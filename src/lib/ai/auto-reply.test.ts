@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { AiConfig } from './types'
+import { DEFAULT_AI_AUTO_REPLY_SCHEDULE } from './schedule'
 
 // Shared, hoisted mock state so the module mocks can close over it.
 const h = vi.hoisted(() => ({
@@ -85,6 +86,7 @@ function aiConfig(overrides: Partial<AiConfig> = {}): AiConfig {
     isActive: true,
     autoReplyEnabled: true,
     autoReplyMaxPerConversation: 3,
+    autoReplySchedule: DEFAULT_AI_AUTO_REPLY_SCHEDULE,
     handoffAgentId: null,
     embeddingsApiKey: null,
     transcriptionEnabled: false,
