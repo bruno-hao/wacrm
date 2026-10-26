@@ -20,6 +20,7 @@ describe('generatePrescriptionReading', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(body.model).toBe('vision-model')
     expect(body.messages[1].content[1].type).toBe('image_url')
+    expect(fetchMock.mock.calls[0][1].redirect).toBe('manual')
   })
 
   it('rejects oversized images before calling the provider', async () => {

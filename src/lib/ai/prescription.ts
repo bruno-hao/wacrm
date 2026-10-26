@@ -58,6 +58,7 @@ export async function generatePrescriptionReading(args: {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { Authorization: `Bearer ${args.config.apiKey}`, 'Content-Type': 'application/json' },
+      redirect: 'manual',
       body: JSON.stringify({
         model: args.model,
         messages: [{ role: 'system', content: 'Leia a imagem com segurança. Não faça diagnóstico nem recomendação clínica.' }, {

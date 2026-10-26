@@ -54,7 +54,12 @@ export async function POST(request: Request) {
     const prompt = config.prescriptionReaderPrompt || 'Leia apenas o texto legível da receita. Indique campos ausentes ou incertos. Não faça diagnóstico nem recomende lentes.'
     const { data: existing } = await db.from('ai_prescription_reads').select('*').eq('message_id', messageId).maybeSingle()
     if (existing?.status === 'completed') return NextResponse.json({ read: existing })
-    if (existing?.status === 'processing') return NextResponse.json({ read: existing })
+    if (existing?.status === 'processing') {
+      const updatedAt = Date.parse(String(existing.updated_at ?? ''))
+      if (Number.isFinite(updatedAt) && Date.now() - updatedAt < 10 * 60_000) {
+        return NextResponse.json({ read: existing })
+      }
+    }
     const { data: row, error: upsertError } = await db.from('ai_prescription_reads').upsert({
       id: existing?.id,
       account_id: accountId,

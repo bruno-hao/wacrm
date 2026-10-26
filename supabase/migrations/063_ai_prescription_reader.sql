@@ -23,6 +23,28 @@ CREATE TABLE IF NOT EXISTS ai_prescription_reads (
   UNIQUE (message_id)
 );
 
+CREATE OR REPLACE FUNCTION public.validate_ai_prescription_read_scope()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM messages m
+    WHERE m.id = NEW.message_id
+      AND m.conversation_id = NEW.conversation_id
+      AND m.account_id = NEW.account_id
+      AND m.sender_type = 'customer'
+      AND m.content_type = 'image'
+  ) THEN
+    RAISE EXCEPTION 'prescription read message is outside account scope';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS ai_prescription_reads_scope ON ai_prescription_reads;
+CREATE TRIGGER ai_prescription_reads_scope
+  BEFORE INSERT OR UPDATE ON ai_prescription_reads
+  FOR EACH ROW EXECUTE FUNCTION public.validate_ai_prescription_read_scope();
+
 CREATE INDEX IF NOT EXISTS idx_ai_prescription_reads_conversation
   ON ai_prescription_reads(account_id, conversation_id, updated_at DESC);
 
