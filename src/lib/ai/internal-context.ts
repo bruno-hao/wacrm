@@ -44,14 +44,23 @@ export async function loadWacrmAiContext(
   let ssoticaStatus: WacrmAiContext['ssoticaStatus'] = 'unavailable'
   let ssoticaName: string | null = null
   if (canonical) {
-    const { data: rows } = await db
-      .from('ssotica_customers')
-      .select('name')
+    const { data: syncState, error: syncError } = await db
+      .from('ssotica_sync_state')
+      .select('phase')
       .eq('account_id', accountId)
-      .contains('phones', [canonical])
-      .limit(1)
-    ssoticaStatus = rows?.length ? 'customer' : 'new'
-    ssoticaName = rows?.[0]?.name ?? null
+      .maybeSingle()
+    if (!syncError && syncState?.phase === 'live') {
+      const { data: rows, error: customerError } = await db
+        .from('ssotica_customers')
+        .select('name')
+        .eq('account_id', accountId)
+        .contains('phones', [canonical])
+        .limit(1)
+      if (!customerError) {
+        ssoticaStatus = rows?.length ? 'customer' : 'new'
+        ssoticaName = rows?.[0]?.name ?? null
+      }
+    }
   }
   const { data: reads } = await db
     .from('ai_prescription_reads')

@@ -7,6 +7,12 @@ import { useTranslations } from 'next-intl'
 
 interface ReadRow { status: string; result_text?: string | null; error_code?: string | null }
 
+function isFreshProcessing(read: ReadRow | null): boolean {
+  if (read?.status !== 'processing') return false
+  const timestamp = Date.parse(String((read as ReadRow & { updated_at?: string }).updated_at ?? ''))
+  return !Number.isFinite(timestamp) || Date.now() - timestamp < 10 * 60_000
+}
+
 export function PrescriptionReading({ messageId }: { messageId: string }) {
   const t = useTranslations('Inbox.bubble')
   const [read, setRead] = useState<ReadRow | null>(null)
@@ -40,11 +46,11 @@ export function PrescriptionReading({ messageId }: { messageId: string }) {
       <p className="whitespace-pre-wrap">{read.result_text}</p>
     </div>
   }
-  if (read?.status === 'processing' || busy) {
+  if (isFreshProcessing(read) || busy) {
     return <p className="text-muted-foreground mt-1 flex items-center gap-1 text-xs"><Loader2 className="h-3 w-3 animate-spin" /> {t('prescriptionReading')}</p>
   }
   return <Button type="button" variant="ghost" size="sm" className="mt-1 h-7 px-1.5 text-xs" onClick={run}>
-    {read?.status === 'failed' ? <RefreshCw className="mr-1 h-3 w-3" /> : <ScanSearch className="mr-1 h-3 w-3" />}
-    {read?.status === 'failed' ? t('prescriptionRetry') : t('prescriptionRead')}
+    {read?.status === 'failed' || read?.status === 'processing' ? <RefreshCw className="mr-1 h-3 w-3" /> : <ScanSearch className="mr-1 h-3 w-3" />}
+    {read?.status === 'failed' || read?.status === 'processing' ? t('prescriptionRetry') : t('prescriptionRead')}
   </Button>
 }

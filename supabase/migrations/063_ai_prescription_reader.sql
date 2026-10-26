@@ -27,10 +27,12 @@ CREATE OR REPLACE FUNCTION public.validate_ai_prescription_read_scope()
 RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM messages m
+    SELECT 1
+    FROM messages m
+    JOIN conversations c ON c.id = m.conversation_id
     WHERE m.id = NEW.message_id
       AND m.conversation_id = NEW.conversation_id
-      AND m.account_id = NEW.account_id
+      AND c.account_id = NEW.account_id
       AND m.sender_type = 'customer'
       AND m.content_type = 'image'
   ) THEN
