@@ -2058,7 +2058,50 @@
       "transcriptionDesc": "Enables the \"transcribe audio\" shortcut on audio messages in the chat. Transcription only runs when someone clicks it and the text is saved on the message. Uses the same base URL and key as the provider above.",
       "transcriptionModel": "Transcription model",
       "transcriptionModelHint": "Default: whisper-large-v3-turbo (Groq). On a direct OpenAI account, use whisper-1.",
-      "transcriptionUnsupported": "Anthropic does not offer audio transcription. Use the OpenAI provider or an OpenAI-compatible API (e.g. Groq)."
+      "transcriptionUnsupported": "Anthropic does not offer audio transcription. Use the OpenAI provider or an OpenAI-compatible API (e.g. Groq).",
+      "schedule": {
+        "title": "Automatic reply schedule",
+        "description": "Choose when new messages may trigger AI. Outside these hours, messages remain in the inbox and AI stays silent.",
+        "enabled": "Enable schedule",
+        "timezone": "Time zone",
+        "days": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        },
+        "shortDays": {
+          "monday": "Mon",
+          "tuesday": "Tue",
+          "wednesday": "Wed",
+          "thursday": "Thu",
+          "friday": "Fri",
+          "saturday": "Sat",
+          "sunday": "Sun"
+        },
+        "start": "start",
+        "end": "end",
+        "to": "to",
+        "addRange": "Add range",
+        "removeRange": "Remove range",
+        "nextDay": "ends the next day",
+        "copyTo": "Copy to…",
+        "copyTitle": "Copy hours",
+        "copyDescription": "Copy {day}'s hours to:",
+        "allOtherDays": "All other days",
+        "overwriteWarning": "Existing hours on the selected days will be replaced.",
+        "confirmOverwrite": "Confirm and replace",
+        "copy": "Copy",
+        "cancel": "Cancel",
+        "summary": "Summary",
+        "inactive": "inactive",
+        "alwaysActive": "24 hours (schedule disabled)",
+        "silentWarning": "No days are active. While this schedule is enabled, AI will always remain silent.",
+        "invalid": "Review the schedule times. Start and end must be valid and different."
+      }
     },
     "aiKnowledge": {
       "loadFailed": "Failed to load knowledge base",

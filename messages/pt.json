@@ -2058,7 +2058,50 @@
       "transcriptionDesc": "Habilita o atalho \"transcrever áudio\" nas mensagens de áudio da conversa. A transcrição só roda quando alguém clica nele e fica salva na mensagem. Usa a mesma URL e chave do provedor acima.",
       "transcriptionModel": "Modelo de transcrição",
       "transcriptionModelHint": "Padrão: whisper-large-v3-turbo (Groq). Em uma conta OpenAI direta, use whisper-1.",
-      "transcriptionUnsupported": "A Anthropic não oferece transcrição de áudio. Use o provedor OpenAI ou uma API compatível com OpenAI (ex.: Groq)."
+      "transcriptionUnsupported": "A Anthropic não oferece transcrição de áudio. Use o provedor OpenAI ou uma API compatível com OpenAI (ex.: Groq).",
+      "schedule": {
+        "title": "Agenda das respostas automáticas",
+        "description": "Defina quando novas mensagens podem acionar a IA. Fora destes horários, elas continuam no inbox e a IA fica em silêncio.",
+        "enabled": "Ativar agenda",
+        "timezone": "Fuso horário",
+        "days": {
+          "monday": "Segunda-feira",
+          "tuesday": "Terça-feira",
+          "wednesday": "Quarta-feira",
+          "thursday": "Quinta-feira",
+          "friday": "Sexta-feira",
+          "saturday": "Sábado",
+          "sunday": "Domingo"
+        },
+        "shortDays": {
+          "monday": "Seg",
+          "tuesday": "Ter",
+          "wednesday": "Qua",
+          "thursday": "Qui",
+          "friday": "Sex",
+          "saturday": "Sáb",
+          "sunday": "Dom"
+        },
+        "start": "início",
+        "end": "fim",
+        "to": "até",
+        "addRange": "Adicionar faixa",
+        "removeRange": "Remover faixa",
+        "nextDay": "termina no dia seguinte",
+        "copyTo": "Copiar para…",
+        "copyTitle": "Copiar horários",
+        "copyDescription": "Copiar os horários de {day} para:",
+        "allOtherDays": "Todos os outros dias",
+        "overwriteWarning": "Os horários existentes nos dias selecionados serão substituídos.",
+        "confirmOverwrite": "Confirmar e substituir",
+        "copy": "Copiar",
+        "cancel": "Cancelar",
+        "summary": "Resumo",
+        "inactive": "inativo",
+        "alwaysActive": "24 horas (agenda desativada)",
+        "silentWarning": "Nenhum dia está ativo. Enquanto esta agenda estiver ativada, a IA ficará sempre silenciosa.",
+        "invalid": "Revise os horários da agenda. Início e fim devem ser válidos e diferentes."
+      }
     },
     "aiKnowledge": {
       "loadFailed": "Falha ao carregar a base de conhecimento",
