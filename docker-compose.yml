@@ -22,6 +22,9 @@ services:
     # healthcheck below.
     environment:
       PORT: 3000
+      # Operational default for Brazil deployments. Override with TZ in
+      # .env.local when intentionally running in another IANA timezone.
+      TZ: ${TZ:-America/Sao_Paulo}
     # Host side only — HOST_PORT=8080 publishes the app on :8080.
     ports:
       - '${HOST_PORT:-3000}:3000'
