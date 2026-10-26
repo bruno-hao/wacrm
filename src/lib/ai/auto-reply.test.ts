@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { AiConfig } from './types'
 import { DEFAULT_AI_AUTO_REPLY_SCHEDULE } from './schedule'
 
@@ -17,6 +17,7 @@ const h = vi.hoisted(() => ({
     claim: true as boolean,
     updatePayload: null as Record<string, unknown> | null,
     rpcCalls: [] as { name: string; args: unknown }[],
+    fromCalls: [] as string[],
   },
 }))
 
@@ -34,6 +35,7 @@ vi.mock('@/lib/whatsapp/meta-api', () => ({
 vi.mock('./admin-client', () => ({
   supabaseAdmin: () => ({
     from: (table: string) => {
+      h.state.fromCalls.push(table)
       if (table === 'automations') {
         // .select().eq().eq().in().limit() → active auto-responders
         const chain = {
@@ -105,6 +107,7 @@ beforeEach(() => {
   h.state.claim = true
   h.state.updatePayload = null
   h.state.rpcCalls = []
+  h.state.fromCalls = []
   h.loadAiConfig.mockResolvedValue(aiConfig())
   h.buildConversationContext.mockResolvedValue([{ role: 'user', content: 'hi' }])
   h.retrieveKnowledge.mockResolvedValue([])
@@ -115,6 +118,10 @@ beforeEach(() => {
     accessToken: 'tok',
   })
   h.sendTypingIndicator.mockResolvedValue(undefined)
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 describe('dispatchInboundToAiReply — eligibility gates', () => {
@@ -166,6 +173,79 @@ describe('dispatchInboundToAiReply — eligibility gates', () => {
     h.loadAiConfig.mockResolvedValue(aiConfig({ autoReplyEnabled: false }))
     await dispatchInboundToAiReply(ARGS)
     expect(h.engineSendText).not.toHaveBeenCalled()
+  })
+
+  it('stays silent outside the configured schedule before any downstream work', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-26T10:59:00Z')) // Monday 07:59 in Sao Paulo
+    h.loadAiConfig.mockResolvedValue(
+      aiConfig({
+        autoReplySchedule: {
+          enabled: true,
+          timezone: 'America/Sao_Paulo',
+          days: {
+            monday: [{ start: '08:00', end: '12:00' }],
+            tuesday: [],
+            wednesday: [],
+            thursday: [],
+            friday: [],
+            saturday: [],
+            sunday: [],
+          },
+        },
+      }),
+    )
+
+    await dispatchInboundToAiReply(ARGS)
+
+    expect(h.state.fromCalls).toEqual([])
+    expect(h.buildConversationContext).not.toHaveBeenCalled()
+    expect(h.retrieveKnowledge).not.toHaveBeenCalled()
+    expect(h.sendTypingIndicator).not.toHaveBeenCalled()
+    expect(h.generateReply).not.toHaveBeenCalled()
+    expect(h.state.rpcCalls).toEqual([])
+    expect(h.engineSendText).not.toHaveBeenCalled()
+  })
+
+  it('uses earlier off-hours messages as context after a new in-hours message arrives', async () => {
+    vi.useFakeTimers()
+    h.loadAiConfig.mockResolvedValue(
+      aiConfig({
+        autoReplySchedule: {
+          enabled: true,
+          timezone: 'America/Sao_Paulo',
+          days: {
+            monday: [{ start: '08:00', end: '12:00' }],
+            tuesday: [],
+            wednesday: [],
+            thursday: [],
+            friday: [],
+            saturday: [],
+            sunday: [],
+          },
+        },
+      }),
+    )
+    h.buildConversationContext.mockResolvedValue([
+      { role: 'user', content: 'off-hours question' },
+      { role: 'user', content: 'new in-hours message' },
+    ])
+
+    vi.setSystemTime(new Date('2026-10-26T10:00:00Z'))
+    await dispatchInboundToAiReply(ARGS)
+    vi.setSystemTime(new Date('2026-10-26T11:00:00Z'))
+    await dispatchInboundToAiReply(ARGS)
+
+    expect(h.buildConversationContext).toHaveBeenCalledTimes(1)
+    expect(h.generateReply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        messages: [
+          { role: 'user', content: 'off-hours question' },
+          { role: 'user', content: 'new in-hours message' },
+        ],
+      }),
+    )
+    expect(h.engineSendText).toHaveBeenCalledTimes(1)
   })
 
   it('skips when a human agent is assigned', async () => {
