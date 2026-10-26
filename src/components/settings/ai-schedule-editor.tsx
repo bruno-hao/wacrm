@@ -98,6 +98,7 @@ export function AiScheduleEditor({
   const t = useTranslations('Settings.aiConfig.schedule');
   const [copySource, setCopySource] = useState<AiWeekday | null>(null);
   const [copyTargets, setCopyTargets] = useState<AiWeekday[]>([]);
+  const scheduleDisabled = disabled || !value.enabled;
 
   const dayNames = useMemo(
     () => AI_WEEKDAYS.map((day) => t(`days.${day}`)),
@@ -166,7 +167,7 @@ export function AiScheduleEditor({
           <Select
             value={value.timezone}
             onValueChange={() => undefined}
-            disabled={disabled || !value.enabled}
+            disabled={scheduleDisabled}
           >
             <SelectTrigger id="ai-schedule-timezone">
               <SelectValue />
@@ -183,7 +184,7 @@ export function AiScheduleEditor({
           className={
             value.enabled
               ? 'space-y-2'
-              : 'pointer-events-none space-y-2 opacity-50'
+              : 'space-y-2 opacity-50'
           }
         >
           {AI_WEEKDAYS.map((day, dayIndex) => {
@@ -195,7 +196,7 @@ export function AiScheduleEditor({
                   <Switch
                     checked={active}
                     onCheckedChange={(checked) => setDayEnabled(day, checked)}
-                    disabled={disabled || !value.enabled}
+                    disabled={scheduleDisabled}
                     aria-label={dayNames[dayIndex]}
                   />
                   <span className="min-w-24 text-sm font-medium">
@@ -213,7 +214,7 @@ export function AiScheduleEditor({
                             { start: '14:00', end: '18:00' },
                           ])
                         }
-                        disabled={disabled}
+                        disabled={scheduleDisabled}
                       >
                         <Plus className="h-3.5 w-3.5" /> {t('addRange')}
                       </Button>
@@ -223,7 +224,7 @@ export function AiScheduleEditor({
                       variant="ghost"
                       size="sm"
                       onClick={() => openCopy(day)}
-                      disabled={disabled}
+                      disabled={scheduleDisabled}
                     >
                       <Copy className="h-3.5 w-3.5" /> {t('copyTo')}
                     </Button>
@@ -245,7 +246,7 @@ export function AiScheduleEditor({
                               start: event.target.value,
                             })
                           }
-                          disabled={disabled}
+                          disabled={scheduleDisabled}
                           required
                           aria-label={`${dayNames[dayIndex]} ${t('start')}`}
                           className="w-32"
@@ -259,7 +260,7 @@ export function AiScheduleEditor({
                           onChange={(event) =>
                             updateRange(day, index, { end: event.target.value })
                           }
-                          disabled={disabled}
+                          disabled={scheduleDisabled}
                           required
                           aria-label={`${dayNames[dayIndex]} ${t('end')}`}
                           className="w-32"
@@ -279,7 +280,7 @@ export function AiScheduleEditor({
                               ranges.filter((_, i) => i !== index)
                             )
                           }
-                          disabled={disabled}
+                          disabled={scheduleDisabled}
                           aria-label={t('removeRange')}
                         >
                           <Trash2 className="h-4 w-4" />
