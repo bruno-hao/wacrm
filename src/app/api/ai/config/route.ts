@@ -20,6 +20,7 @@ import {
 } from '@/lib/ai/config-payload';
 import { DEFAULT_AI_AUTO_REPLY_SCHEDULE } from '@/lib/ai/schedule';
 import { getT } from '@/lib/i18n/translate';
+import { DEFAULT_MARIA_SYSTEM_PROMPT } from '@/lib/ai/maria-prompt';
 
 const t = getT('Api');
 
@@ -43,7 +44,7 @@ export async function GET() {
       // `api_key` is selected only to derive `has_key` — it is stripped
       // out below and never returned to the client.
       .select(
-        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model'
+        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt'
       )
       .eq('account_id', accountId)
       .maybeSingle();
@@ -73,6 +74,7 @@ export async function GET() {
       has_key: !!api_key,
       has_embeddings_key: !!embeddings_api_key,
       ...safe,
+      system_prompt: safe.system_prompt || DEFAULT_MARIA_SYSTEM_PROMPT,
       auto_reply_schedule: safeSchedule,
     });
   } catch (err) {
@@ -122,6 +124,7 @@ export async function POST(request: Request) {
       typeof body.system_prompt === 'string' && body.system_prompt.trim()
         ? body.system_prompt.trim()
         : null;
+    const systemPromptProvided = 'system_prompt' in body;
     const isActive = body.is_active === true;
     const autoReplyEnabled = body.auto_reply_enabled === true;
     let scheduleUpdate: ReturnType<typeof readAutoReplyScheduleUpdate>;
@@ -134,7 +137,7 @@ export async function POST(request: Request) {
     }
 
     let maxPer = Number(body.auto_reply_max_per_conversation);
-    if (!Number.isFinite(maxPer)) maxPer = 3;
+    if (!Number.isFinite(maxPer)) maxPer = 20;
     maxPer = Math.min(20, Math.max(1, Math.floor(maxPer)));
 
     // Handoff routing target for auto-reply. A non-empty string must be a
@@ -171,6 +174,40 @@ export async function POST(request: Request) {
       return bad(t('ai.transcriptionUnsupported'));
     }
 
+    const prescriptionReaderProvided =
+      'prescription_reader_enabled' in body ||
+      'prescription_reader_model' in body ||
+      'prescription_reader_prompt' in body;
+    const prescriptionReaderEnabled =
+      'prescription_reader_enabled' in body
+        ? body.prescription_reader_enabled === true
+        : false;
+    const prescriptionReaderModel =
+      typeof body.prescription_reader_model === 'string'
+        ? body.prescription_reader_model.trim().slice(0, 120)
+        : '';
+    const prescriptionReaderPrompt =
+      typeof body.prescription_reader_prompt === 'string' &&
+      body.prescription_reader_prompt.trim()
+        ? body.prescription_reader_prompt.trim().slice(0, 20_000)
+        : null;
+    const { data: existingReader } = await supabase
+      .from('ai_configs')
+      .select('prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt')
+      .eq('account_id', accountId)
+      .maybeSingle();
+    const effectiveReaderEnabled =
+      'prescription_reader_enabled' in body
+        ? prescriptionReaderEnabled
+        : Boolean(existingReader?.prescription_reader_enabled);
+    const effectiveReaderModel =
+      'prescription_reader_model' in body
+        ? prescriptionReaderModel
+        : existingReader?.prescription_reader_model ?? '';
+    if (effectiveReaderEnabled && !effectiveReaderModel) {
+      return bad(t('ai.prescriptionReaderModelRequired'));
+    }
+
     const rawKey = typeof body.api_key === 'string' ? body.api_key.trim() : '';
 
     // Embeddings key (optional, for semantic KB search): a non-empty
@@ -185,7 +222,7 @@ export async function POST(request: Request) {
     // Reuse the stored key when the form didn't send a fresh one.
     const { data: existing } = await supabase
       .from('ai_configs')
-      .select('id, provider, model, base_url, api_key')
+      .select('id, provider, model, base_url, api_key, system_prompt, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt')
       .eq('account_id', accountId)
       .maybeSingle();
 
@@ -286,11 +323,13 @@ export async function POST(request: Request) {
       provider,
       model,
       base_url: baseUrl,
-      system_prompt: systemPrompt,
       is_active: isActive,
       auto_reply_enabled: autoReplyEnabled,
       auto_reply_max_per_conversation: maxPer,
     };
+    if (systemPromptProvided || !existing) {
+      shared.system_prompt = systemPrompt || DEFAULT_MARIA_SYSTEM_PROMPT;
+    }
     // Only touch the handoff target when the form actually sent the field,
     // so a partial save (e.g. flipping a toggle) doesn't wipe it.
     if (handoffProvided) shared.handoff_agent_id = handoffAgentId;
@@ -300,6 +339,20 @@ export async function POST(request: Request) {
     if (transcriptionProvided) {
       shared.transcription_enabled = transcriptionEnabled;
       shared.transcription_model = transcriptionModel;
+    }
+    if (prescriptionReaderProvided) {
+      shared.prescription_reader_enabled =
+        'prescription_reader_enabled' in body
+          ? prescriptionReaderEnabled
+          : Boolean(existing?.prescription_reader_enabled);
+      shared.prescription_reader_model =
+        'prescription_reader_model' in body
+          ? prescriptionReaderModel
+          : existing?.prescription_reader_model ?? '';
+      shared.prescription_reader_prompt =
+        'prescription_reader_prompt' in body
+          ? prescriptionReaderPrompt
+          : existing?.prescription_reader_prompt ?? null;
     }
     if (rawEmbeddingsKey) {
       shared.embeddings_api_key = encrypt(rawEmbeddingsKey);

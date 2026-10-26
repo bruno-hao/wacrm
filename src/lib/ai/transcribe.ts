@@ -5,6 +5,8 @@ import {
 } from '@/lib/ai/providers/openai-compatible'
 import { aiRequestTimeoutMs } from './defaults'
 import type { AiConfig } from './types'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { loadAiConfig } from './config'
 
 export const DEFAULT_TRANSCRIPTION_MODEL = 'whisper-large-v3-turbo'
 
@@ -82,6 +84,43 @@ export async function transcribeAudio(args: {
     return text || null
   } catch (err) {
     console.error('[transcribe] failed:', err instanceof Error ? err.message : err)
+    return null
+  }
+}
+
+/** Best-effort transcription for a stored inbound audio message. */
+export async function transcribeStoredAudio(args: {
+  db: SupabaseClient
+  accountId: string
+  messageId: string
+}): Promise<string | null> {
+  const { db, accountId, messageId } = args
+  try {
+    const { data: msg } = await db
+      .from('messages')
+      .select('id, content_type, content_text, media_url, media_type')
+      .eq('id', messageId)
+      .maybeSingle()
+    if (!msg || msg.content_type !== 'audio' || !msg.media_url || msg.content_text?.trim()) {
+      return msg?.content_text?.trim() || null
+    }
+    const config = await loadAiConfig(db, accountId)
+    if (!config?.transcriptionEnabled || !transcriptionSupported(config.provider)) return null
+    const url = new URL(msg.media_url)
+    if (url.protocol !== 'https:') return null
+    if (!(await isDeliverableUrl(url.toString(), { allowPrivateHosts: new Set() }))) return null
+    const res = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })
+    if (!res.ok) return null
+    const text = await transcribeAudio({
+      config,
+      bytes: await res.arrayBuffer(),
+      mimeType: msg.media_type || res.headers.get('content-type'),
+    })
+    if (!text) return null
+    await db.from('messages').update({ content_text: text }).eq('id', messageId)
+    return text
+  } catch (err) {
+    console.error('[transcribe] stored audio failed:', err instanceof Error ? err.message : err)
     return null
   }
 }

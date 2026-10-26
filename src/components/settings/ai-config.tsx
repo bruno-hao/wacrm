@@ -103,11 +103,14 @@ export function AiConfig() {
   const [autoReplyEnabled, setAutoReplyEnabled] = useState(false);
   const [autoReplySchedule, setAutoReplySchedule] =
     useState<AiAutoReplySchedule>(emptySchedule);
-  const [maxPerConversation, setMaxPerConversation] = useState(3);
+  const [maxPerConversation, setMaxPerConversation] = useState(20);
   const [transcriptionEnabled, setTranscriptionEnabled] = useState(false);
   const [transcriptionModel, setTranscriptionModel] = useState(
     'whisper-large-v3-turbo'
   );
+  const [prescriptionReaderEnabled, setPrescriptionReaderEnabled] = useState(false);
+  const [prescriptionReaderModel, setPrescriptionReaderModel] = useState('');
+  const [prescriptionReaderPrompt, setPrescriptionReaderPrompt] = useState('');
   // Empty string = leave unassigned (shared queue).
   const [handoffAgentId, setHandoffAgentId] = useState('');
   const [members, setMembers] = useState<AccountMember[]>([]);
@@ -145,6 +148,9 @@ export function AiConfig() {
         setTranscriptionModel(
           data.transcription_model || 'whisper-large-v3-turbo'
         );
+        setPrescriptionReaderEnabled(Boolean(data.prescription_reader_enabled));
+        setPrescriptionReaderModel(data.prescription_reader_model || '');
+        setPrescriptionReaderPrompt(data.prescription_reader_prompt || '');
         setHandoffAgentId(data.handoff_agent_id ?? '');
         setHasStoredKey(Boolean(data.has_key));
         setApiKey(data.has_key ? MASKED_KEY : '');
@@ -205,6 +211,9 @@ export function AiConfig() {
     handoff_agent_id: handoffAgentId || null,
     transcription_enabled: transcriptionEnabled && provider !== 'anthropic',
     transcription_model: transcriptionModel.trim() || 'whisper-large-v3-turbo',
+    prescription_reader_enabled: prescriptionReaderEnabled,
+    prescription_reader_model: prescriptionReaderModel.trim(),
+    prescription_reader_prompt: prescriptionReaderPrompt.trim() || null,
   });
 
   const handleTest = async () => {
@@ -288,6 +297,9 @@ export function AiConfig() {
         setHandoffAgentId('');
         setTranscriptionEnabled(false);
         setTranscriptionModel('whisper-large-v3-turbo');
+        setPrescriptionReaderEnabled(false);
+        setPrescriptionReaderModel('');
+        setPrescriptionReaderPrompt('');
       } else {
         const data = await res.json();
         toast.error(data.error ?? t('removeFailed'));
@@ -559,6 +571,45 @@ export function AiConfig() {
                   </p>
                 </div>
               )}
+            </div>
+
+            <div className="border-border rounded-md border p-3">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-foreground text-sm font-medium">{t('prescriptionReader')}</p>
+                  <p className="text-muted-foreground text-xs">{t('prescriptionReaderDesc')}</p>
+                </div>
+                <Switch
+                  checked={prescriptionReaderEnabled}
+                  onCheckedChange={setPrescriptionReaderEnabled}
+                  disabled={disabled}
+                />
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ai-prescription-model">{t('prescriptionReaderModel')}</Label>
+                  <Input
+                    id="ai-prescription-model"
+                    value={prescriptionReaderModel}
+                    onChange={(e) => setPrescriptionReaderModel(e.target.value)}
+                    placeholder="gpt-4o-mini"
+                    disabled={disabled}
+                    autoComplete="off"
+                  />
+                </div>
+                <p className="text-muted-foreground self-end text-xs">{t('prescriptionReaderModelHint')}</p>
+              </div>
+              <div className="mt-3 space-y-2">
+                <Label htmlFor="ai-prescription-prompt">{t('prescriptionReaderPrompt')}</Label>
+                <Textarea
+                  id="ai-prescription-prompt"
+                  value={prescriptionReaderPrompt}
+                  onChange={(e) => setPrescriptionReaderPrompt(e.target.value)}
+                  placeholder={t('prescriptionReaderPromptPlaceholder')}
+                  rows={4}
+                  disabled={disabled}
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between gap-4">

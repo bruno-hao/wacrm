@@ -291,7 +291,11 @@
       "imageAlt": "공유된 이미지",
       "transcribeAudio": "음성 전사",
       "transcribing": "음성을 전사하는 중…",
-      "transcribeRetry": "다시 전사 시도"
+      "transcribeRetry": "다시 전사 시도",
+      "prescriptionRead": "처방전 읽기…",
+      "prescriptionReading": "처방전을 읽는 중…",
+      "prescriptionRetry": "다시 읽기",
+      "prescriptionTitle": "처방전 읽기"
     },
     "mediaViewer": {
       "counter": "{total}개 중 {index}번째",
@@ -2059,6 +2063,12 @@
       "transcriptionModel": "전사 모델",
       "transcriptionModelHint": "기본값: whisper-large-v3-turbo (Groq). OpenAI 직접 계정에서는 whisper-1을 사용하세요.",
       "transcriptionUnsupported": "Anthropic은 음성 전사를 제공하지 않습니다. OpenAI 제공업체 또는 OpenAI 호환 API(예: Groq)를 사용하세요.",
+      "prescriptionReader": "처방전 읽기",
+      "prescriptionReaderDesc": "받은 이미지를 팀 내부에서만 읽습니다.",
+      "prescriptionReaderModel": "비전 모델",
+      "prescriptionReaderModelHint": "같은 제공업체의 이미지 지원 모델을 사용하세요.",
+      "prescriptionReaderPrompt": "읽기 프롬프트",
+      "prescriptionReaderPromptPlaceholder": "읽을 수 있는 항목과 불확실한 항목을 표시하세요. 진단이나 렌즈 추천은 하지 마세요.",
       "schedule": {
         "title": "자동 답장 운영 시간",
         "description": "새 메시지가 AI를 실행할 시간을 설정합니다. 운영 시간 외에는 메시지가 받은 편지함에 남고 AI는 응답하지 않습니다.",
@@ -2853,7 +2863,13 @@
       "transcribeNotAudio": "이 메시지는 음성이 아닙니다.",
       "transcriptionDisabled": "음성 전사가 활성화되어 있지 않습니다.",
       "transcribeFetchFailed": "음성을 다운로드할 수 없습니다.",
-      "transcribeFailed": "음성을 전사할 수 없습니다."
+      "transcribeFailed": "음성을 전사할 수 없습니다.",
+      "prescriptionReaderModelRequired": "처방전 읽기를 활성화하려면 이미지를 지원하는 모델을 입력하세요.",
+      "prescriptionReaderDisabled": "처방전 읽기가 활성화되지 않았습니다.",
+      "prescriptionReaderNotImage": "받은 이미지 메시지가 아닙니다.",
+      "prescriptionReaderFailed": "처방전을 읽을 수 없습니다. 다시 시도하세요.",
+      "prescriptionReaderProcessing": "처방전을 읽는 중…",
+      "prescriptionReaderTitle": "처방전 읽기"
     },
     "automations": {
       "copyName": "{name} (복사본)",

@@ -291,7 +291,11 @@
       "imageAlt": "Imagen compartida",
       "transcribeAudio": "transcribir audio",
       "transcribing": "Transcribiendo audio…",
-      "transcribeRetry": "intentar transcribir de nuevo"
+      "transcribeRetry": "intentar transcribir de nuevo",
+      "prescriptionRead": "Leer receta…",
+      "prescriptionReading": "Leyendo receta…",
+      "prescriptionRetry": "Intentar leer de nuevo",
+      "prescriptionTitle": "Lectura de receta"
     },
     "mediaViewer": {
       "counter": "{index} de {total}",
@@ -2059,6 +2063,12 @@
       "transcriptionModel": "Modelo de transcripción",
       "transcriptionModelHint": "Predeterminado: whisper-large-v3-turbo (Groq). En una cuenta OpenAI directa, usa whisper-1.",
       "transcriptionUnsupported": "Anthropic no ofrece transcripción de audio. Usa el proveedor OpenAI o una API compatible con OpenAI (p. ej., Groq).",
+      "prescriptionReader": "Lectura de recetas",
+      "prescriptionReaderDesc": "Lectura privada de imágenes recibidas, visible solo para el equipo.",
+      "prescriptionReaderModel": "Modelo visual",
+      "prescriptionReaderModelHint": "Usa un modelo compatible con imágenes del mismo proveedor.",
+      "prescriptionReaderPrompt": "Prompt de lectura",
+      "prescriptionReaderPromptPlaceholder": "Lee los campos legibles y marca dudas; no diagnostiques ni recomiendes lentes.",
       "schedule": {
         "title": "Horario de respuestas automáticas",
         "description": "Define cuándo los mensajes nuevos pueden activar la IA. Fuera de este horario, permanecen en la bandeja y la IA guarda silencio.",
@@ -2853,7 +2863,13 @@
       "transcribeNotAudio": "Este mensaje no es un audio.",
       "transcriptionDisabled": "La transcripción de audio no está activada.",
       "transcribeFetchFailed": "No se pudo descargar el audio.",
-      "transcribeFailed": "No se pudo transcribir el audio."
+      "transcribeFailed": "No se pudo transcribir el audio.",
+      "prescriptionReaderModelRequired": "Indica un modelo compatible con imágenes para activar la lectura de recetas.",
+      "prescriptionReaderDisabled": "La lectura de recetas no está activada.",
+      "prescriptionReaderNotImage": "Este mensaje no es una imagen recibida.",
+      "prescriptionReaderFailed": "No se pudo leer la receta. Inténtalo de nuevo.",
+      "prescriptionReaderProcessing": "Leyendo receta…",
+      "prescriptionReaderTitle": "Lectura de receta"
     },
     "automations": {
       "copyName": "{name} (Copia)",

@@ -11,6 +11,7 @@ import { logAiUsage } from '@/lib/ai/usage'
 import { supabaseAdmin } from '@/lib/ai/admin-client'
 import { AiError } from '@/lib/ai/types'
 import { getT } from '@/lib/i18n/translate'
+import { formatWacrmAiContext, loadWacrmAiContext } from '@/lib/ai/internal-context'
 
 const t = getT('Api')
 
@@ -101,10 +102,19 @@ export async function POST(request: Request) {
       latestUserMessage(messages),
     )
 
+    let internalContext = ''
+    try {
+      internalContext = formatWacrmAiContext(
+        await loadWacrmAiContext(supabaseAdmin(), accountId, conversationId),
+      )
+    } catch (err) {
+      console.warn('[ai/draft] internal context unavailable:', err)
+    }
     const systemPrompt = buildSystemPrompt({
       userPrompt: config.systemPrompt,
       mode: 'draft',
       knowledge,
+      internalContext,
     })
 
     const { text, usage } = await generateReply({ config, systemPrompt, messages })

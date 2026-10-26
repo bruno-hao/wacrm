@@ -14,6 +14,7 @@ import {
 } from '@/lib/flows/meta-send'
 import { sendTypingIndicator } from '@/lib/whatsapp/meta-api'
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { formatWacrmAiContext, loadWacrmAiContext } from './internal-context'
 
 interface DispatchArgs {
   /** Tenancy key — drives config, contact, and whatsapp_config lookups. */
@@ -97,6 +98,14 @@ export async function dispatchInboundToAiReply(
 
     const messages = await buildConversationContext(db, conversationId)
     if (messages.length === 0) return
+    let internalContext = ''
+    try {
+      internalContext = formatWacrmAiContext(
+        await loadWacrmAiContext(db, accountId, conversationId),
+      )
+    } catch (err) {
+      console.warn('[ai auto-reply] internal context unavailable:', err)
+    }
 
     // Account-wide throttle on the shared BYO key. The per-conversation
     // cap bounds one thread; this bounds a burst across many threads (a
@@ -136,6 +145,7 @@ export async function dispatchInboundToAiReply(
       userPrompt: config.systemPrompt,
       mode: 'auto_reply',
       knowledge,
+      internalContext,
     })
 
     const { text, handoff, usage } = await generateReply({

@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { decrypt } from '@/lib/whatsapp/encryption';
 import type { AiConfig } from './types';
 import { readStoredAutoReplySchedule } from './config-payload';
+import { DEFAULT_MARIA_SYSTEM_PROMPT } from './maria-prompt';
 
 interface AiConfigRow {
   provider: 'openai' | 'anthropic' | 'openai_compatible';
@@ -17,10 +18,13 @@ interface AiConfigRow {
   embeddings_api_key: string | null;
   transcription_enabled: boolean;
   transcription_model: string;
+  prescription_reader_enabled: boolean;
+  prescription_reader_model: string;
+  prescription_reader_prompt: string | null;
 }
 
 const CONFIG_COLUMNS =
-  'provider, model, base_url, api_key, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, embeddings_api_key, transcription_enabled, transcription_model';
+  'provider, model, base_url, api_key, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt';
 
 /**
  * Load and decrypt the account's AI config for *use* (draft or
@@ -89,7 +93,7 @@ export async function loadAiConfig(
     model: row.model,
     baseUrl: row.base_url,
     apiKey: decrypt(row.api_key),
-    systemPrompt: row.system_prompt,
+    systemPrompt: row.system_prompt || DEFAULT_MARIA_SYSTEM_PROMPT,
     isActive: row.is_active,
     autoReplyEnabled: row.auto_reply_enabled,
     autoReplyMaxPerConversation: row.auto_reply_max_per_conversation,
@@ -98,6 +102,9 @@ export async function loadAiConfig(
     embeddingsApiKey,
     transcriptionEnabled: row.transcription_enabled === true,
     transcriptionModel: row.transcription_model || 'whisper-large-v3-turbo',
+    prescriptionReaderEnabled: row.prescription_reader_enabled === true,
+    prescriptionReaderModel: row.prescription_reader_model || '',
+    prescriptionReaderPrompt: row.prescription_reader_prompt || null,
   };
 }
 

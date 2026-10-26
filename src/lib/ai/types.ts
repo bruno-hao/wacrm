@@ -55,6 +55,9 @@ export interface AiConfig {
   /** Transcribe inbound voice notes with this provider's audio API. */
   transcriptionEnabled: boolean
   transcriptionModel: string
+  prescriptionReaderEnabled?: boolean
+  prescriptionReaderModel?: string
+  prescriptionReaderPrompt?: string | null
 }
 
 /** A single conversation turn in the shape both providers accept. */

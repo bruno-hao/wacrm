@@ -21,6 +21,7 @@ import { reopenClosedConversation } from '@/lib/conversations/reopen'
 import { resumeAwaitingReply, runAutomationsForTrigger } from '@/lib/automations/engine'
 import { dispatchInboundToFlows } from '@/lib/flows/engine'
 import { dispatchInboundToAiReply } from '@/lib/ai/auto-reply'
+import { transcribeStoredAudio } from '@/lib/ai/transcribe'
 import { dispatchWebhookEvent } from '@/lib/webhooks/deliver'
 import {
   handleTemplateWebhookChange,
@@ -743,6 +744,19 @@ async function processMessage(
     return
   }
 
+  // Transcribe inbound voice notes before any future AI responder can build
+  // its context. This is deliberately independent of auto-reply: enabling
+  // the assistant enables internal understanding, while auto-reply remains
+  // governed by its own switch and schedule.
+  let transcribedText = ''
+  if (contentType === 'audio') {
+    transcribedText = (await transcribeStoredAudio({
+      db: supabaseAdmin(),
+      accountId,
+      messageId: insertedRows[0].id,
+    })) || ''
+  }
+
   // Update conversation. The unread bump is done DB-side (migration 037's
   // bump_conversation_on_inbound) rather than as a read-modify-write of the
   // snapshot loaded above: two inbound messages for the same conversation
@@ -892,12 +906,12 @@ async function processMessage(
     }).catch((err) => console.error('[automations] dispatch failed:', err))
   }
 
-  // AI auto-reply. Runs only for plain-text inbound the deterministic
-  // flow runner did NOT consume (flows win over the LLM), and only when
-  // the account has enabled it. Awaited inside `after()` (same reason as
+  // AI auto-reply. Runs for text or successfully transcribed inbound audio
+  // that the deterministic flow runner did NOT consume (flows win over the
+  // LLM), and only when the account has enabled it. Awaited inside `after()` (same reason as
   // the webhook dispatch below); `dispatchInboundToAiReply` owns its
   // eligibility gates + try/catch and never throws.
-  if (!contentConsumed && !interactiveReplyId && inboundText.trim()) {
+  if (!contentConsumed && !interactiveReplyId && (inboundText.trim() || transcribedText.trim())) {
     await dispatchInboundToAiReply({
       accountId,
       conversationId: conversation.id,

@@ -15,6 +15,7 @@ import {
 import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
 import { AudioTranscription } from "./audio-transcription";
+import { PrescriptionReading } from "./prescription-reading";
 import { MessageReactions } from "./message-reactions";
 import {
   MediaAudioBubble,
@@ -136,6 +137,9 @@ function MessageContent({
             <p className="mt-1 whitespace-pre-wrap break-words text-sm">
               {message.content_text}
             </p>
+          )}
+          {message.sender_type === 'customer' && (
+            <PrescriptionReading messageId={message.id} />
           )}
         </div>
       );

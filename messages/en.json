@@ -291,7 +291,11 @@
       "imageAlt": "Shared image",
       "transcribeAudio": "transcribe audio",
       "transcribing": "Transcribing audio…",
-      "transcribeRetry": "try transcribing again"
+      "transcribeRetry": "try transcribing again",
+      "prescriptionRead": "Read prescription…",
+      "prescriptionReading": "Reading prescription…",
+      "prescriptionRetry": "Try reading again",
+      "prescriptionTitle": "Prescription reading"
     },
     "mediaViewer": {
       "counter": "{index} of {total}",
@@ -2059,6 +2063,12 @@
       "transcriptionModel": "Transcription model",
       "transcriptionModelHint": "Default: whisper-large-v3-turbo (Groq). On a direct OpenAI account, use whisper-1.",
       "transcriptionUnsupported": "Anthropic does not offer audio transcription. Use the OpenAI provider or an OpenAI-compatible API (e.g. Groq).",
+      "prescriptionReader": "Prescription reading",
+      "prescriptionReaderDesc": "Private reading of received images, visible only to your team.",
+      "prescriptionReaderModel": "Vision model",
+      "prescriptionReaderModelHint": "Use an image-capable model from the same provider.",
+      "prescriptionReaderPrompt": "Reading prompt",
+      "prescriptionReaderPromptPlaceholder": "Read legible fields and mark uncertainty; do not diagnose or recommend lenses.",
       "schedule": {
         "title": "Automatic reply schedule",
         "description": "Choose when new messages may trigger AI. Outside these hours, messages remain in the inbox and AI stays silent.",
@@ -2853,7 +2863,13 @@
       "transcribeNotAudio": "This message is not an audio.",
       "transcriptionDisabled": "Audio transcription is not enabled.",
       "transcribeFetchFailed": "Could not download the audio.",
-      "transcribeFailed": "Could not transcribe the audio."
+      "transcribeFailed": "Could not transcribe the audio.",
+      "prescriptionReaderModelRequired": "Enter an image-capable model before enabling prescription reading.",
+      "prescriptionReaderDisabled": "Prescription reading is not enabled.",
+      "prescriptionReaderNotImage": "This message is not a received image.",
+      "prescriptionReaderFailed": "The prescription could not be read. Try again.",
+      "prescriptionReaderProcessing": "Reading prescription…",
+      "prescriptionReaderTitle": "Prescription reading"
     },
     "automations": {
       "copyName": "{name} (Copy)",
