@@ -496,7 +496,7 @@ export function AiConfig() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="ai-prompt">{t('businessContext')}</Label>
+              <Label htmlFor="ai-prompt" id="ai-business-context">{t('businessContext')}</Label>
               <Textarea
                 id="ai-prompt"
                 value={systemPrompt}
@@ -539,7 +539,7 @@ export function AiConfig() {
               />
             </div>
 
-            <div className="border-border rounded-md border p-3">
+            <div id="ai-prescription-reader" className="border-border rounded-md border p-3">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-foreground text-sm font-medium">

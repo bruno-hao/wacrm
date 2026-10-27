@@ -2,21 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Bot, Sparkles, Settings2, BarChart3 } from 'lucide-react';
+import { Bot, Sparkles, Settings2, BarChart3, ScanSearch } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AiPlayground } from '@/components/agents/ai-playground';
+import { AiPrescriptionSandbox } from '@/components/agents/ai-prescription-sandbox';
 import { AiUsageCard } from '@/components/agents/ai-usage';
 import { AiConfig } from '@/components/settings/ai-config';
 import { useAuth } from '@/hooks/use-auth';
 import { canEditSettings } from '@/lib/auth/roles';
 
-type Tab = 'playground' | 'setup' | 'usage';
+type Tab = 'client-sandbox' | 'recipe-sandbox' | 'setup' | 'usage';
 
 export default function AgentsPage() {
   const t = useTranslations('Agents');
   const { accountRole } = useAuth();
   const canViewUsage = accountRole ? canEditSettings(accountRole) : false;
-  const [tab, setTab] = useState<Tab>('playground');
+  const [tab, setTab] = useState<Tab>('client-sandbox');
   const [decided, setDecided] = useState(false);
 
   // Land first-time users on Setup, returning users on the Playground.
@@ -26,7 +27,7 @@ export default function AgentsPage() {
       try {
         const res = await fetch('/api/ai/config');
         const data = await res.json().catch(() => ({}));
-        if (!cancelled) setTab(data?.configured ? 'playground' : 'setup');
+        if (!cancelled) setTab(data?.configured ? 'client-sandbox' : 'setup');
       } catch {
         if (!cancelled) setTab('setup');
       } finally {
@@ -37,6 +38,11 @@ export default function AgentsPage() {
       cancelled = true;
     };
   }, []);
+
+  const goToSetup = (anchor: string) => {
+    setTab('setup');
+    window.setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+  };
 
   return (
     <div>
@@ -57,8 +63,11 @@ export default function AgentsPage() {
           className="mt-6"
         >
           <TabsList>
-            <TabsTrigger value="playground">
-              <Sparkles className="mr-1.5 h-4 w-4" /> {t('tabPlayground')}
+            <TabsTrigger value="client-sandbox">
+              <Sparkles className="mr-1.5 h-4 w-4" /> {t('tabClientSandbox')}
+            </TabsTrigger>
+            <TabsTrigger value="recipe-sandbox">
+              <ScanSearch className="mr-1.5 h-4 w-4" /> {t('tabRecipeSandbox')}
             </TabsTrigger>
             <TabsTrigger value="setup">
               <Settings2 className="mr-1.5 h-4 w-4" /> {t('tabSetup')}
@@ -70,8 +79,12 @@ export default function AgentsPage() {
             )}
           </TabsList>
 
-          <TabsContent value="playground" className="mt-4">
-            <AiPlayground onGoToSetup={() => setTab('setup')} />
+          <TabsContent value="client-sandbox" className="mt-4">
+            <AiPlayground onGoToSetup={() => goToSetup('ai-business-context')} />
+          </TabsContent>
+
+          <TabsContent value="recipe-sandbox" className="mt-4">
+            <AiPrescriptionSandbox onGoToSetup={() => goToSetup('ai-prescription-reader')} />
           </TabsContent>
 
           <TabsContent value="setup" className="mt-4">

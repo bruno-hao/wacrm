@@ -24,5 +24,6 @@ Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o pont
 - A migration `064_correios_shipments.sql` cria o monitoramento de encomendas; a rota protegida `/api/cron/correios` deve ser chamada a cada 4 horas e exige `CORREIOS_API_TOKEN` no ambiente do servidor.
 - A migration `065_correios_credentials.sql` armazena criptografados o usuário/senha do Meu Correios e o token renovável por conta; a configuração fica em Configurações → Espaço de trabalho → Logística.
 - A migration `066_google_reviews.sql` cria a configuração OAuth do Google Business Profile e os campos do agente de respostas de avaliações.
+- Em **Agentes de IA**, `IA Sandbox Cliente` testa conversas da Maria; `IA Sandbox Receitas` envia uma imagem apenas em memória para o modelo visual configurado. O sandbox de receitas não grava a imagem em Storage, mensagens ou tabelas e descarta os bytes após a leitura.
 - O `.gitignore` protege `.env*`, `docs/orcamento/simulacao/` e `WACRM-MVISION.md`, que pode conter continuidade e segredos de produção.
 Mesmo alterações exclusivamente documentais devem ser commitadas e publicadas quando alterarem as instruções de operação. A documentação local e a documentação da VPS devem permanecer sincronizadas com o commit e a imagem efetivamente implantados.
