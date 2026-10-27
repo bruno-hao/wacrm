@@ -15,3 +15,9 @@ Quando o usuário pedir para fazer um commit, trate o pedido como autorização 
 5. confirmar que o contêiner está saudável e que a imagem executada corresponde à imagem publicada.
 
 Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o ponto exato em que o fluxo parou. Não é necessário pedir nova confirmação entre essas etapas quando o pedido original for para fazer o commit.
+
+## Estado atual relevante
+
+- A branch de produção inclui agenda semanal de respostas automáticas de IA, fuso operacional `America/Sao_Paulo`, prompt seguro da Maria, transcrição automática/manual de áudio e leitura privada de receitas com escopo por conta.
+- As migrations mais recentes são `062_ai_autoreply_schedule.sql` e `063_ai_prescription_reader.sql`. Elas precisam estar aplicadas no Supabase real antes de publicar uma imagem que use essas funcionalidades.
+- O `.gitignore` protege `.env*`, `docs/orcamento/simulacao/` e `WACRM-MVISION.md`, que pode conter continuidade e segredos de produção.
