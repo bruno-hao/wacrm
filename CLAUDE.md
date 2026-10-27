@@ -58,6 +58,7 @@ Armazenados exatamente como o WAHA/WhatsApp os informa (muitos celulares brasile
 
 ### Convenções da UI do inbox
 - Toda conversa mostra um `ChannelBadge` (`components/inbox/channel-badge.tsx`: WhatsApp verde, Instagram rosa; apenas ícone na lista, pílula completa no cabeçalho da conversa). A lista tem um filtro **Origem** (todos / WhatsApp / Instagram) ao lado de Status e Tags, baseado em `conversation.channel ?? 'whatsapp'`.
+- A lista do inbox filtra `last_message_at IS NOT NULL` e aplica `hasInboxMessage`, para não exibir conversas órfãs sem mensagens persistidas.
 - Painel do contato: clique duplo no nome para renomear (grava `contacts.name` pelo cliente RLS); o **+** ao lado de Tags abre um popup para adicionar/remover tags via `lib/contacts/tag-api.ts` (para que as automações `tag_added` continuem disparando).
 - A ordem da barra de Configurações = a ordem de `SETTINGS_SECTIONS` em `components/settings/settings-sections.ts` (o Instagram fica logo abaixo do WhatsApp). Novas rotas do dashboard também precisam de `protectedPaths` em `middleware.ts`; `/avisos` (menu "Avisos") é uma página provisória.
 

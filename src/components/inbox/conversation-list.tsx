@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   CONVERSATION_SELECT,
+  hasInboxMessage,
   matchesContactFilters,
   normalizeConversations,
 } from "@/lib/inbox/conversations";
@@ -103,6 +104,7 @@ export function ConversationList({
       const { data, error } = await supabase
         .from("conversations")
         .select(CONVERSATION_SELECT)
+        .not("last_message_at", "is", null)
         .order("last_message_at", { ascending: false });
 
       if (cancelled) return;
@@ -119,7 +121,11 @@ export function ConversationList({
         return;
       }
 
-      onConversationsLoadedRef.current(normalizeConversations(data ?? []));
+      onConversationsLoadedRef.current(
+        normalizeConversations(
+          (data ?? []) as Parameters<typeof normalizeConversations>[0],
+        ).filter(hasInboxMessage),
+      );
       setLoading(false);
     })();
 

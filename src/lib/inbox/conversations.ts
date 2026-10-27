@@ -42,6 +42,13 @@ export function normalizeConversations(
   return rows.map(normalizeConversation);
 }
 
+/** Inbox threads need at least one persisted message to be actionable. */
+export function hasInboxMessage(conversation: Conversation): boolean {
+  return Boolean(
+    conversation.last_message_at || conversation.last_message_text?.trim(),
+  );
+}
+
 export interface ContactFilters {
   /** Tag ids; a conversation matches if its contact has ANY of them (OR). */
   tagIds: string[];

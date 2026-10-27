@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  hasInboxMessage,
   matchesContactFilters,
   normalizeConversation,
 } from "./conversations";
@@ -97,6 +98,16 @@ describe("matchesContactFilters", () => {
     expect(
       matchesContactFilters(conv, { tagIds: ["tX"], company: "Acme" }),
     ).toBe(false);
+  });
+});
+
+describe("hasInboxMessage", () => {
+  it("excludes a conversation with no message preview or timestamp", () => {
+    expect(hasInboxMessage(makeConversation(null))).toBe(false);
+  });
+
+  it("keeps a conversation with a message timestamp even when its text is empty", () => {
+    expect(hasInboxMessage({ ...makeConversation(null), last_message_at: "2026-10-27T12:00:00Z" })).toBe(true);
   });
 });
 
