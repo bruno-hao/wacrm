@@ -3,6 +3,7 @@ import {
   FileText,
   Camera,
   Glasses,
+  Package,
   KeyRound,
   LayoutGrid,
   MessageSquareText,
@@ -39,6 +40,7 @@ export const SETTINGS_SECTIONS = [
   'members',
   'api',
   'ssotica',
+  'logistics',
 ] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
@@ -72,6 +74,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   members: { id: 'members', label: 'Team members', icon: UsersRound, group: 'workspace' },
   api: { id: 'api', label: 'API keys', icon: KeyRound, group: 'workspace' },
   ssotica: { id: 'ssotica', label: 'ssOtica', icon: Glasses, group: 'workspace' },
+  logistics: { id: 'logistics', label: 'Logística', icon: Package, group: 'workspace' },
   instagram: { id: 'instagram', label: 'Instagram', icon: Camera, group: 'workspace' },
 };
 

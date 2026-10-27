@@ -21,6 +21,7 @@ import { MembersTab } from '@/components/settings/members-tab';
 import { ApiKeysSettings } from '@/components/settings/api-keys-settings';
 import { SsoticaSettings } from '@/components/settings/ssotica-settings';
 import { InstagramSettings } from '@/components/settings/instagram-settings';
+import { CorreiosSettings } from '@/components/settings/correios-settings';
 import {
   resolveSection,
   type SettingsSection,
@@ -87,6 +88,7 @@ function SettingsPageInner() {
     api: <ApiKeysSettings />,
     ssotica: <SsoticaSettings />,
     instagram: <InstagramSettings />,
+    logistics: <CorreiosSettings />,
   };
 
   return (

@@ -221,6 +221,22 @@ BEGIN
       'standard_messages.key / ssotica_customers.registered_at are missing — migration 061 did not apply';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ai_configs' AND column_name = 'prescription_reader_enabled'
+  ) OR to_regclass('public.ai_prescription_reads') IS NULL THEN
+    RAISE EXCEPTION
+      'AI prescription reader schema is missing — migration 063 did not apply';
+  END IF;
+
+  IF to_regclass('public.correios_shipments') IS NULL THEN
+    RAISE EXCEPTION
+      'public.correios_shipments is missing — migration 064 did not apply';
+  END IF;
+  IF to_regclass('public.correios_credentials') IS NULL THEN
+    RAISE EXCEPTION 'public.correios_credentials is missing — migration 065 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

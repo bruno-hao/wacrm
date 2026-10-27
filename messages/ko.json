@@ -43,7 +43,8 @@
     "menuSettings": "설정",
     "menuSignOut": "로그아웃",
     "announcements": "ZapÓtica",
-    "quotes": "견적"
+    "quotes": "견적",
+    "logistics": "물류"
   },
   "Header": {
     "dashboard": "대시보드",
@@ -62,7 +63,16 @@
     "menuSettings": "설정",
     "menuSignOut": "로그아웃",
     "announcements": "ZapÓtica",
-    "quotes": "견적"
+    "quotes": "견적",
+    "logistics": "물류"
+  },
+  "Logistics": {
+    "title": "물류",
+    "subtitle": "Correios 배송을 조회하고 모니터링합니다.",
+    "tabs": { "tracking": "배송 조회", "monitoring": "배송 모니터링" },
+    "tracking": { "title": "배송 조회", "codeLabel": "배송 코드", "consult": "조회", "copy": "상태 복사", "copied": "복사됨" },
+    "monitoring": { "title": "배송 모니터링", "subtitle": "배송을 서비스 주문과 연결해 상태 변경을 확인합니다.", "orderLabel": "고객 / 주문", "orderPlaceholder": "주문 선택", "valueLabel": "금액 (선택)", "ok": "확인", "refresh": "목록 새로고침", "listTitle": "모니터링 배송", "delete": "선택 삭제", "selectRow": "배송 선택", "valid": "코드 확인됨", "noContact": "WhatsApp 연락처 없음", "empty": "모니터링 중인 배송이 없습니다.", "columns": { "date": "날짜", "os": "주문", "customer": "고객명", "value": "금액", "code": "배송 ID", "status": "상태" }, "associated": "배송이 확인되고 연결되었습니다.", "associatedNoContact": "배송은 확인되었지만 WhatsApp 연락처를 찾지 못했습니다." },
+    "errors": { "unexpected": "작업을 완료할 수 없습니다.", "ssotica": "ssOtica 주문을 불러올 수 없습니다.", "invalidAssociation": "연결을 확인할 수 없습니다." }
   },
   "ModeToggle": {
     "switchMode": "{mode} 모드로 전환"
@@ -1865,6 +1875,7 @@
       "members": "팀원",
       "api": "API 키",
       "ssotica": "ssOtica",
+      "logistics": "물류",
       "instagram": "Instagram",
       "standard-messages": "표준 메시지"
     },
@@ -2161,6 +2172,28 @@
       "textPlaceholder": "삽입할 메시지 텍스트",
       "cancel": "취소",
       "save": "저장"
+    },
+    "correios": {
+      "title": "물류",
+      "description": "배송 조회와 모니터링 자동 업데이트를 위해 Meu Correios 접속을 설정합니다.",
+      "credentialsTitle": "Meu Correios 인증 정보",
+      "credentialsDescription": "사용자 이름과 비밀번호는 암호화되어 저장됩니다. 토큰은 만료 전에 자동으로 갱신됩니다.",
+      "username": "Meu Correios 사용자 이름",
+      "password": "Meu Correios 비밀번호",
+      "usernamePlaceholder": "Meu Correios 사용자 이름",
+      "passwordPlaceholder": "비밀번호",
+      "passwordPlaceholderSaved": "업데이트하려면 다시 입력하세요",
+      "showPassword": "비밀번호 표시",
+      "hidePassword": "비밀번호 숨기기",
+      "securityNotice": "인증 정보는 다시 표시되지 않으며 토큰은 브라우저로 전송되지 않습니다.",
+      "connected": "Correios API 인증됨",
+      "save": "저장 및 테스트",
+      "saved": "인증 정보가 저장되고 토큰이 생성되었습니다.",
+      "saveFailed": "인증 정보를 저장할 수 없습니다.",
+      "remove": "인증 정보 삭제",
+      "removeConfirm": "이 계정의 Correios 인증 정보를 삭제하시겠습니까?",
+      "removeFailed": "인증 정보를 삭제할 수 없습니다.",
+      "removed": "인증 정보가 삭제되었습니다."
     },
     "ssotica": {
       "title": "ssOtica",

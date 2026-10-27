@@ -43,7 +43,8 @@
     "menuSettings": "Settings",
     "menuSignOut": "Sign out",
     "announcements": "ZapÓtica",
-    "quotes": "Quotes"
+    "quotes": "Quotes",
+    "logistics": "Logistics"
   },
   "Header": {
     "dashboard": "Dashboard",
@@ -62,7 +63,16 @@
     "menuSettings": "Settings",
     "menuSignOut": "Sign out",
     "announcements": "ZapÓtica",
-    "quotes": "Quotes"
+    "quotes": "Quotes",
+    "logistics": "Logistics"
+  },
+  "Logistics": {
+    "title": "Logistics",
+    "subtitle": "Track and monitor Correios shipments.",
+    "tabs": { "tracking": "Shipment tracking", "monitoring": "Shipment monitoring" },
+    "tracking": { "title": "Shipment tracking", "codeLabel": "Shipment code", "consult": "Track", "copy": "Copy status", "copied": "Copied" },
+    "monitoring": { "title": "Shipment monitoring", "subtitle": "Link a shipment to a service order to monitor status changes.", "orderLabel": "Customer / order", "orderPlaceholder": "Select an order", "valueLabel": "Value BRL (optional)", "ok": "OK", "refresh": "Refresh list", "listTitle": "Monitored shipments", "delete": "Delete selected", "selectRow": "Select shipment", "valid": "Code confirmed", "noContact": "WhatsApp contact not found", "empty": "No monitored shipments.", "columns": { "date": "Date", "os": "Order", "customer": "Customer name", "value": "Value", "code": "Shipment ID", "status": "Status" }, "associated": "Shipment validated and linked.", "associatedNoContact": "Shipment validated and saved, but no matching WhatsApp contact was found." },
+    "errors": { "unexpected": "The operation could not be completed.", "ssotica": "Could not load service orders from ssOtica.", "invalidAssociation": "Could not validate the association." }
   },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"
@@ -1865,6 +1875,7 @@
       "members": "Team members",
       "api": "API keys",
       "ssotica": "ssOtica",
+      "logistics": "Logistics",
       "instagram": "Instagram",
       "standard-messages": "Standard messages"
     },
@@ -2161,6 +2172,28 @@
       "textPlaceholder": "The message text to insert",
       "cancel": "Cancel",
       "save": "Save"
+    },
+    "correios": {
+      "title": "Logistics",
+      "description": "Configure Meu Correios access to query tracking and update monitored shipments automatically.",
+      "credentialsTitle": "Meu Correios credentials",
+      "credentialsDescription": "The username and password are encrypted at rest. The token is renewed automatically before it expires.",
+      "username": "Meu Correios username",
+      "password": "Meu Correios password",
+      "usernamePlaceholder": "Your Meu Correios username",
+      "passwordPlaceholder": "Your password",
+      "passwordPlaceholderSaved": "Enter again to update",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "securityNotice": "Credentials are never shown again and the token is never sent to the browser.",
+      "connected": "Correios API authenticated",
+      "save": "Save and test",
+      "saved": "Credentials saved and token generated.",
+      "saveFailed": "Could not save the credentials.",
+      "remove": "Remove credentials",
+      "removeConfirm": "Remove the Correios credentials from this account?",
+      "removeFailed": "Could not remove the credentials.",
+      "removed": "Credentials removed."
     },
     "ssotica": {
       "title": "ssOtica",

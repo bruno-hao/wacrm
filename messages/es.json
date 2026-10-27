@@ -43,7 +43,8 @@
     "menuSettings": "Configuración",
     "menuSignOut": "Cerrar sesión",
     "announcements": "ZapÓtica",
-    "quotes": "Presupuestos"
+    "quotes": "Presupuestos",
+    "logistics": "Logística"
   },
   "Header": {
     "dashboard": "Panel",
@@ -62,7 +63,16 @@
     "menuSettings": "Configuración",
     "menuSignOut": "Cerrar sesión",
     "announcements": "ZapÓtica",
-    "quotes": "Presupuestos"
+    "quotes": "Presupuestos",
+    "logistics": "Logística"
+  },
+  "Logistics": {
+    "title": "Logística",
+    "subtitle": "Consulta y monitorea envíos de Correos.",
+    "tabs": { "tracking": "Rastreo de envíos", "monitoring": "Monitoreo de envíos" },
+    "tracking": { "title": "Rastreo de envíos", "codeLabel": "Código del envío", "consult": "Consultar", "copy": "Copiar estado", "copied": "Copiado" },
+    "monitoring": { "title": "Monitoreo de envíos", "subtitle": "Relaciona un envío con una O.S. para monitorear cambios.", "orderLabel": "Cliente / O.S.", "orderPlaceholder": "Selecciona una O.S.", "valueLabel": "Valor (opcional)", "ok": "OK", "refresh": "Actualizar lista", "listTitle": "Envíos monitoreados", "delete": "Eliminar seleccionados", "selectRow": "Seleccionar envío", "valid": "Código confirmado", "noContact": "No se encontró contacto de WhatsApp", "empty": "No hay envíos monitoreados.", "columns": { "date": "Fecha", "os": "O.S.", "customer": "Cliente", "value": "Valor", "code": "ID del envío", "status": "Estado" }, "associated": "Envío validado y asociado.", "associatedNoContact": "Envío validado y guardado, pero no se encontró contacto de WhatsApp." },
+    "errors": { "unexpected": "No se pudo completar la operación.", "ssotica": "No se pudieron cargar las O.S. de ssOtica.", "invalidAssociation": "No se pudo validar la asociación." }
   },
   "ModeToggle": {
     "switchMode": "Cambiar al modo {mode}"
@@ -1865,6 +1875,7 @@
       "members": "Miembros del equipo",
       "api": "Claves de API",
       "ssotica": "ssOtica",
+      "logistics": "Logística",
       "instagram": "Instagram",
       "standard-messages": "Mensajes Estándar"
     },
@@ -2161,6 +2172,28 @@
       "textPlaceholder": "El texto del mensaje que se insertará",
       "cancel": "Cancelar",
       "save": "Guardar"
+    },
+    "correios": {
+      "title": "Logística",
+      "description": "Configure el acceso a Meu Correios para consultar rastreos y actualizar envíos monitoreados automáticamente.",
+      "credentialsTitle": "Credenciales de Meu Correios",
+      "credentialsDescription": "El usuario y la contraseña se almacenan cifrados. El token se renueva automáticamente antes de expirar.",
+      "username": "Usuario de Meu Correios",
+      "password": "Contraseña de Meu Correios",
+      "usernamePlaceholder": "Su usuario de Meu Correios",
+      "passwordPlaceholder": "Su contraseña",
+      "passwordPlaceholderSaved": "Vuelva a introducirla para actualizar",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
+      "securityNotice": "Las credenciales nunca se muestran de nuevo y el token no se envía al navegador.",
+      "connected": "API de Correios autenticada",
+      "save": "Guardar y probar",
+      "saved": "Credenciales guardadas y token generado.",
+      "saveFailed": "No se pudieron guardar las credenciales.",
+      "remove": "Eliminar credenciales",
+      "removeConfirm": "¿Eliminar las credenciales de Correios de esta cuenta?",
+      "removeFailed": "No se pudieron eliminar las credenciales.",
+      "removed": "Credenciales eliminadas."
     },
     "ssotica": {
       "title": "ssOtica",
