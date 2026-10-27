@@ -44,7 +44,8 @@
     "menuSignOut": "Sair",
     "announcements": "ZapÓtica",
     "quotes": "Orçamentos",
-    "logistics": "Logística"
+    "logistics": "Logística",
+    "reviews": "Avaliações"
   },
   "Header": {
     "dashboard": "Painel",
@@ -64,7 +65,8 @@
     "menuSignOut": "Sair",
     "announcements": "ZapÓtica",
     "quotes": "Orçamentos",
-    "logistics": "Logística"
+    "logistics": "Logística",
+    "reviews": "Avaliações"
   },
   "Logistics": {
     "title": "Logística",
@@ -74,6 +76,7 @@
     "monitoring": { "title": "Monitoramento de Encomendas", "subtitle": "Relacione uma encomenda a uma O.S. para acompanhar alterações automaticamente.", "orderLabel": "Cliente / O.S.", "orderPlaceholder": "Selecione uma O.S.", "valueLabel": "Valor R$ (opcional)", "ok": "OK", "refresh": "Atualizar lista", "listTitle": "Encomendas monitoradas", "delete": "Excluir selecionadas", "selectRow": "Selecionar encomenda", "valid": "Código confirmado", "noContact": "Contato WhatsApp não localizado", "empty": "Nenhuma encomenda monitorada.", "columns": { "date": "Data", "os": "OS", "customer": "Nome do Cliente", "value": "Valor R$", "code": "ID da encomenda", "status": "Status" }, "associated": "Encomenda validada e associada. O cliente receberá atualizações quando o status mudar.", "associatedNoContact": "Encomenda validada e salva. Não encontrei um contato WhatsApp correspondente para enviar notificações." },
     "errors": { "unexpected": "Não foi possível concluir a operação.", "ssotica": "Não foi possível carregar as O.S. do ssOtica.", "invalidAssociation": "Não foi possível validar a associação." }
   },
+  "Reviews": { "title": "Avaliações Google", "totalReviews": "avaliações", "refresh": "Atualizar", "anonymous": "Cliente anônimo", "noComment": "Avaliação sem comentário.", "replyPlaceholder": "Digite a réplica pública…", "saveReply": "Salvar comentário", "generateAi": "Gerar resposta por IA", "empty": "Nenhuma avaliação encontrada.", "loadFailed": "Não foi possível carregar as avaliações do Google.", "saveFailed": "Não foi possível salvar a réplica.", "aiFailed": "Não foi possível gerar uma resposta." },
   "ModeToggle": {
     "switchMode": "Mudar para o modo {mode}"
   },
@@ -1976,6 +1979,24 @@
         "template": "📋 Modelo"
       }
     },
+    "googleBusiness": {
+      "title": "Google Meu Negócio",
+      "description": "Conecte o Google Business Profile para listar avaliações e publicar réplicas.",
+      "oauthHint": "A API usa OAuth 2.0. Crie um cliente OAuth no Google Cloud, autorize o escopo business.manage e informe o refresh token e os nomes da conta/local.",
+      "clientId": "OAuth Client ID",
+      "clientSecret": "OAuth Client Secret",
+      "refreshToken": "Refresh token",
+      "businessName": "Nome do negócio",
+      "accountName": "Nome da conta Google",
+      "locationName": "Nome do local Google",
+      "configured": "Google Business Profile configurado",
+      "save": "Salvar configuração",
+      "saved": "Configuração do Google salva.",
+      "saveFailed": "Não foi possível salvar a configuração do Google.",
+      "remove": "Remover",
+      "removeConfirm": "Remover a configuração do Google Meu Negócio?",
+      "removed": "Configuração removida."
+    },
     "apiKeys": {
       "title": "Chaves de API",
       "description": "As chaves autenticam a API REST pública (<apiCode>/api/v1</apiCode>) para que você crie suas próprias automações. Envie-as como <headerCode>Authorization: Bearer &lt;key&gt;</headerCode>.",
@@ -2080,6 +2101,12 @@
       "prescriptionReaderModelHint": "Use um modelo do mesmo provedor que aceite imagens.",
       "prescriptionReaderPrompt": "Prompt da leitura",
       "prescriptionReaderPromptPlaceholder": "Leia os campos legíveis e marque dúvidas; não faça diagnóstico nem recomende lentes.",
+      "googleReviews": "Respostas Avaliações Google",
+      "googleReviewsDesc": "Configure o modelo e o prompt usados pelo botão Gerar resposta por IA nas avaliações.",
+      "googleReviewsModel": "Modelo",
+      "googleReviewsModelHint": "Para OpenRouter, use o identificador do catálogo, por exemplo openai/gpt-4o-mini.",
+      "googleReviewsPrompt": "Prompt do agente",
+      "googleReviewsPromptPlaceholder": "Agradeça, demonstre empatia e responda com cordialidade sem inventar informações.",
       "schedule": {
         "title": "Agenda das respostas automáticas",
         "description": "Defina quando novas mensagens podem acionar a IA. Fora destes horários, elas continuam no inbox e a IA fica em silêncio.",

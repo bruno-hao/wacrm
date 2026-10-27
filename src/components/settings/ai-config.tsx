@@ -111,6 +111,8 @@ export function AiConfig() {
   const [prescriptionReaderEnabled, setPrescriptionReaderEnabled] = useState(false);
   const [prescriptionReaderModel, setPrescriptionReaderModel] = useState('');
   const [prescriptionReaderPrompt, setPrescriptionReaderPrompt] = useState('');
+  const [googleReviewsModel, setGoogleReviewsModel] = useState('openai/gpt-4o-mini');
+  const [googleReviewsPrompt, setGoogleReviewsPrompt] = useState('');
   // Empty string = leave unassigned (shared queue).
   const [handoffAgentId, setHandoffAgentId] = useState('');
   const [members, setMembers] = useState<AccountMember[]>([]);
@@ -151,6 +153,8 @@ export function AiConfig() {
         setPrescriptionReaderEnabled(Boolean(data.prescription_reader_enabled));
         setPrescriptionReaderModel(data.prescription_reader_model || '');
         setPrescriptionReaderPrompt(data.prescription_reader_prompt || '');
+        setGoogleReviewsModel(data.google_reviews_model || 'openai/gpt-4o-mini');
+        setGoogleReviewsPrompt(data.google_reviews_prompt || '');
         setHandoffAgentId(data.handoff_agent_id ?? '');
         setHasStoredKey(Boolean(data.has_key));
         setApiKey(data.has_key ? MASKED_KEY : '');
@@ -214,6 +218,8 @@ export function AiConfig() {
     prescription_reader_enabled: prescriptionReaderEnabled,
     prescription_reader_model: prescriptionReaderModel.trim(),
     prescription_reader_prompt: prescriptionReaderPrompt.trim() || null,
+    google_reviews_model: googleReviewsModel.trim() || 'openai/gpt-4o-mini',
+    google_reviews_prompt: googleReviewsPrompt.trim() || null,
   });
 
   const handleTest = async () => {
@@ -300,6 +306,8 @@ export function AiConfig() {
         setPrescriptionReaderEnabled(false);
         setPrescriptionReaderModel('');
         setPrescriptionReaderPrompt('');
+        setGoogleReviewsModel('openai/gpt-4o-mini');
+        setGoogleReviewsPrompt('');
       } else {
         const data = await res.json();
         toast.error(data.error ?? t('removeFailed'));
@@ -571,6 +579,16 @@ export function AiConfig() {
                   </p>
                 </div>
               )}
+            </div>
+
+            <div className="border-border rounded-md border p-3">
+              <p className="text-foreground text-sm font-medium">{t('googleReviews')}</p>
+              <p className="text-muted-foreground mt-1 text-xs">{t('googleReviewsDesc')}</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2"><Label htmlFor="ai-google-reviews-model">{t('googleReviewsModel')}</Label><Input id="ai-google-reviews-model" value={googleReviewsModel} onChange={(e) => setGoogleReviewsModel(e.target.value)} placeholder="openai/gpt-4o-mini" disabled={disabled} /></div>
+                <p className="text-muted-foreground self-end text-xs">{t('googleReviewsModelHint')}</p>
+              </div>
+              <div className="mt-3 space-y-2"><Label htmlFor="ai-google-reviews-prompt">{t('googleReviewsPrompt')}</Label><Textarea id="ai-google-reviews-prompt" value={googleReviewsPrompt} onChange={(e) => setGoogleReviewsPrompt(e.target.value)} placeholder={t('googleReviewsPromptPlaceholder')} rows={4} disabled={disabled} /></div>
             </div>
 
             <div className="border-border rounded-md border p-3">

@@ -44,7 +44,8 @@
     "menuSignOut": "Cerrar sesión",
     "announcements": "ZapÓtica",
     "quotes": "Presupuestos",
-    "logistics": "Logística"
+    "logistics": "Logística",
+    "reviews": "Reseñas"
   },
   "Header": {
     "dashboard": "Panel",
@@ -64,7 +65,8 @@
     "menuSignOut": "Cerrar sesión",
     "announcements": "ZapÓtica",
     "quotes": "Presupuestos",
-    "logistics": "Logística"
+    "logistics": "Logística",
+    "reviews": "Reseñas"
   },
   "Logistics": {
     "title": "Logística",
@@ -74,6 +76,7 @@
     "monitoring": { "title": "Monitoreo de envíos", "subtitle": "Relaciona un envío con una O.S. para monitorear cambios.", "orderLabel": "Cliente / O.S.", "orderPlaceholder": "Selecciona una O.S.", "valueLabel": "Valor (opcional)", "ok": "OK", "refresh": "Actualizar lista", "listTitle": "Envíos monitoreados", "delete": "Eliminar seleccionados", "selectRow": "Seleccionar envío", "valid": "Código confirmado", "noContact": "No se encontró contacto de WhatsApp", "empty": "No hay envíos monitoreados.", "columns": { "date": "Fecha", "os": "O.S.", "customer": "Cliente", "value": "Valor", "code": "ID del envío", "status": "Estado" }, "associated": "Envío validado y asociado.", "associatedNoContact": "Envío validado y guardado, pero no se encontró contacto de WhatsApp." },
     "errors": { "unexpected": "No se pudo completar la operación.", "ssotica": "No se pudieron cargar las O.S. de ssOtica.", "invalidAssociation": "No se pudo validar la asociación." }
   },
+  "Reviews": { "title": "Reseñas de Google", "totalReviews": "reseñas", "refresh": "Actualizar", "anonymous": "Cliente anónimo", "noComment": "Valoración sin comentario.", "replyPlaceholder": "Escriba una respuesta pública…", "saveReply": "Guardar comentario", "generateAi": "Generar respuesta con IA", "empty": "No se encontraron reseñas.", "loadFailed": "No se pudieron cargar las reseñas de Google.", "saveFailed": "No se pudo guardar la respuesta.", "aiFailed": "No se pudo generar una respuesta." },
   "ModeToggle": {
     "switchMode": "Cambiar al modo {mode}"
   },
@@ -1976,6 +1979,24 @@
         "template": "📋 Plantilla"
       }
     },
+    "googleBusiness": {
+      "title": "Google Business Profile",
+      "description": "Conecte Google Business Profile para listar reseñas y publicar respuestas.",
+      "oauthHint": "La API usa OAuth 2.0. Cree un cliente OAuth en Google Cloud, autorice business.manage e informe el refresh token y los nombres de cuenta/local.",
+      "clientId": "OAuth Client ID",
+      "clientSecret": "OAuth Client Secret",
+      "refreshToken": "Refresh token",
+      "businessName": "Nombre del negocio",
+      "accountName": "Nombre de cuenta de Google",
+      "locationName": "Nombre del local de Google",
+      "configured": "Google Business Profile configurado",
+      "save": "Guardar configuración",
+      "saved": "Configuración de Google guardada.",
+      "saveFailed": "No se pudo guardar la configuración de Google.",
+      "remove": "Eliminar",
+      "removeConfirm": "¿Eliminar la configuración de Google Business Profile?",
+      "removed": "Configuración eliminada."
+    },
     "apiKeys": {
       "title": "Claves de API",
       "description": "Las claves autentican la API REST pública (<apiCode>/api/v1</apiCode>) para que construyas tus propias automatizaciones. Envíalas como <headerCode>Authorization: Bearer &lt;key&gt;</headerCode>.",
@@ -2080,6 +2101,12 @@
       "prescriptionReaderModelHint": "Usa un modelo compatible con imágenes del mismo proveedor.",
       "prescriptionReaderPrompt": "Prompt de lectura",
       "prescriptionReaderPromptPlaceholder": "Lee los campos legibles y marca dudas; no diagnostiques ni recomiendes lentes.",
+      "googleReviews": "Respuestas de reseñas de Google",
+      "googleReviewsDesc": "Configure el modelo y el prompt usados por Generar respuesta con IA.",
+      "googleReviewsModel": "Modelo",
+      "googleReviewsModelHint": "Para OpenRouter, use un identificador del catálogo como openai/gpt-4o-mini.",
+      "googleReviewsPrompt": "Prompt del agente",
+      "googleReviewsPromptPlaceholder": "Agradezca, muestre empatía y responda con cordialidad sin inventar información.",
       "schedule": {
         "title": "Horario de respuestas automáticas",
         "description": "Define cuándo los mensajes nuevos pueden activar la IA. Fuera de este horario, permanecen en la bandeja y la IA guarda silencio.",

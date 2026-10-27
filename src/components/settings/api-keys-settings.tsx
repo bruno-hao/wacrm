@@ -42,6 +42,7 @@ import {
 } from '@/lib/api-keys/scopes';
 import { useTranslations } from 'next-intl';
 import { SettingsPanelHead } from './settings-panel-head';
+import { GoogleBusinessSettings } from './google-business-settings';
 
 interface ApiKey {
   id: string;
@@ -136,6 +137,7 @@ export function ApiKeysSettings() {
 
   return (
     <section className="animate-in fade-in-50 space-y-6 duration-200">
+      <GoogleBusinessSettings />
       <SettingsPanelHead
         title={t('title')}
         description={

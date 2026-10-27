@@ -236,6 +236,9 @@ BEGIN
   IF to_regclass('public.correios_credentials') IS NULL THEN
     RAISE EXCEPTION 'public.correios_credentials is missing — migration 065 did not apply';
   END IF;
+  IF to_regclass('public.google_business_profile_config') IS NULL THEN
+    RAISE EXCEPTION 'public.google_business_profile_config is missing — migration 066 did not apply';
+  END IF;
 
   RAISE NOTICE 'schema verification passed';
 END

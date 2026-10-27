@@ -44,7 +44,7 @@ export async function GET() {
       // `api_key` is selected only to derive `has_key` — it is stripped
       // out below and never returned to the client.
       .select(
-        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt'
+        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt, google_reviews_model, google_reviews_prompt'
       )
       .eq('account_id', accountId)
       .maybeSingle();
@@ -191,6 +191,9 @@ export async function POST(request: Request) {
       body.prescription_reader_prompt.trim()
         ? body.prescription_reader_prompt.trim().slice(0, 20_000)
         : null;
+    const googleReviewsProvided = 'google_reviews_model' in body || 'google_reviews_prompt' in body;
+    const googleReviewsModel = typeof body.google_reviews_model === 'string' ? body.google_reviews_model.trim().slice(0, 120) : 'openai/gpt-4o-mini';
+    const googleReviewsPrompt = typeof body.google_reviews_prompt === 'string' && body.google_reviews_prompt.trim() ? body.google_reviews_prompt.trim().slice(0, 20_000) : null;
     const { data: existingReader } = await supabase
       .from('ai_configs')
       .select('prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt')
@@ -353,6 +356,10 @@ export async function POST(request: Request) {
         'prescription_reader_prompt' in body
           ? prescriptionReaderPrompt
           : existing?.prescription_reader_prompt ?? null;
+    }
+    if (googleReviewsProvided) {
+      shared.google_reviews_model = googleReviewsModel || 'openai/gpt-4o-mini';
+      shared.google_reviews_prompt = googleReviewsPrompt;
     }
     if (rawEmbeddingsKey) {
       shared.embeddings_api_key = encrypt(rawEmbeddingsKey);

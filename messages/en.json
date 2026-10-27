@@ -44,7 +44,8 @@
     "menuSignOut": "Sign out",
     "announcements": "ZapÓtica",
     "quotes": "Quotes",
-    "logistics": "Logistics"
+    "logistics": "Logistics",
+    "reviews": "Reviews"
   },
   "Header": {
     "dashboard": "Dashboard",
@@ -64,7 +65,8 @@
     "menuSignOut": "Sign out",
     "announcements": "ZapÓtica",
     "quotes": "Quotes",
-    "logistics": "Logistics"
+    "logistics": "Logistics",
+    "reviews": "Reviews"
   },
   "Logistics": {
     "title": "Logistics",
@@ -74,6 +76,7 @@
     "monitoring": { "title": "Shipment monitoring", "subtitle": "Link a shipment to a service order to monitor status changes.", "orderLabel": "Customer / order", "orderPlaceholder": "Select an order", "valueLabel": "Value BRL (optional)", "ok": "OK", "refresh": "Refresh list", "listTitle": "Monitored shipments", "delete": "Delete selected", "selectRow": "Select shipment", "valid": "Code confirmed", "noContact": "WhatsApp contact not found", "empty": "No monitored shipments.", "columns": { "date": "Date", "os": "Order", "customer": "Customer name", "value": "Value", "code": "Shipment ID", "status": "Status" }, "associated": "Shipment validated and linked.", "associatedNoContact": "Shipment validated and saved, but no matching WhatsApp contact was found." },
     "errors": { "unexpected": "The operation could not be completed.", "ssotica": "Could not load service orders from ssOtica.", "invalidAssociation": "Could not validate the association." }
   },
+  "Reviews": { "title": "Google Reviews", "totalReviews": "reviews", "refresh": "Refresh", "anonymous": "Anonymous customer", "noComment": "Rating without a comment.", "replyPlaceholder": "Write a public reply…", "saveReply": "Save comment", "generateAi": "Generate AI reply", "empty": "No reviews found.", "loadFailed": "Could not load Google reviews.", "saveFailed": "Could not save the reply.", "aiFailed": "Could not generate a reply." },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"
   },
@@ -1976,6 +1979,24 @@
         "template": "📋 Template"
       }
     },
+    "googleBusiness": {
+      "title": "Google Business Profile",
+      "description": "Connect Google Business Profile to list reviews and publish replies.",
+      "oauthHint": "The API uses OAuth 2.0. Create an OAuth client in Google Cloud, authorize business.manage, and enter the refresh token and account/location names.",
+      "clientId": "OAuth Client ID",
+      "clientSecret": "OAuth Client Secret",
+      "refreshToken": "Refresh token",
+      "businessName": "Business name",
+      "accountName": "Google account name",
+      "locationName": "Google location name",
+      "configured": "Google Business Profile configured",
+      "save": "Save configuration",
+      "saved": "Google configuration saved.",
+      "saveFailed": "Could not save Google configuration.",
+      "remove": "Remove",
+      "removeConfirm": "Remove the Google Business Profile configuration?",
+      "removed": "Configuration removed."
+    },
     "apiKeys": {
       "title": "API keys",
       "description": "Keys authenticate the public REST API (<apiCode>/api/v1</apiCode>) so you can build your own automations. Send them as <headerCode>Authorization: Bearer &lt;key&gt;</headerCode>.",
@@ -2080,6 +2101,12 @@
       "prescriptionReaderModelHint": "Use an image-capable model from the same provider.",
       "prescriptionReaderPrompt": "Reading prompt",
       "prescriptionReaderPromptPlaceholder": "Read legible fields and mark uncertainty; do not diagnose or recommend lenses.",
+      "googleReviews": "Google review replies",
+      "googleReviewsDesc": "Configure the model and prompt used by Generate AI reply on reviews.",
+      "googleReviewsModel": "Model",
+      "googleReviewsModelHint": "For OpenRouter, use a catalog identifier such as openai/gpt-4o-mini.",
+      "googleReviewsPrompt": "Agent prompt",
+      "googleReviewsPromptPlaceholder": "Thank the customer, show empathy, and respond courteously without inventing facts.",
       "schedule": {
         "title": "Automatic reply schedule",
         "description": "Choose when new messages may trigger AI. Outside these hours, messages remain in the inbox and AI stays silent.",

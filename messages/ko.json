@@ -44,7 +44,8 @@
     "menuSignOut": "로그아웃",
     "announcements": "ZapÓtica",
     "quotes": "견적",
-    "logistics": "물류"
+    "logistics": "물류",
+    "reviews": "리뷰"
   },
   "Header": {
     "dashboard": "대시보드",
@@ -64,7 +65,8 @@
     "menuSignOut": "로그아웃",
     "announcements": "ZapÓtica",
     "quotes": "견적",
-    "logistics": "물류"
+    "logistics": "물류",
+    "reviews": "리뷰"
   },
   "Logistics": {
     "title": "물류",
@@ -74,6 +76,7 @@
     "monitoring": { "title": "배송 모니터링", "subtitle": "배송을 서비스 주문과 연결해 상태 변경을 확인합니다.", "orderLabel": "고객 / 주문", "orderPlaceholder": "주문 선택", "valueLabel": "금액 (선택)", "ok": "확인", "refresh": "목록 새로고침", "listTitle": "모니터링 배송", "delete": "선택 삭제", "selectRow": "배송 선택", "valid": "코드 확인됨", "noContact": "WhatsApp 연락처 없음", "empty": "모니터링 중인 배송이 없습니다.", "columns": { "date": "날짜", "os": "주문", "customer": "고객명", "value": "금액", "code": "배송 ID", "status": "상태" }, "associated": "배송이 확인되고 연결되었습니다.", "associatedNoContact": "배송은 확인되었지만 WhatsApp 연락처를 찾지 못했습니다." },
     "errors": { "unexpected": "작업을 완료할 수 없습니다.", "ssotica": "ssOtica 주문을 불러올 수 없습니다.", "invalidAssociation": "연결을 확인할 수 없습니다." }
   },
+  "Reviews": { "title": "Google 리뷰", "totalReviews": "리뷰", "refresh": "새로 고침", "anonymous": "익명 고객", "noComment": "댓글 없는 평가입니다.", "replyPlaceholder": "공개 답변을 입력하세요…", "saveReply": "댓글 저장", "generateAi": "AI 답변 생성", "empty": "리뷰가 없습니다.", "loadFailed": "Google 리뷰를 불러올 수 없습니다.", "saveFailed": "답변을 저장할 수 없습니다.", "aiFailed": "답변을 생성할 수 없습니다." },
   "ModeToggle": {
     "switchMode": "{mode} 모드로 전환"
   },
@@ -1976,6 +1979,24 @@
         "template": "📋 템플릿"
       }
     },
+    "googleBusiness": {
+      "title": "Google 비즈니스 프로필",
+      "description": "리뷰를 불러오고 답변을 게시하려면 Google 비즈니스 프로필을 연결하세요.",
+      "oauthHint": "API는 OAuth 2.0을 사용합니다. Google Cloud에서 OAuth 클라이언트를 만들고 business.manage 범위를 승인한 뒤 refresh token과 계정/위치 이름을 입력하세요.",
+      "clientId": "OAuth Client ID",
+      "clientSecret": "OAuth Client Secret",
+      "refreshToken": "Refresh token",
+      "businessName": "비즈니스 이름",
+      "accountName": "Google 계정 이름",
+      "locationName": "Google 위치 이름",
+      "configured": "Google 비즈니스 프로필 구성됨",
+      "save": "구성 저장",
+      "saved": "Google 구성이 저장되었습니다.",
+      "saveFailed": "Google 구성을 저장할 수 없습니다.",
+      "remove": "삭제",
+      "removeConfirm": "Google 비즈니스 프로필 구성을 삭제하시겠습니까?",
+      "removed": "구성이 삭제되었습니다."
+    },
     "apiKeys": {
       "title": "API 키",
       "description": "키는 공개 REST API(<apiCode>/api/v1</apiCode>)를 인증해 직접 자동화를 구축할 수 있게 해줍니다. <headerCode>Authorization: Bearer &lt;key&gt;</headerCode> 형식으로 전송하세요.",
@@ -2080,6 +2101,12 @@
       "prescriptionReaderModelHint": "같은 제공업체의 이미지 지원 모델을 사용하세요.",
       "prescriptionReaderPrompt": "읽기 프롬프트",
       "prescriptionReaderPromptPlaceholder": "읽을 수 있는 항목과 불확실한 항목을 표시하세요. 진단이나 렌즈 추천은 하지 마세요.",
+      "googleReviews": "Google 리뷰 답변",
+      "googleReviewsDesc": "리뷰에서 AI 답변 생성에 사용할 모델과 프롬프트를 설정합니다.",
+      "googleReviewsModel": "모델",
+      "googleReviewsModelHint": "OpenRouter는 openai/gpt-4o-mini와 같은 카탈로그 식별자를 사용하세요.",
+      "googleReviewsPrompt": "에이전트 프롬프트",
+      "googleReviewsPromptPlaceholder": "고객에게 감사하고 공감하며 사실을 만들지 않고 정중하게 답변하세요.",
       "schedule": {
         "title": "자동 답장 운영 시간",
         "description": "새 메시지가 AI를 실행할 시간을 설정합니다. 운영 시간 외에는 메시지가 받은 편지함에 남고 AI는 응답하지 않습니다.",

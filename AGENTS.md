@@ -22,4 +22,5 @@ Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o pont
 - As migrations mais recentes são `062_ai_autoreply_schedule.sql` e `063_ai_prescription_reader.sql`. Elas precisam estar aplicadas no Supabase real antes de publicar uma imagem que use essas funcionalidades.
 - A migration `064_correios_shipments.sql` cria o monitoramento de encomendas; a rota protegida `/api/cron/correios` deve ser chamada a cada 4 horas e exige `CORREIOS_API_TOKEN` no ambiente do servidor.
 - A migration `065_correios_credentials.sql` armazena criptografados o usuário/senha do Meu Correios e o token renovável por conta; a configuração fica em Configurações → Espaço de trabalho → Logística.
+- A migration `066_google_reviews.sql` cria a configuração OAuth do Google Business Profile e os campos do agente de respostas de avaliações.
 - O `.gitignore` protege `.env*`, `docs/orcamento/simulacao/` e `WACRM-MVISION.md`, que pode conter continuidade e segredos de produção.
