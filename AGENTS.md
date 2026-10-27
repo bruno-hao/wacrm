@@ -4,15 +4,16 @@
 Esta versão tem mudanças incompatíveis — APIs, convenções e estrutura de arquivos podem ser todas diferentes do que consta no seu treinamento. Leia o guia relevante em `node_modules/next/dist/docs/` antes de escrever qualquer código. Preste atenção aos avisos de depreciação.
 <!-- END:nextjs-agent-rules -->
 
-## Fluxo padrão de commit e publicação
+## Fluxo obrigatório de alteração, commit e publicação
 
-Após qualquer alteração solicitada pelo usuário, trate a solicitação como autorização para executar o fluxo completo de produção, nesta ordem:
+Após qualquer alteração solicitada pelo usuário, trate a solicitação como autorização para executar o fluxo completo de produção, nesta ordem. Não é necessário que ele use a palavra “commit” ou “deploy” separadamente:
 
-1. validar e criar o commit local;
+1. validar a alteração e criar o commit local;
 2. enviar o commit ao repositório Git remoto;
 3. executar e acompanhar até o fim o workflow `publish-image.yml`, que publica a imagem no GHCR;
 4. somente após o workflow concluir com sucesso, conectar à VPS `crm.oticamvision.com.br` por SSH na porta `22022`, atualizar a imagem e recriar o contêiner com `docker compose pull && docker compose up -d` em `/root/wacrm`;
-5. confirmar que o contêiner está saudável e que a imagem executada corresponde à imagem publicada.
+5. confirmar que o contêiner está saudável e que a imagem executada corresponde à imagem publicada;
+6. atualizar `CLAUDE.md`, `AGENTS.md` e o guia operacional da VPS (`/root/.claude/CLAUDE.md` e `/root/wacrm-handoff/LEIA-PRIMEIRO.md`) quando a alteração modificar comportamento, infraestrutura, versões, migrations ou procedimento operacional, e versionar essas atualizações no próximo commit.
 
 Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o ponto exato em que o fluxo parou. Não é necessário pedir nova confirmação entre essas etapas.
 
@@ -24,3 +25,4 @@ Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o pont
 - A migration `065_correios_credentials.sql` armazena criptografados o usuário/senha do Meu Correios e o token renovável por conta; a configuração fica em Configurações → Espaço de trabalho → Logística.
 - A migration `066_google_reviews.sql` cria a configuração OAuth do Google Business Profile e os campos do agente de respostas de avaliações.
 - O `.gitignore` protege `.env*`, `docs/orcamento/simulacao/` e `WACRM-MVISION.md`, que pode conter continuidade e segredos de produção.
+Mesmo alterações exclusivamente documentais devem ser commitadas e publicadas quando alterarem as instruções de operação. A documentação local e a documentação da VPS devem permanecer sincronizadas com o commit e a imagem efetivamente implantados.
