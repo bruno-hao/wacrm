@@ -14,7 +14,7 @@ import { Search, ChevronDown, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
-import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { cleanContactName, displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { useSsoticaStatuses } from "@/hooks/use-ssotica-customer";
 import { ChannelBadge, type Channel } from "./channel-badge";
 import { formatPhoneDisplay } from "@/lib/whatsapp/phone-utils";
@@ -201,7 +201,7 @@ export function ConversationList({
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((c) => {
-        const name = c.contact?.name?.toLowerCase() ?? "";
+        const name = cleanContactName(c.contact?.name).toLowerCase();
         const phone = `${c.contact?.phone ?? ""} ${formatPhoneDisplay(c.contact?.phone)}`.toLowerCase();
         const lastMsg = c.last_message_text?.toLowerCase() ?? "";
         return name.includes(q) || phone.includes(q) || lastMsg.includes(q);
@@ -510,7 +510,7 @@ function ConversationItem({
 }: ConversationItemProps) {
   const contact = conversation.contact;
   const displayName =
-    contact?.name || displayContactHandle(contact ?? {}) || t("unknown");
+    cleanContactName(contact?.name) || displayContactHandle(contact ?? {}) || t("unknown");
   const initials = displayName.charAt(0).toUpperCase();
 
   const handleClick = useCallback(() => {
@@ -557,7 +557,7 @@ function ConversationItem({
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
           <p className="truncate text-xs text-muted-foreground">
-            {conversation.last_message_text || t("noMessagesYet")}
+            {conversation.last_message_text?.toLowerCase() === "[image]" ? t("photo") : conversation.last_message_text?.toLowerCase() === "[audio]" ? t("audio") : conversation.last_message_text || t("noMessagesYet")}
           </p>
           <div className="flex shrink-0 items-center gap-1.5">
             {conversation.unread_count > 0 && (

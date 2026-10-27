@@ -24,7 +24,7 @@ import { addContactTag, deleteContactTag } from "@/lib/contacts/tag-api";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
-import { contactHandle, displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { cleanContactName, contactHandle, displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { formatMoney } from "@/lib/currency";
 import { phoneForCopy } from "@/lib/whatsapp/phone-utils";
 import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
@@ -198,7 +198,7 @@ export function ContactSidebar({ contact, onContactRenamed }: ContactSidebarProp
     );
   }
 
-  const displayName = contact.name || displayContactHandle(contact);
+  const displayName = cleanContactName(contact.name) || displayContactHandle(contact);
   const initials = displayName.charAt(0).toUpperCase();
 
   return (

@@ -57,7 +57,7 @@ import { TemplatePicker } from "./template-picker";
 import { AiThreadBanner } from "./ai-thread-banner";
 import { buildReplyPreview } from "./reply-quote";
 import { renderTemplateBody } from "@/lib/whatsapp/template-body";
-import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { cleanContactName, displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
 import { SsoticaSellerBadge, SsoticaStatusBadge } from "./ssotica-badges";
 import { ChannelBadge } from "./channel-badge";
@@ -801,7 +801,7 @@ export function MessageThread({
   }, [reactions]);
 
   const contactDisplayName =
-    contact?.name || (contact ? displayContactHandle(contact) : "") || t("customer");
+    cleanContactName(contact?.name) || (contact ? displayContactHandle(contact) : "") || t("customer");
 
   // Author label for a quoted message: "You" when we sent the parent,
   // contact name when the customer sent it.
@@ -929,7 +929,7 @@ export function MessageThread({
     );
   }
 
-  const displayName = contact.name || displayContactHandle(contact);
+  const displayName = cleanContactName(contact.name) || displayContactHandle(contact);
   const messageGroups = groupMessagesByDate(messages);
   const currentStatus = STATUS_OPTIONS.find(
     (s) => s.value === conversation.status
@@ -1171,7 +1171,7 @@ export function MessageThread({
                           authorLabel:
                             parent.sender_type === "agent" || parent.sender_type === "bot"
                               ? t("me") 
-                              : contact?.name || displayContactHandle(contact ?? {}) || t("unknown"),
+                              : cleanContactName(contact?.name) || displayContactHandle(contact ?? {}) || t("unknown"),
                           preview: buildReplyPreview(parent, tQuote),
                         }
                       : null;

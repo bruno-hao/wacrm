@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { normalizeInstagramWebhook, sendWindow } from './events'
+import { downloadInstagramMedia } from './inbound'
 import { signOAuthState, verifyInstagramSignature, verifyOAuthState } from './security'
 
 const ME = '17841400000000000'
@@ -9,6 +10,20 @@ const PEER = '9988776655'
 const wrap = (messaging: unknown[]) => ({
   object: 'instagram',
   entry: [{ id: ME, time: 1, messaging }],
+})
+
+describe('downloadInstagramMedia', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('retries a protected CDN URL with the account token', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response('no', { status: 403 }))
+      .mockResolvedValueOnce(new Response(new Uint8Array([1, 2]), { status: 200, headers: { 'content-type': 'image/jpeg' } }))
+    vi.stubGlobal('fetch', fetchMock)
+    const result = await downloadInstagramMedia({ downloadUrl: 'https://cdn.instagram.test/image', accessToken: 'secret' })
+    expect(result.buffer.byteLength).toBe(2)
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ headers: { Authorization: 'Bearer secret' } })
+  })
 })
 
 describe('normalizeInstagramWebhook', () => {

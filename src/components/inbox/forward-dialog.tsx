@@ -10,7 +10,7 @@ import {
   CONVERSATION_SELECT,
   normalizeConversations,
 } from "@/lib/inbox/conversations";
-import { displayContactHandle } from "@/lib/whatsapp/wa-identity";
+import { cleanContactName, displayContactHandle } from "@/lib/whatsapp/wa-identity";
 import { cn } from "@/lib/utils";
 import type { Conversation } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -61,7 +61,7 @@ export function ForwardDialog({
   }, [open]);
 
   const nameOf = (c: Conversation) =>
-    c.contact?.name || displayContactHandle(c.contact ?? {}) || t("unknown");
+    cleanContactName(c.contact?.name) || displayContactHandle(c.contact ?? {}) || t("unknown");
 
   const initialsOf = (c: Conversation) =>
     nameOf(c)

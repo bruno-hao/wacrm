@@ -20,12 +20,19 @@ interface IgConfigRow {
   access_token: string
 }
 
-/** Download a public Instagram CDN attachment (no auth header needed). */
-async function downloadPlain({ downloadUrl }: { downloadUrl: string; accessToken: string }) {
-  const res = await fetch(downloadUrl, {
+/** Download an Instagram CDN attachment, retrying with the account token. */
+export async function downloadInstagramMedia({ downloadUrl, accessToken }: { downloadUrl: string; accessToken: string }) {
+  let res = await fetch(downloadUrl, {
     redirect: 'follow',
     signal: AbortSignal.timeout(30_000),
   })
+  if (res.status === 401 || res.status === 403) {
+    res = await fetch(downloadUrl, {
+      redirect: 'follow',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(30_000),
+    })
+  }
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return {
     buffer: Buffer.from(await res.arrayBuffer()),
@@ -179,7 +186,7 @@ async function handleMessage(
         downloadUrl: part.mediaUrl,
         accessToken: token,
         messageTimestamp: String(ev.timestamp),
-        download: downloadPlain,
+        download: downloadInstagramMedia,
       })
       mediaUrl = mirrored ?? part.mediaUrl
     }

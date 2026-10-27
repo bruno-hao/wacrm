@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
 import { AudioTranscription } from "./audio-transcription";
 import { PrescriptionReading } from "./prescription-reading";
+import { LinkPreview } from "./link-preview";
 import { MessageReactions } from "./message-reactions";
 import {
   MediaAudioBubble,
@@ -120,9 +121,7 @@ function MessageContent({
   switch (message.content_type) {
     case "text":
       return (
-        <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content_text}
-        </p>
+        <div><p className="whitespace-pre-wrap break-words text-sm">{message.content_text}</p><LinkPreview text={message.content_text} /></div>
       );
 
     case "image":

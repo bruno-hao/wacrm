@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   contactHandle,
+  cleanContactName,
   hasUsableIdentity,
   identityDisplayName,
   isBusinessScopedUserId,
@@ -21,6 +22,10 @@ const USERNAME_ONLY_CONTACT = {
 }
 
 describe('isBusinessScopedUserId', () => {
+  it('removes emoji while preserving the contact name', () => {
+    expect(cleanContactName('Tainá Melo💕')).toBe('Tainá Melo')
+    expect(cleanContactName('  Maria  ')).toBe('Maria')
+  })
   it('accepts both BSUID shapes', () => {
     expect(isBusinessScopedUserId('US.13491208655302741918')).toBe(true)
     expect(isBusinessScopedUserId('US.ENT.11815799212886844830')).toBe(true)

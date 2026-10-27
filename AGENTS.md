@@ -26,5 +26,7 @@ Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o pont
 - A migration `066_google_reviews.sql` cria a configuração OAuth do Google Business Profile e os campos do agente de respostas de avaliações.
 - Em **Agentes de IA**, `IA Sandbox Cliente` testa conversas da Maria; `IA Sandbox Receitas` envia uma imagem apenas em memória para o modelo visual configurado. O sandbox de receitas não grava a imagem em Storage, mensagens ou tabelas e descarta os bytes após a leitura.
 - O inbox deve ignorar conversas sem mensagem persistida (`last_message_at` nulo); registros órfãos não podem aparecer como chats acionáveis.
+- Mídias recebidas do Instagram devem ser espelhadas no `chat-media`; o downloader tenta a CDN sem autenticação e repete com o token da conta quando a CDN responder 401/403. Nomes de contato usam `cleanContactName`, que remove emoji decorativo sem alterar palavras.
+- Mensagens de texto com URL podem exibir prévia em `components/inbox/link-preview.tsx`, alimentada por `/api/link-preview` com validação SSRF e limite de HTML; não confie em URLs remotas sem passar pela rota.
 - O `.gitignore` protege `.env*`, `docs/orcamento/simulacao/` e `WACRM-MVISION.md`, que pode conter continuidade e segredos de produção.
 Mesmo alterações exclusivamente documentais devem ser commitadas e publicadas quando alterarem as instruções de operação. A documentação local e a documentação da VPS devem permanecer sincronizadas com o commit e a imagem efetivamente implantados.

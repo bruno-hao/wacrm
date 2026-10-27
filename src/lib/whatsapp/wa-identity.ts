@@ -91,6 +91,15 @@ function cleanUsername(value: string | undefined): string | null {
   return trimmed ? trimmed : null
 }
 
+/** Remove decorative emoji from profile/contact names without changing words. */
+export function cleanContactName(value: string | null | undefined): string {
+  return (value ?? '')
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/[\uFE0E\uFE0F\u200D\u20E3]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
 function cleanBsuid(value: string | undefined): string | null {
   const trimmed = value?.trim()
   if (!trimmed) return null
@@ -118,7 +127,7 @@ export function resolveInboundIdentity(
       cleanBsuid(message.from_parent_user_id) ??
       cleanBsuid(contact?.parent_user_id),
     waUsername: cleanUsername(contact?.profile?.username),
-    name: contact?.profile?.name?.trim() ?? '',
+    name: cleanContactName(contact?.profile?.name),
   }
 }
 
