@@ -13,6 +13,14 @@ export function isCorreiosApiToken(value: unknown): value is string {
   return typeof value === 'string' && /^cws-[A-Za-z0-9_-]+$/.test(value.trim())
 }
 
+export function extractCorreiosApiToken(username: unknown, password: unknown): string | null {
+  const values = [username, password]
+  for (const value of values) {
+    if (isCorreiosApiToken(value)) return value.trim()
+  }
+  return null
+}
+
 type CredentialRow = {
   account_id: string
   username: string
@@ -68,11 +76,29 @@ export async function getCorreiosAccessToken(accountId: string): Promise<string>
     throw new CorreiosAuthError('Configure o usuário e a senha do Meu Correios em Configurações → Espaço de trabalho → Logística.')
   }
   const current = row as CredentialRow
+  let legacyUsername = ''
+  let legacyPassword = ''
+  try {
+    legacyUsername = decrypt(current.username)
+    legacyPassword = decrypt(current.password)
+  } catch {
+    throw new CorreiosAuthError('Não foi possível descriptografar as credenciais dos Correios.')
+  }
+  const legacyApiToken = extractCorreiosApiToken(legacyUsername, legacyPassword)
+  if (legacyApiToken && !current.access_token) {
+    const { error: tokenError } = await db.from('correios_credentials').update({
+      access_token: encrypt(legacyApiToken),
+      token_expires_at: null,
+      last_error: null,
+    }).eq('account_id', accountId)
+    if (tokenError) throw new CorreiosAuthError('A chave CWS foi reconhecida, mas não foi possível armazená-la com segurança.')
+    return legacyApiToken
+  }
   const expiresAt = current.token_expires_at ? new Date(current.token_expires_at).getTime() : 0
   if (current.access_token && (!current.token_expires_at || expiresAt > Date.now() + 5 * 60_000)) {
     return decrypt(current.access_token)
   }
-  const generated = await requestToken(current)
+  const generated = await requestToken({ ...current, username: encrypt(legacyUsername), password: encrypt(legacyPassword) })
   const { error: updateError } = await db.from('correios_credentials').update({
     access_token: encrypt(generated.token),
     token_expires_at: generated.expiresAt,
