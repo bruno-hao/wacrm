@@ -102,4 +102,4 @@ Desenvolvimento local: o `.env.local` aqui pode ser uma cópia do de produção 
 ### Modelo de orçamento (em andamento)
 `docs/orcamento` guarda o modelo de orçamento da M Vision (`template-src.html` → `modelo-orcamento.html` com 1–3 opções e `modelo-orcamento-opcao-unica.html`; geradores `gerar_simulacao.py`/`gerar_trio.py`; logos em `logos/`). `docs/orcamento/simulacao/` é gitignored (dados reais de clientes). Os PDFs atuais vêm do Edge headless, que não existe na VPS. O plano e as decisões pendentes para ligar o modelo à página Orçamentos estão em `docs/orcamento/PROXIMOS-PASSOS.md`; leia-o antes de mexer nessa área.
 
-Última validação de produção: 2026-10-28, commit `86701fc0ad703663702ca81781003670ce1b2d0f`, imagem `ghcr.io/bruno-hao/wacrm:latest` digest `sha256:3a1bf681b9c7219de4f40e753f2c51adee43f5ec9807349e8ad4ca49dca57b0c`, container saudável.
+Última validação de produção: 2026-10-28, commit `7b440f33ddc8b4bf8ceb47ee7c9dcfed9d4a70f6`, imagem `ghcr.io/bruno-hao/wacrm:latest` digest `sha256:40a410ae9381d4ed8d45ddf07fb0174f23db73d24f5500012d6bc21c2d6c3843`, container saudável.
