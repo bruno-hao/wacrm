@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getCurrentAccount, requireRole, toErrorResponse } from '@/lib/auth/account'
 import { supabaseAdmin } from '@/lib/automations/admin-client'
 import { encrypt } from '@/lib/whatsapp/encryption'
-import { getCorreiosAccessToken, CorreiosAuthError } from '@/lib/correios/auth'
+import { getCorreiosAccessToken, CorreiosAuthError, isCorreiosApiToken } from '@/lib/correios/auth'
 
 export async function GET() {
   try {
@@ -19,9 +19,10 @@ export async function PUT(request: Request) {
     const body = await request.json().catch(() => null)
     const username = typeof body?.username === 'string' ? body.username.trim() : ''
     const password = typeof body?.password === 'string' ? body.password : ''
-    if (!username || !password) return NextResponse.json({ error: 'required', message: 'Informe o usuário e a senha do Meu Correios.' }, { status: 400 })
+    const apiToken = isCorreiosApiToken(username) ? username : isCorreiosApiToken(password) ? password.trim() : null
+    if ((!username || !password) && !apiToken) return NextResponse.json({ error: 'required', message: 'Informe o usuário e a senha do Meu Correios, ou cole uma chave CWS completa.' }, { status: 400 })
     const db = supabaseAdmin()
-    const { error } = await db.from('correios_credentials').upsert({ account_id: accountId, username: encrypt(username), password: encrypt(password), access_token: null, token_expires_at: null, last_error: null, created_by: userId }, { onConflict: 'account_id' })
+    const { error } = await db.from('correios_credentials').upsert({ account_id: accountId, username: encrypt(apiToken ? '' : username), password: encrypt(apiToken ? '' : password), access_token: apiToken ? encrypt(apiToken) : null, token_expires_at: null, last_error: null, created_by: userId }, { onConflict: 'account_id' })
     if (error) return NextResponse.json({ error: 'save_failed' }, { status: 500 })
     try {
       await getCorreiosAccessToken(accountId)

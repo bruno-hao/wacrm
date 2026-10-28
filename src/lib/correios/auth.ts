@@ -9,6 +9,10 @@ export class CorreiosAuthError extends Error {
   }
 }
 
+export function isCorreiosApiToken(value: unknown): value is string {
+  return typeof value === 'string' && /^cws-[A-Za-z0-9_-]+$/.test(value.trim())
+}
+
 type CredentialRow = {
   account_id: string
   username: string
@@ -65,7 +69,7 @@ export async function getCorreiosAccessToken(accountId: string): Promise<string>
   }
   const current = row as CredentialRow
   const expiresAt = current.token_expires_at ? new Date(current.token_expires_at).getTime() : 0
-  if (current.access_token && expiresAt > Date.now() + 5 * 60_000) {
+  if (current.access_token && (!current.token_expires_at || expiresAt > Date.now() + 5 * 60_000)) {
     return decrypt(current.access_token)
   }
   const generated = await requestToken(current)
