@@ -40,6 +40,9 @@ export interface AiConfig {
   baseUrl: string | null
   apiKey: string
   systemPrompt: string | null
+  chatDraftModel?: string | null
+  chatDraftPrompt?: string | null
+  disableAiOnAgentMessage?: boolean
   isActive: boolean
   autoReplyEnabled: boolean
   autoReplyMaxPerConversation: number

@@ -62,6 +62,7 @@ import { useSsoticaCustomer } from "@/hooks/use-ssotica-customer";
 import { SsoticaSellerBadge, SsoticaStatusBadge } from "./ssotica-badges";
 import { ChannelBadge } from "./channel-badge";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 
 interface ReplyDraft {
   id: string;
@@ -186,6 +187,36 @@ export function MessageThread({
   // simply "at least one selected".
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [forwardOpen, setForwardOpen] = useState(false);
+  const [aiAutoReplyAvailable, setAiAutoReplyAvailable] = useState(false);
+  const [aiToggleBusy, setAiToggleBusy] = useState(false);
+  const [aiPaused, setAiPaused] = useState(Boolean(conversation?.ai_autoreply_disabled));
+  useEffect(() => {
+    setAiPaused(Boolean(conversation?.ai_autoreply_disabled));
+  }, [conversation?.id, conversation?.ai_autoreply_disabled]);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/ai/config', { cache: 'no-store' }).then(async (res) => {
+      if (!res.ok) return;
+      const data = await res.json();
+      if (alive) setAiAutoReplyAvailable(Boolean(data.configured && data.is_active && data.auto_reply_enabled));
+    }).catch(() => undefined);
+    return () => { alive = false; };
+  }, []);
+  const toggleAiAutoReply = useCallback(async (enabled: boolean) => {
+    if (!conversation?.id) return;
+    setAiToggleBusy(true);
+    try {
+      const res = await fetch(`/api/ai/autoreply/${conversation.id}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paused: !enabled, assign_to_me: false }),
+      });
+      if (!res.ok) throw new Error('toggle_failed');
+      setAiPaused(!enabled);
+      toast.success(enabled ? t('aiEnabled') : t('aiDisabled'));
+    } catch {
+      toast.error(t('aiToggleFailed'));
+    } finally { setAiToggleBusy(false); }
+  }, [conversation?.id, t]);
   const selectionMode = selected.size > 0;
   const toggleSelect = useCallback((id: string) => {
     setSelected((cur) => {
@@ -1069,6 +1100,19 @@ export function MessageThread({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {aiAutoReplyAvailable && (
+            <div className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-muted-foreground" title={aiPaused ? t('aiEnableTitle') : t('aiDisableTitle')}>
+              <span className="hidden lg:inline">IA</span>
+              <Switch
+                checked={!aiPaused}
+                onCheckedChange={(checked) => void toggleAiAutoReply(checked)}
+                disabled={aiToggleBusy}
+                aria-label={aiPaused ? t('aiEnableTitle') : t('aiDisableTitle')}
+                className="scale-75"
+              />
+            </div>
+          )}
 
           {/* Assign dropdown */}
           <DropdownMenu>

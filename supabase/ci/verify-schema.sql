@@ -239,6 +239,18 @@ BEGIN
   IF to_regclass('public.google_business_profile_config') IS NULL THEN
     RAISE EXCEPTION 'public.google_business_profile_config is missing — migration 066 did not apply';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ai_configs' AND column_name = 'chat_draft_model'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ai_configs' AND column_name = 'chat_draft_prompt'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ai_configs' AND column_name = 'disable_ai_on_agent_message'
+  ) THEN
+    RAISE EXCEPTION 'AI chat assistant settings are missing — migration 067 did not apply';
+  END IF;
 
   RAISE NOTICE 'schema verification passed';
 END

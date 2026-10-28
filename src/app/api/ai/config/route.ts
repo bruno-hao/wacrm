@@ -44,7 +44,7 @@ export async function GET() {
       // `api_key` is selected only to derive `has_key` — it is stripped
       // out below and never returned to the client.
       .select(
-        'provider, model, base_url, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt, google_reviews_model, google_reviews_prompt'
+        'provider, model, base_url, system_prompt, chat_draft_model, chat_draft_prompt, disable_ai_on_agent_message, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, api_key, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt, google_reviews_model, google_reviews_prompt'
       )
       .eq('account_id', accountId)
       .maybeSingle();
@@ -75,6 +75,9 @@ export async function GET() {
       has_embeddings_key: !!embeddings_api_key,
       ...safe,
       system_prompt: safe.system_prompt || DEFAULT_MARIA_SYSTEM_PROMPT,
+      chat_draft_model: safe.chat_draft_model || safe.model,
+      chat_draft_prompt: safe.chat_draft_prompt || safe.system_prompt || DEFAULT_MARIA_SYSTEM_PROMPT,
+      disable_ai_on_agent_message: safe.disable_ai_on_agent_message === true,
       auto_reply_schedule: safeSchedule,
     });
   } catch (err) {
@@ -125,6 +128,14 @@ export async function POST(request: Request) {
         ? body.system_prompt.trim()
         : null;
     const systemPromptProvided = 'system_prompt' in body;
+    const chatDraftModelProvided = 'chat_draft_model' in body;
+    const chatDraftPromptProvided = 'chat_draft_prompt' in body;
+    const disableAiOnAgentMessageProvided = 'disable_ai_on_agent_message' in body;
+    const chatDraftModel = typeof body.chat_draft_model === 'string' && body.chat_draft_model.trim()
+      ? body.chat_draft_model.trim().slice(0, 120) : null;
+    const chatDraftPrompt = typeof body.chat_draft_prompt === 'string' && body.chat_draft_prompt.trim()
+      ? body.chat_draft_prompt.trim().slice(0, 20_000) : null;
+    const disableAiOnAgentMessage = body.disable_ai_on_agent_message === true;
     const isActive = body.is_active === true;
     const autoReplyEnabled = body.auto_reply_enabled === true;
     let scheduleUpdate: ReturnType<typeof readAutoReplyScheduleUpdate>;
@@ -225,7 +236,7 @@ export async function POST(request: Request) {
     // Reuse the stored key when the form didn't send a fresh one.
     const { data: existing } = await supabase
       .from('ai_configs')
-      .select('id, provider, model, base_url, api_key, system_prompt, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt')
+      .select('id, provider, model, base_url, api_key, system_prompt, chat_draft_model, chat_draft_prompt, disable_ai_on_agent_message, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt')
       .eq('account_id', accountId)
       .maybeSingle();
 
@@ -333,6 +344,9 @@ export async function POST(request: Request) {
     if (systemPromptProvided || !existing) {
       shared.system_prompt = systemPrompt || DEFAULT_MARIA_SYSTEM_PROMPT;
     }
+    if (chatDraftModelProvided) shared.chat_draft_model = chatDraftModel;
+    if (chatDraftPromptProvided) shared.chat_draft_prompt = chatDraftPrompt;
+    if (disableAiOnAgentMessageProvided) shared.disable_ai_on_agent_message = disableAiOnAgentMessage;
     // Only touch the handoff target when the form actually sent the field,
     // so a partial save (e.g. flipping a toggle) doesn't wipe it.
     if (handoffProvided) shared.handoff_agent_id = handoffAgentId;

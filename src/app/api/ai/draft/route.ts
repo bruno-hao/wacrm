@@ -12,6 +12,7 @@ import { supabaseAdmin } from '@/lib/ai/admin-client'
 import { AiError } from '@/lib/ai/types'
 import { getT } from '@/lib/i18n/translate'
 import { formatWacrmAiContext, loadWacrmAiContext } from '@/lib/ai/internal-context'
+import { resolveChatDraftSettings } from '@/lib/ai/chat-draft'
 
 const t = getT('Api')
 
@@ -110,14 +111,16 @@ export async function POST(request: Request) {
     } catch (err) {
       console.warn('[ai/draft] internal context unavailable:', err)
     }
+    const draftSettings = resolveChatDraftSettings(config)
+    const draftConfig = { ...config, model: draftSettings.model }
     const systemPrompt = buildSystemPrompt({
-      userPrompt: config.systemPrompt,
+      userPrompt: draftSettings.prompt,
       mode: 'draft',
       knowledge,
       internalContext,
     })
 
-    const { text, usage } = await generateReply({ config, systemPrompt, messages })
+    const { text, usage } = await generateReply({ config: draftConfig, systemPrompt, messages })
 
     // Record spend on the account's BYO key. Best-effort + via the
     // service role (the log has no `authenticated` INSERT policy). This
@@ -132,7 +135,7 @@ export async function POST(request: Request) {
         conversationId,
         mode: 'draft',
         provider: config.provider,
-        model: config.model,
+        model: draftConfig.model,
         usage,
       })
     } catch (logErr) {

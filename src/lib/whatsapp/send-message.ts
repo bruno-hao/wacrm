@@ -304,6 +304,9 @@ export async function sendMessageToConversation(
         contentText,
         mediaUrl,
       });
+      if (senderUserId && await shouldDisableAiAfterAgentMessage(db, accountId)) {
+        await db.from('conversations').update({ ai_autoreply_disabled: true }).eq('id', conversationId).eq('account_id', accountId);
+      }
       return { messageId: r.messageId, whatsappMessageId: r.instagramMessageId };
     } catch (err) {
       if (err instanceof InstagramSendError) {
@@ -606,6 +609,9 @@ export async function sendMessageToConversation(
       last_message_text: lastMessageText,
       last_message_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...(senderUserId && await shouldDisableAiAfterAgentMessage(db, accountId)
+        ? { ai_autoreply_disabled: true }
+        : {}),
     })
     .eq('id', conversationId);
 
@@ -633,4 +639,20 @@ export async function sendMessageToConversation(
   }
 
   return { messageId: messageRecord.id, whatsappMessageId: waMessageId };
+}
+
+async function shouldDisableAiAfterAgentMessage(
+  db: SupabaseClient,
+  accountId: string,
+): Promise<boolean> {
+  const { data, error } = await db
+    .from('ai_configs')
+    .select('disable_ai_on_agent_message')
+    .eq('account_id', accountId)
+    .maybeSingle();
+  if (error) {
+    console.warn('[send-message] could not read AI pause preference:', error.message);
+    return false;
+  }
+  return data?.disable_ai_on_agent_message === true;
 }

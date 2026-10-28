@@ -10,6 +10,9 @@ interface AiConfigRow {
   base_url: string | null;
   api_key: string;
   system_prompt: string | null;
+  chat_draft_model: string | null;
+  chat_draft_prompt: string | null;
+  disable_ai_on_agent_message: boolean;
   is_active: boolean;
   auto_reply_enabled: boolean;
   auto_reply_max_per_conversation: number;
@@ -24,7 +27,7 @@ interface AiConfigRow {
 }
 
 const CONFIG_COLUMNS =
-  'provider, model, base_url, api_key, system_prompt, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt';
+  'provider, model, base_url, api_key, system_prompt, chat_draft_model, chat_draft_prompt, disable_ai_on_agent_message, is_active, auto_reply_enabled, auto_reply_max_per_conversation, auto_reply_schedule, handoff_agent_id, embeddings_api_key, transcription_enabled, transcription_model, prescription_reader_enabled, prescription_reader_model, prescription_reader_prompt';
 
 /**
  * Load and decrypt the account's AI config for *use* (draft or
@@ -94,6 +97,9 @@ export async function loadAiConfig(
     baseUrl: row.base_url,
     apiKey: decrypt(row.api_key),
     systemPrompt: row.system_prompt || DEFAULT_MARIA_SYSTEM_PROMPT,
+    chatDraftModel: row.chat_draft_model || row.model,
+    chatDraftPrompt: row.chat_draft_prompt || row.system_prompt || DEFAULT_MARIA_SYSTEM_PROMPT,
+    disableAiOnAgentMessage: row.disable_ai_on_agent_message === true,
     isActive: row.is_active,
     autoReplyEnabled: row.auto_reply_enabled,
     autoReplyMaxPerConversation: row.auto_reply_max_per_conversation,

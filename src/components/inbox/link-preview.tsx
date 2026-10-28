@@ -14,7 +14,14 @@ export function LinkPreview({ text }: { text: string | null | undefined }) {
   const [loading, setLoading] = useState(Boolean(url))
 
   useEffect(() => {
-    if (!url) { setPreview(null); setLoading(false); return }
+    if (!url) {
+      // The empty URL is an external-input reset, not a render-loop update.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPreview(null)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoading(false)
+      return
+    }
     let cancelled = false
     setLoading(true)
     fetch(`/api/link-preview?url=${encodeURIComponent(url)}`)

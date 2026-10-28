@@ -99,6 +99,9 @@ export function AiConfig() {
   const [embeddingsKeyEdited, setEmbeddingsKeyEdited] = useState(false);
   const [hasStoredEmbeddingsKey, setHasStoredEmbeddingsKey] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState('');
+  const [chatDraftModel, setChatDraftModel] = useState('');
+  const [chatDraftPrompt, setChatDraftPrompt] = useState('');
+  const [disableAiOnAgentMessage, setDisableAiOnAgentMessage] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [autoReplyEnabled, setAutoReplyEnabled] = useState(false);
   const [autoReplySchedule, setAutoReplySchedule] =
@@ -138,6 +141,9 @@ export function AiConfig() {
         setModel(data.model);
         setBaseUrl(data.base_url ?? '');
         setSystemPrompt(data.system_prompt ?? '');
+        setChatDraftModel(data.chat_draft_model || data.model || '');
+        setChatDraftPrompt(data.chat_draft_prompt || data.system_prompt || '');
+        setDisableAiOnAgentMessage(Boolean(data.disable_ai_on_agent_message));
         setIsActive(data.is_active);
         setAutoReplyEnabled(data.auto_reply_enabled);
         setAutoReplySchedule(
@@ -208,6 +214,9 @@ export function AiConfig() {
     api_key: keyPayload(),
     embeddings_api_key: embeddingsKeyPayload(),
     system_prompt: systemPrompt.trim() || null,
+    chat_draft_model: chatDraftModel.trim() || model.trim(),
+    chat_draft_prompt: chatDraftPrompt.trim() || null,
+    disable_ai_on_agent_message: disableAiOnAgentMessage,
     is_active: isActive,
     auto_reply_enabled: autoReplyEnabled,
     auto_reply_schedule: autoReplySchedule,
@@ -300,6 +309,9 @@ export function AiConfig() {
         setAutoReplyEnabled(false);
         setAutoReplySchedule(emptySchedule());
         setSystemPrompt('');
+        setChatDraftModel('');
+        setChatDraftPrompt('');
+        setDisableAiOnAgentMessage(false);
         setHandoffAgentId('');
         setTranscriptionEnabled(false);
         setTranscriptionModel('whisper-large-v3-turbo');
@@ -521,6 +533,27 @@ export function AiConfig() {
                 onCheckedChange={setIsActive}
                 disabled={disabled}
               />
+            </div>
+
+            <div className="border-border rounded-md border p-3">
+              <p className="text-foreground text-sm font-medium">{t('chatAssistant')}</p>
+              <p className="text-muted-foreground mt-1 text-xs">{t('chatAssistantDesc')}</p>
+              <div className="mt-3 space-y-2">
+                <Label htmlFor="ai-chat-draft-model">{t('chatAssistantModel')}</Label>
+                <Input id="ai-chat-draft-model" value={chatDraftModel || model} onChange={(e) => setChatDraftModel(e.target.value)} disabled={disabled} />
+              </div>
+              <div className="mt-3 space-y-2">
+                <Label htmlFor="ai-chat-draft-prompt">{t('chatAssistantPrompt')}</Label>
+                <Textarea id="ai-chat-draft-prompt" value={chatDraftPrompt} onChange={(e) => setChatDraftPrompt(e.target.value)} placeholder={t('chatAssistantPromptPlaceholder')} rows={5} disabled={disabled} />
+              </div>
+            </div>
+
+            <div className="border-border flex items-center justify-between gap-4 rounded-md border p-3">
+              <div>
+                <p className="text-foreground text-sm font-medium">{t('disableAiOnAgentMessage')}</p>
+                <p className="text-muted-foreground text-xs">{t('disableAiOnAgentMessageDesc')}</p>
+              </div>
+              <Switch checked={disableAiOnAgentMessage} onCheckedChange={setDisableAiOnAgentMessage} disabled={disabled} />
             </div>
 
             <div className="border-border flex items-center justify-between gap-4 rounded-md border p-3">
