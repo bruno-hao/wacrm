@@ -25,6 +25,7 @@ Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o pont
 - A migration `065_correios_credentials.sql` armazena criptografados o usuário/senha do Meu Correios e o token renovável por conta; a configuração fica em Configurações → Espaço de trabalho → Logística.
 - A migration `066_google_reviews.sql` cria a configuração OAuth do Google Business Profile e os campos do agente de respostas de avaliações.
 - A migration `067_ai_chat_assistant.sql` cria o Assistente de resposta do chat e a opção de pausar a IA quando um atendente envia mensagem.
+- O controle de IA por conversa permanece visível no cabeçalho quando a IA está configurada; fica desabilitado enquanto `auto_reply_enabled` global estiver desligado, evitando confundir ausência do controle com ausência de configuração.
 - Em **Agentes de IA**, `IA Sandbox Cliente` testa conversas da Maria; `IA Sandbox Receitas` envia uma imagem apenas em memória para o modelo visual configurado. O sandbox de receitas não grava a imagem em Storage, mensagens ou tabelas e descarta os bytes após a leitura.
 - O inbox deve ignorar conversas sem mensagem persistida (`last_message_at` nulo); registros órfãos não podem aparecer como chats acionáveis.
 - Mídias recebidas do Instagram devem ser espelhadas no `chat-media`; o downloader tenta a CDN sem autenticação e repete com o token da conta quando a CDN responder 401/403. Nomes de contato usam `cleanContactName`, que remove emoji decorativo sem alterar palavras.

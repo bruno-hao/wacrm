@@ -63,6 +63,7 @@ import { SsoticaSellerBadge, SsoticaStatusBadge } from "./ssotica-badges";
 import { ChannelBadge } from "./channel-badge";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { getChatAiToggleState } from "@/lib/ai/chat-toggle";
 
 interface ReplyDraft {
   id: string;
@@ -188,6 +189,7 @@ export function MessageThread({
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [forwardOpen, setForwardOpen] = useState(false);
   const [aiAutoReplyAvailable, setAiAutoReplyAvailable] = useState(false);
+  const [aiAutoReplyGlobalOn, setAiAutoReplyGlobalOn] = useState(false);
   const [aiToggleBusy, setAiToggleBusy] = useState(false);
   const [aiPaused, setAiPaused] = useState(Boolean(conversation?.ai_autoreply_disabled));
   useEffect(() => {
@@ -198,7 +200,10 @@ export function MessageThread({
     fetch('/api/ai/config', { cache: 'no-store' }).then(async (res) => {
       if (!res.ok) return;
       const data = await res.json();
-      if (alive) setAiAutoReplyAvailable(Boolean(data.configured && data.is_active && data.auto_reply_enabled));
+      if (alive) {
+        setAiAutoReplyAvailable(Boolean(data.configured && data.is_active));
+        setAiAutoReplyGlobalOn(Boolean(data.auto_reply_enabled));
+      }
     }).catch(() => undefined);
     return () => { alive = false; };
   }, []);
@@ -1101,14 +1106,14 @@ export function MessageThread({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {aiAutoReplyAvailable && (
-            <div className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-muted-foreground" title={aiPaused ? t('aiEnableTitle') : t('aiDisableTitle')}>
+          {getChatAiToggleState({ configured: aiAutoReplyAvailable, active: true, globalAutoReply: aiAutoReplyGlobalOn, paused: aiPaused }).visible && (
+            <div className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-muted-foreground" title={aiAutoReplyGlobalOn ? (aiPaused ? t('aiEnableTitle') : t('aiDisableTitle')) : t('aiDisabled')}>
               <span className="hidden lg:inline">IA</span>
               <Switch
-                checked={!aiPaused}
+                checked={getChatAiToggleState({ configured: true, active: true, globalAutoReply: aiAutoReplyGlobalOn, paused: aiPaused }).checked}
                 onCheckedChange={(checked) => void toggleAiAutoReply(checked)}
-                disabled={aiToggleBusy}
-                aria-label={aiPaused ? t('aiEnableTitle') : t('aiDisableTitle')}
+                disabled={aiToggleBusy || getChatAiToggleState({ configured: true, active: true, globalAutoReply: aiAutoReplyGlobalOn, paused: aiPaused }).disabled}
+                aria-label={aiAutoReplyGlobalOn ? (aiPaused ? t('aiEnableTitle') : t('aiDisableTitle')) : t('aiDisabled')}
                 className="scale-75"
               />
             </div>
