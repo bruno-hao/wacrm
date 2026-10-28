@@ -121,7 +121,7 @@ export async function trackCorreiosObject(rawCode: unknown, accountId?: string):
   let response: Response
   try {
     response = await fetch(`${base}/srorastro/v1/objetos/${encodeURIComponent(code)}?resultado=T`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+      headers: { Accept: 'application/json', 'Accept-Language': 'pt-BR', Authorization: `Bearer ${token}` },
       cache: 'no-store',
       signal: AbortSignal.timeout(20_000),
     })
@@ -134,6 +134,11 @@ export async function trackCorreiosObject(rawCode: unknown, accountId?: string):
   }
   if (!response.ok) {
     throw new CorreiosTrackingError('api_error', 'Os Correios recusaram a consulta. Verifique a credencial da API.', 502)
+  }
+  const objects = payload && typeof payload === 'object' && Array.isArray(payload.objetos) ? payload.objetos : []
+  const objectMessage = objects.find((item: unknown) => item && typeof item === 'object' && typeof (item as Record<string, unknown>).mensagem === 'string')?.mensagem
+  if (typeof objectMessage === 'string' && objectMessage.trim()) {
+    throw new CorreiosTrackingError('not_found', objectMessage.trim(), 404)
   }
   return parseTrackingPayload(payload, code)
 }

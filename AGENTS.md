@@ -27,6 +27,7 @@ Se qualquer etapa falhar, não avance para as seguintes. Informe o erro e o pont
 - A migration `067_ai_chat_assistant.sql` cria o Assistente de resposta do chat e a opção de pausar a IA quando um atendente envia mensagem.
 - O controle de IA por conversa permanece visível no cabeçalho quando a IA está configurada; fica desabilitado enquanto `auto_reply_enabled` global estiver desligado, evitando confundir ausência do controle com ausência de configuração.
 - A integração dos Correios aceita tanto usuário/senha do Meu Correios quanto uma chave CWS `cws-...` colada diretamente no painel Configurações → Espaço de trabalho → Logística; chaves CWS são armazenadas criptografadas como token Bearer sem renovação Basic.
+- Consultas de rastreio enviam `Accept-Language: pt-BR`; mensagens de erro por objeto, inclusive SRO-009 (fora do contrato), não são tratadas como rastreio bem-sucedido.
 - Em **Agentes de IA**, `IA Sandbox Cliente` testa conversas da Maria; `IA Sandbox Receitas` envia uma imagem apenas em memória para o modelo visual configurado. O sandbox de receitas não grava a imagem em Storage, mensagens ou tabelas e descarta os bytes após a leitura.
 - O inbox deve ignorar conversas sem mensagem persistida (`last_message_at` nulo); registros órfãos não podem aparecer como chats acionáveis.
 - Mídias recebidas do Instagram devem ser espelhadas no `chat-media`; o downloader tenta a CDN sem autenticação e repete com o token da conta quando a CDN responder 401/403. Nomes de contato usam `cleanContactName`, que remove emoji decorativo sem alterar palavras.
